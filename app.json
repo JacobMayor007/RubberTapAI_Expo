@@ -1,6 +1,11 @@
 {
   "expo": {
     "name": "rubbertapai",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "slug": "rubbertapai",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,6 +17,12 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.anonymous.rubbertapai",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "INTERNET"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -33,10 +44,25 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "The app accesses your photos to let you share them with your friends."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow RubberTapAI to access your camera"
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "enableDebugLogs": false
     }
   }
 }
