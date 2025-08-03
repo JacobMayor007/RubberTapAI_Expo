@@ -152,7 +152,7 @@ export default function ChatBox() {
         {loading ? (
           <ActivityIndicator animating size={"large"} />
         ) : (
-          <ScrollView className="flex-1  py-2">
+          <ScrollView className="flex-1 py-2">
             {chatHistory.map((chat, chatIndex) => {
               const other = getOtherParticipant(chat);
 

@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView, Text, View } from "react-native";
 import { useLocation } from "../contexts/LocationContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { fetchForecastWeather } from "../services/weatherApi";
 import { AppText } from "./AppText";
 
@@ -30,12 +31,14 @@ const WeatherForecast = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { address } = useLocation();
+  const { theme } = useTheme();
   const now = dayjs();
 
   useEffect(() => {
     const fetchWeatherData = async () => {
       try {
-        if (!address?.city) return; // wait until we have a city
+        setLoading(true);
+        if (!address?.city) return;
 
         const weatherData = await fetchForecastWeather(address.city);
         setForecastDays(weatherData.forecast.forecastday);
@@ -62,29 +65,40 @@ const WeatherForecast = () => {
     <ScrollView>
       <View>
         <AppText
-          color="dark"
+          color={theme === "dark" ? "light" : "dark"}
           className="font-poppins font-extrabold text-xl mb-3"
         >
           Weather Forecast
         </AppText>
-        <View className="h-56 py-4 bg-[#fff3df] justify-center gap-1 drop-shadow-xl rounded-xl flex-row">
+        <View
+          style={{
+            borderRadius: 12,
+          }}
+          className={`h-56 py-4 ${theme === "dark" ? `bg-gray-900 border-[1px] border-white` : `bg-[#fff3df]`} justify-center gap-1 drop-shadow-xl flex-row`}
+        >
           {forecastDays.slice(1, 7).map((data, index) => {
             return (
               <View
                 key={index}
-                className=" w-[15%] border-[1px] rounded-full flex-col justify-between"
+                className={` w-[15%] ${theme === "dark" ? "border-white" : "border-black"} border-[1px] rounded-full flex-col justify-between`}
               >
                 <View className="flex-col items-center pt-4 gap-1">
-                  <AppText color={"dark"} className="text-[8px] font-extrabold">
+                  <AppText
+                    color={theme === "dark" ? "light" : "dark"}
+                    className="text-[8px] font-extrabold"
+                  >
                     {now.add(index + 1, "day").format("MM/D")}
                   </AppText>
                   <AppText
-                    color={"dark"}
+                    color={theme === "dark" ? "light" : "dark"}
                     className="text-[8px] font-poppins font-extrabold"
                   >
                     6:00 AM
                   </AppText>
-                  <AppText color={"dark"} className="text-[9px]">
+                  <AppText
+                    color={theme === "dark" ? "light" : "dark"}
+                    className="text-[9px]"
+                  >
                     {data?.hour[6]?.temp_c}&deg;c
                   </AppText>
                   <Image
@@ -94,12 +108,15 @@ const WeatherForecast = () => {
                 </View>
                 <View className="flex-col items-center pt-4 gap-1">
                   <AppText
-                    color={"dark"}
+                    color={theme === "dark" ? "light" : "dark"}
                     className="text-[8px] font-poppins font-extrabold"
                   >
                     6:00 PM
                   </AppText>
-                  <AppText color={"dark"} className="text-[9px]">
+                  <AppText
+                    color={theme === "dark" ? "light" : "dark"}
+                    className="text-[9px]"
+                  >
                     {data?.hour[18]?.temp_c}&deg;c
                   </AppText>
                   <Image

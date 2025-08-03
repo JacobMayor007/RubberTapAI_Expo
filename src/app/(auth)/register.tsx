@@ -77,17 +77,50 @@ export default function Register() {
     }
 
     try {
-      const result = account.create(
+      await account.create(
         ID.unique(),
         userInfo.email,
         userInfo.password,
         userInfo.fullName
       );
 
-      Alert.alert(`Account created successfully: `, `${result}`);
+      const session = await account.createEmailPasswordSession(
+        userInfo.email,
+        userInfo.password
+      );
+      if (!session) throw new Error("Failed to create session");
+
+      const user = await account.get();
+      auth.setUser(user);
+      const userId = user.$id;
+      const userEmail = user.email;
+      const userName = user.name;
+      const userProfile =
+        user?.prefs?.picture ||
+        `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`;
+
+      await database.createDocument(
+        "686156d00007a3127068",
+        "686b71a300125286e377",
+        userId,
+        {
+          username: userName,
+          fullName: userInfo.fullName,
+          email: userEmail,
+          imageURL: userProfile,
+          role: "farmer",
+          notifSettings: false,
+          themeSettings: false,
+          subscription: false,
+        }
+      );
+
+      Alert.alert(`Account created successfully`);
     } catch (error) {
       console.error("Error registering user:", error);
       Alert.alert("Register Failed", "Failed to create account");
+    } finally {
+      router.replace("/(tabs)");
     }
   };
 
@@ -196,6 +229,7 @@ export default function Register() {
               <TextInput
                 placeholder="Full Name"
                 value={userInfo.fullName}
+                placeholderTextColor={"#797979"}
                 onFocus={() => setFocusedInput("first")}
                 onBlur={() => setFocusedInput("")}
                 onChangeText={(e) => setUserInfo({ ...userInfo, fullName: e })}
@@ -210,6 +244,7 @@ export default function Register() {
                 value={userInfo.email}
                 onChangeText={(e) => setUserInfo({ ...userInfo, email: e })}
                 onFocus={() => setFocusedInput("second")}
+                placeholderTextColor={"#797979"}
                 onBlur={() => setFocusedInput("")}
                 className={`h-14 text-slate-800 border-2 rounded-md px-4 ${
                   focusedInput === "second"
@@ -220,6 +255,7 @@ export default function Register() {
               <TextInput
                 placeholder="Username"
                 value={userInfo.userName}
+                placeholderTextColor={"#797979"}
                 onChangeText={(e) => setUserInfo({ ...userInfo, userName: e })}
                 onFocus={() => setFocusedInput("third")}
                 onBlur={() => setFocusedInput("")}
@@ -231,6 +267,7 @@ export default function Register() {
               />
               <TextInput
                 value={userInfo.password}
+                placeholderTextColor={"#797979"}
                 onChangeText={(e) => setUserInfo({ ...userInfo, password: e })}
                 placeholder="Password"
                 secureTextEntry={true}
@@ -248,6 +285,7 @@ export default function Register() {
                   setUserInfo({ ...userInfo, confirmPassword: e })
                 }
                 secureTextEntry={true}
+                placeholderTextColor={"#797979"}
                 placeholder="Confirm Password"
                 onFocus={() => setFocusedInput("fifth")}
                 onBlur={() => setFocusedInput("")}

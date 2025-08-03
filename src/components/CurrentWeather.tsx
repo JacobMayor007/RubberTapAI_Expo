@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, View } from "react-native";
 import { useLocation } from "../contexts/LocationContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { currentWeather } from "../services/weatherApi";
 import { AppText } from "./AppText";
 
@@ -24,6 +25,7 @@ export default function CurrentWeather() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { address } = useLocation();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const getCurrenData = async () => {
@@ -58,10 +60,16 @@ export default function CurrentWeather() {
         source={{ uri: `https:${current?.current.condition.icon}` }}
       />
       <View>
-        <AppText color={"dark"} className="font-poppins font-bold">
+        <AppText
+          color={theme === "dark" ? "light" : "dark"}
+          className="font-poppins font-bold"
+        >
           {current?.current.temp_c}&deg;c
         </AppText>
-        <AppText color={"dark"} className="font-poppins font-medium">
+        <AppText
+          color={theme === "dark" ? "light" : "dark"}
+          className="font-poppins font-medium"
+        >
           {current?.current.condition.text}
         </AppText>
       </View>

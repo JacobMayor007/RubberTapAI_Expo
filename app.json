@@ -56,7 +56,8 @@
         {
           "cameraPermission": "Allow RubberTapAI to access your camera"
         }
-      ]
+      ],
+      "react-native-vision-camera"
     ],
     "experiments": {
       "typedRoutes": true

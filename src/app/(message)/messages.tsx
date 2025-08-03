@@ -9,6 +9,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
 import { client, database, storage } from "@/src/lib/appwrite";
 import { MessageHistory, User } from "@/types";
+import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -243,10 +244,10 @@ export default function Messages() {
         user?.$id || "",
         userMessage?.user?.$id || "",
         newMessage,
-        fileUrl // pass the image URL here
+        fileUrl
       );
 
-      setNewMessage(""); // clear input after sending
+      setNewMessage("");
     } catch (error) {
       console.error("There is an error sending the message", error);
       return [];
@@ -363,7 +364,7 @@ export default function Messages() {
               onPress={pickAnImage}
               className="h-10 w-10 bg-black rounded-full items-center justify-center"
             >
-              <Image source={require("@/assets/images/camera.png")} />
+              <Entypo name="folder-images" size={20} color={"white"} />
             </ViewPressable>
 
             <TextInput

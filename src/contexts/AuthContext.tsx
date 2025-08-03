@@ -13,6 +13,7 @@ type User = {
   $id: string;
   name: string;
   email: string;
+  emailVerification: boolean;
 } | null;
 
 type AuthContextType = {
@@ -37,8 +38,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const getUser = async () => {
     try {
       const userData = await account.get();
-      console.log(userData);
-
       setUser(userData);
     } catch {
       setUser(null);

@@ -1,5 +1,6 @@
 import { AppText } from "@/src/components/AppText";
 import { Button } from "@/src/components/Button";
+import ForgotPassword from "@/src/components/ForgotPassword";
 import Logo from "@/src/components/Logo";
 import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -14,6 +15,8 @@ import {
   Alert,
   Image,
   KeyboardAvoidingView,
+  Modal,
+  Pressable,
   ScrollView,
   TextInput,
   View,
@@ -25,6 +28,7 @@ export default function Login() {
   const router = useRouter();
   const auth = useAuth();
   const [focusedInput, setFocusedInput] = useState("");
+  const [forgotModal, setForgotModal] = useState(false);
 
   const [userInfo, setUserInfo] = useState({
     email: "",
@@ -96,7 +100,7 @@ export default function Login() {
               size={40}
               onPress={() => router.replace("/getStarted")}
             />
-            <View className="flex-col items-center justify-center pt-14">
+            <View className="flex-col items-center justify-center pt-14 ">
               <Logo className="h-24 w-24" />
               <View className="flex-col ">
                 <Image
@@ -107,7 +111,7 @@ export default function Login() {
                   AI
                 </AppText>
               </View>
-              <View className="w-full gap-8 px-10">
+              <View className="w-full gap-4 px-10">
                 <AppText className="font-poppins font-extrabold text-center text-black text-3xl mb-2">
                   Welcome
                 </AppText>
@@ -142,12 +146,13 @@ export default function Login() {
                     }
                   />
                 </View>
-                <ViewPressable
-                  onPress={googleAuth}
-                  className=" bg-white w-20 h-16 mt-2 rounded-xl justify-center items-center"
-                >
-                  <AntDesign size={32} name="google" color={"green"} />
-                </ViewPressable>
+
+                <Pressable onPress={() => setForgotModal(true)}>
+                  <AppText className="font-poppins font-bold text-[#064B0E] text-right">
+                    Forgot Password?
+                  </AppText>
+                </Pressable>
+
                 <Button
                   title="Login"
                   onPress={handleLogin}
@@ -155,7 +160,13 @@ export default function Login() {
                 />
               </View>
             </View>
-            <View className="flex-row justify-center mt-12 gap-2">
+            <ViewPressable
+              onPress={googleAuth}
+              className=" bg-white mx-10 w-20 h-16 mt-8 rounded-xl justify-center items-center"
+            >
+              <AntDesign size={32} name="google" color={"green"} />
+            </ViewPressable>
+            <View className="flex-row justify-center mt-5 gap-2">
               <AppText className="text-black">Don't have an account?</AppText>
               <AppText
                 className="text-black underline"
@@ -166,6 +177,9 @@ export default function Login() {
             </View>
           </View>
         </ScrollView>
+        <Modal visible={forgotModal} animationType="slide">
+          <ForgotPassword setForgotModal={setForgotModal} />
+        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

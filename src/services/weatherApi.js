@@ -1,5 +1,5 @@
 
-const API_KEY = "62e9a623ed054e34b44151854253006";
+const API_KEY = "823e9957b5b8485f95b45426250208";
 const BASE_URL = "https://api.weatherapi.com/v1";
 
  const fetchForecastWeather = async (city) => {
@@ -30,7 +30,10 @@ const currentWeather = async (city) => {
     }
     const data = await response.json()
 
+    console.log(`${BASE_URL}/current.json?key=${API_KEY}&q=${city}`);
+    
     return data;
+
   } catch (error) {
     console.error("Error fetching current weather", error);
     throw error;
