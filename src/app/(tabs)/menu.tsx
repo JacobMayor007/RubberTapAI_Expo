@@ -1,16 +1,14 @@
-import { getUserByIdDirect } from "@/src/action/userAction";
 import AppearanceSettings from "@/src/components/AppearanceSettings";
 import { AppText } from "@/src/components/AppText";
 import HelpAndSupport from "@/src/components/HelpAndSupport";
 import Logo from "@/src/components/Logo";
 import Logout from "@/src/components/Logout";
+import NavigationBar from "@/src/components/Navigation";
 import NotificationSettings from "@/src/components/NotificationSettings";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
-import Entypo from "@expo/vector-icons/Entypo";
-import Feather from "@expo/vector-icons/Feather";
+import { Profile } from "@/types";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import FontAwesome from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -19,20 +17,10 @@ import { useEffect, useState } from "react";
 import { Image, Modal, Pressable, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-interface User {
-  $id: string;
-  $createdAt?: string;
-  username: string;
-  notifSettings: string;
-  themeSettings: string;
-  subscription: string;
-  imageURL: string;
-}
-
 export default function Menu() {
   const router = useRouter();
   const { user } = useAuth();
-  const [profile, setProfile] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [emailHide, setEmailHide] = useState("");
   const [visibleModal, setVisibleModal] = useState(false);
   const [modalShown, setModalShown] = useState("");
@@ -41,9 +29,21 @@ export default function Menu() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (user?.$id) {
-        const userProfile = await getUserByIdDirect(user.$id);
-        setProfile(userProfile);
+      try {
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        const data = await response.json();
+        setProfile(data);
+      } catch (error) {
+        console.error("Upload error:", error);
       }
     };
     fetchProfile();
@@ -97,7 +97,7 @@ export default function Menu() {
               <View className="flex-row items-center  gap-2 -mt-5 overflow-hidden w-[75%] text-nowrap">
                 <Image
                   className="h-14 w-14 rounded-full"
-                  source={{ uri: profile?.imageURL }}
+                  src={`${profile?.imageURL}`}
                 />
                 <AppText
                   color={theme === "dark" ? "light" : "dark"}
@@ -208,47 +208,7 @@ export default function Menu() {
             </Pressable>
           </View>
         </View>
-        <View
-          className={`${theme === "dark" ? `bg-slate-900 border-t-[1px] border-white` : `bg-white`} h-20 flex-row items-center justify-between px-7 pb-2`}
-        >
-          <View
-            className={`mb-14 h-20 w-20 rounded-full ${theme === "dark" ? `bg-gray-900` : `bg-[#E8DFD0]`} items-center justify-center p-1.5`}
-          >
-            <View
-              className={`${theme === "dark" ? `bg-gray-900 border-[1px] border-white` : `bg-white`} h-full w-full rounded-full items-center justify-center`}
-            >
-              <Feather
-                name="menu"
-                size={24}
-                onPress={() => router.push("/(tabs)/menu")}
-                color={theme === "dark" ? "white" : "black"}
-              />
-            </View>
-          </View>
-          <Feather
-            name="camera"
-            size={24}
-            onPress={() => router.push("/(camera)")}
-            color={theme === "dark" ? "white" : "black"}
-          />
-          <Entypo
-            name="home"
-            size={32}
-            onPress={() => router.push("/(tabs)")}
-            color={theme === "dark" ? "white" : "black"}
-          />
-          <FontAwesome
-            name="arrow-trend-up"
-            size={20}
-            onPress={() => router.push("/(tabs)/market")}
-            color={theme === "dark" ? "white" : "black"}
-          />
-          <FontAwesome
-            name="clock-rotate-left"
-            size={20}
-            color={theme === "dark" ? "white" : "black"}
-          />
-        </View>
+        <NavigationBar active="menu" />
       </View>
       <Modal
         visible={visibleModal}

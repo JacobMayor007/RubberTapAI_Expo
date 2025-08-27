@@ -1,4 +1,4 @@
-import { User } from "@/types";
+import { Profile } from "@/types";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
@@ -25,29 +25,12 @@ import {
 } from "react-native";
 import { ID } from "react-native-appwrite";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { addNewProduct } from "../action/productAction";
-import { getUserByIdDirect } from "../action/userAction";
 import { useAuth } from "../contexts/AuthContext";
 import { useLocation } from "../contexts/LocationContext";
 import { storage } from "../lib/appwrite";
 import { AppText } from "./AppText";
 import { Button } from "./Button";
 import { ViewPressable } from "./ViewPressable";
-
-interface Address {
-  city: string | null;
-  country: string | null;
-  district: string | null;
-  formattedAddress?: string | null;
-  isoCountryCode: string | null;
-  name: string | null;
-  postalCode: string | null;
-  region: string | null;
-  street: string | null;
-  streetNumber: string | null;
-  subregion: string | null;
-  timezone: string | null;
-}
 
 export default function AddProduct() {
   const router = useRouter();
@@ -56,7 +39,7 @@ export default function AddProduct() {
   const [flip, setFlip] = useState<"front" | "back">("back");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
-  const [profile, setProfile] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [cameraModal, setCameraModal] = useState(false);
   const [categoryVisible, setCategoryVisible] = useState(false);
   const [permission, requestCameraPermission] = useCameraPermissions();
@@ -115,9 +98,21 @@ export default function AddProduct() {
     MediaLibrary.usePermissions();
   useEffect(() => {
     const fetchProfile = async () => {
-      if (user?.$id) {
-        const userProfile = await getUserByIdDirect(user.$id);
-        setProfile(userProfile);
+      try {
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        const data = await response.json();
+        setProfile(data);
+      } catch (error) {
+        console.error("Upload error:", error);
       }
     };
     fetchProfile();
@@ -163,9 +158,9 @@ export default function AddProduct() {
     console.log(result);
   };
 
-  const addProduct = async () => {
+  const validating = () => {
     try {
-      if (!uri || !category || !price || !description) {
+      if (!uri || !category || !price || !description || !address) {
         Alert.alert("Adding error", "Please input all fields");
         setConfirmModal(false);
         return;
@@ -177,16 +172,27 @@ export default function AddProduct() {
         return;
       }
 
+      setConfirmModal(true);
+    } catch (error) {
+      Alert.alert(
+        "Adding new product failed. Make sure to input all necessary fields"
+      );
+      return;
+    }
+  };
+
+  const addProduct = async () => {
+    try {
       let fileUrl = "";
 
       if (uri) {
         const fileInfo = await FileSystem.getInfoAsync(uri);
 
         if (!fileInfo.exists) {
-          console.error("File does not exist!");
+          Alert.alert("File does not exist!");
         } else {
           const result = await storage.createFile(
-            "686bdf11001233285b53",
+            `${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}`,
             ID.unique(),
             {
               uri: uri,
@@ -198,36 +204,80 @@ export default function AddProduct() {
 
           console.log("Image uploaded!", result);
 
-          fileUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/686bdf11001233285b53/files/${result.$id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&mode=admin`;
+          fileUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}/files/${result.$id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&mode=admin`;
+
+          const data = {
+            address: address?.address?.formattedAddress || "",
+            user_id: profile?.$id || "",
+            user_username: profile?.username || "",
+            user_email: profile?.email || "",
+            farmerProfile: profile?.imageURL || "",
+            productURL: fileUrl,
+            category: category?.toLowerCase() || "",
+            description: description || "",
+            price: Number(price),
+            city: address?.address?.city || "",
+            region: address?.address?.region || "",
+            country: address?.address?.country || "",
+          };
+
+          const response = await fetch(
+            `${process.env.EXPO_PUBLIC_BASE_URL}/product`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+              body: JSON.stringify(data),
+            }
+          );
+
+          const responseData = await response.json();
+
+          if (response.ok) {
+            Alert.alert(
+              responseData.message || "Successfully added your new product!"
+            );
+          } else {
+            Alert.alert(
+              responseData.message ||
+                "Adding new product failed. Make sure to input all necessary fields"
+            );
+          }
         }
 
         setUri("");
+      } else {
+        Alert.alert("Missing product photo");
       }
 
-      await addNewProduct(
-        address?.address.formattedAddress || "",
-        profile?.$id || "",
-        profile?.username || "",
-        profile?.email || "",
-        fileUrl,
-        profile?.imageURL || "",
-        category.toLowerCase(),
-        description,
-        Number(price),
-        address?.address.city || "",
-        address?.address.region || "",
-        address?.address.country || ""
-      );
+      // await addNewProduct(
+      //   address?.address.formattedAddress || "",
+      //   profile?.$id || "",
+      //   profile?.username || "",
+      //   profile?.email || "",
+      //   fileUrl,
+      //   profile?.imageURL || "",
+      //   category.toLowerCase(),
+      //   description,
+      //   Number(price),
+      //   address?.address.city || "",
+      //   address?.address.region || "",
+      //   address?.address.country || ""
+      // );
 
       setCategory("");
       setPrice("");
       setDescription("");
     } catch (error) {
       console.error(error);
-    } finally {
-      setConfirmModal(false);
-      router.replace("/(tabs)/market");
     }
+
+    // finally {
+    //   setConfirmModal(false);
+    //   router.replace("/(tabs)/market");
+    // }
   };
 
   return (
@@ -404,7 +454,7 @@ export default function AddProduct() {
           </View>
           <Button
             title="Post Item"
-            onPress={() => setConfirmModal(true)}
+            onPress={validating}
             className="my-2 py-1 rounded-full font-poppins font-bold text-xl"
           />
         </ScrollView>

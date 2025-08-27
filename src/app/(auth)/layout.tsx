@@ -1,16 +1,19 @@
 import { useAuth } from "@/src/contexts/AuthContext";
-import { Slot, useRouter } from "expo-router";
+import { Redirect, Slot } from "expo-router";
+import { useEffect } from "react";
 
 export default function Layout() {
   const { user } = useAuth();
-  const router = useRouter();
 
-  if (user?.email !== null) {
-    console.log(user?.email);
+  useEffect(() => {
+    if (user?.email !== null) {
+      console.log(user?.email);
 
-    router.push("/(tabs)");
-  } else {
-    router.push("/(auth)");
-  }
+      <Redirect href={{ pathname: "/(tabs)" }} />;
+    } else {
+      <Redirect href={{ pathname: "/(auth)" }} />;
+    }
+  }, [user?.email]);
+
   return <Slot />;
 }

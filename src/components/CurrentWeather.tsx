@@ -56,16 +56,20 @@ export default function CurrentWeather() {
   return (
     <View className="flex-row">
       <Image
-        className="h-12 w-12"
+        className="h-14 w-14"
         source={{ uri: `https:${current?.current.condition.icon}` }}
       />
       <View>
-        <AppText
-          color={theme === "dark" ? "light" : "dark"}
-          className="font-poppins font-bold"
-        >
-          {current?.current.temp_c}&deg;c
-        </AppText>
+        {current?.current.temp_c ? (
+          <AppText
+            color={theme === "dark" ? "light" : "dark"}
+            className="font-poppins font-bold text-lg"
+          >
+            {current?.current.temp_c}&deg;c
+          </AppText>
+        ) : (
+          <AppText className="text-red-500">No weather data</AppText>
+        )}
         <AppText
           color={theme === "dark" ? "light" : "dark"}
           className="font-poppins font-medium"

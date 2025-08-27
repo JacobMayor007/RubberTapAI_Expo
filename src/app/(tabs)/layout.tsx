@@ -1,17 +1,12 @@
 import { useAuth } from "@/src/contexts/AuthContext";
-import { router, Slot } from "expo-router";
-import { useEffect } from "react";
+import { Redirect, Slot } from "expo-router";
 
 export default function TabLayout() {
-  const auth = useAuth();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    if (auth.isReady) {
-      if (!auth.user?.$id) {
-        router.replace("/(auth)");
-      }
-    }
-  }, [auth]);
+  if (!user) {
+    <Redirect href={{ pathname: "/(auth)" }} />;
+  }
 
   return <Slot />;
 }

@@ -1,14 +1,10 @@
-import {
-  createNewChatRoom,
-  createNewMessages,
-} from "@/src/action/messageAction";
-import { getUserByIdDirect } from "@/src/action/userAction";
 import { AppText } from "@/src/components/AppText";
 import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
-import { client, database, storage } from "@/src/lib/appwrite";
-import { MessageHistory, User } from "@/types";
+import { useTheme } from "@/src/contexts/ThemeContext";
+import { client, storage } from "@/src/lib/appwrite";
+import { MessageHistory, Profile } from "@/types";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -17,17 +13,19 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
 import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Image,
   KeyboardAvoidingView,
   ScrollView,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
-import { ID, Query } from "react-native-appwrite";
+import { ID } from "react-native-appwrite";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 dayjs.extend(utc);
@@ -39,8 +37,11 @@ export default function Messages() {
   const router = useRouter();
   const [lines, setLines] = useState(1);
   const [newMessage, setNewMessage] = useState("");
-  const [profile, setProfile] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [images, setImages] = useState("");
+  const [loading, setLoading] = useState(true);
+  const { theme } = useTheme();
+  const [showDate, setShowDate] = useState<Number | null>(null);
 
   const [messages, setMessages] = useState<MessageHistory[]>([]);
 
@@ -53,33 +54,25 @@ export default function Messages() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (user?.$id) {
-        const userProfile = await getUserByIdDirect(user.$id);
-        setProfile(userProfile);
+      try {
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        const data = await response.json();
+        setProfile(data);
+      } catch (error) {
+        console.error("Upload error:", error);
       }
     };
     fetchProfile();
   }, [user?.$id]);
-
-  useEffect(() => {
-    handleFirstLoad();
-  }, []);
-
-  useEffect(() => {
-    handleFirstLoad();
-
-    const channel = `databases.686156d00007a3127068.collections.686cd8000033894e4bc8.documents`;
-    const unsubscribe = client.subscribe(channel, (response) => {
-      console.log("Realtime event: ", response);
-      if (response.events.includes("databases.*.collections.*.documents.*")) {
-        getMessages();
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, []);
 
   const pickAnImage = async () => {
     const permissionResult =
@@ -98,70 +91,55 @@ export default function Messages() {
       const selectedUris = result.assets[0].uri;
       setImages(selectedUris);
     }
-
-    console.log(result);
   };
 
-  const handleFirstLoad = async () => {
-    try {
-      await getMessages();
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  useEffect(() => {
+    if (!user?.$id || !userMessage?.user?.$id) return;
 
-  const getMessages = async () => {
-    try {
-      const sentResponse = await database.listDocuments(
-        "686156d00007a3127068",
-        "686cd8000033894e4bc8",
-        [
-          Query.equal("sender_id", user?.$id || ""),
-          Query.equal("receiver_id", userMessage?.user?.$id || ""),
-        ]
-      );
+    const getMessages = async () => {
+      try {
+        const sentResponse = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/sent-messages/${user.$id}/${userMessage?.user?.$id}`
+        );
+        const sentMessages = await sentResponse.json();
 
-      const sentMessages: MessageHistory[] = sentResponse.documents.map(
-        (doc) => ({
-          $id: doc.$id,
-          $createdAt: dayjs(doc.$createdAt),
-          content: doc.content,
-          product_id: doc.product_id,
-          sender_id: doc.sender_id,
-          receiver_id: doc.receiver_id,
-          imageUrl: doc.imageUrl,
-        })
-      );
+        const receivedResponse = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/received-messages/${user.$id}/${userMessage?.user?.$id}`
+        );
+        const receivedMessages = await receivedResponse.json();
 
-      const receivedResponse = await database.listDocuments(
-        "686156d00007a3127068",
-        "686cd8000033894e4bc8",
-        [
-          Query.equal("sender_id", userMessage?.user?.$id || ""),
-          Query.equal("receiver_id", user?.$id || ""),
-        ]
-      );
+        const normalize = (msgs: MessageHistory[]) =>
+          msgs.map((msg) => ({
+            ...msg,
+            $createdAt: dayjs(msg.$createdAt),
+          }));
 
-      const receivedMessages: MessageHistory[] = receivedResponse.documents.map(
-        (doc) => ({
-          $id: doc.$id,
-          $createdAt: dayjs(doc.$createdAt),
-          content: doc.content,
-          product_id: doc.product_id,
-          sender_id: doc.sender_id,
-          receiver_id: doc.receiver_id,
-          imageUrl: doc.imageUrl,
-        })
-      );
+        const combined = [
+          ...normalize(sentMessages),
+          ...normalize(receivedMessages),
+        ].sort((a, b) => a.$createdAt.valueOf() - b.$createdAt.valueOf());
 
-      const combinedMessages = [...sentMessages, ...receivedMessages].sort(
-        (a, b) => a.$createdAt.valueOf() - b.$createdAt.valueOf()
-      );
-      setMessages(combinedMessages);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+        setMessages(combined);
+      } catch (err) {
+        console.error("Error fetching messages:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getMessages();
+
+    const channel = `databases.${process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID}.collections.${process.env.EXPO_PUBLIC_APPWRITE_MESS_COLLECTION_ID}.documents`;
+    const unsubscribe = client.subscribe(channel, (response) => {
+      if (response.events.includes("databases.*.collections.*.documents.*")) {
+        getMessages();
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [user?.$id, userMessage?.user?.$id]);
 
   const handleSend = async () => {
     setNewMessage("");
@@ -171,46 +149,6 @@ export default function Messages() {
     }
 
     try {
-      const existingChats = await database.listDocuments(
-        "686156d00007a3127068",
-        "686cd6a3000e3ba76aef",
-        [
-          Query.or([
-            Query.and([
-              Query.equal("senderId", user?.$id || ""),
-              Query.equal("receiverId", userMessage?.user?.$id || ""),
-            ]),
-            Query.and([
-              Query.equal("senderId", user?.$id || ""),
-              Query.equal("receiverId", userMessage?.user?.$id || ""),
-            ]),
-          ]),
-        ]
-      );
-
-      const chatRoomID = existingChats.documents[0]?.$id;
-
-      if (existingChats.total === 0) {
-        await createNewChatRoom(
-          user?.$id || "",
-          userMessage?.user?.$id || "",
-          newMessage,
-          profile?.imageURL || "",
-          userMessage.user?.imageURL || "",
-          user?.name || "",
-          userMessage?.user?.username || ""
-        );
-      } else {
-        await database.updateDocument(
-          "686156d00007a3127068",
-          "686cd6a3000e3ba76aef",
-          chatRoomID,
-          {
-            lastMessage: newMessage,
-          }
-        );
-      }
-
       let fileUrl = "";
 
       if (images) {
@@ -232,20 +170,33 @@ export default function Messages() {
 
           console.log("Image uploaded!", result);
 
-          // Construct the file URL
           fileUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/686bdf11001233285b53/files/${result.$id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&mode=admin`;
         }
 
-        setImages(""); // Clear selected image after send
+        setImages("");
       }
 
-      await createNewMessages(
-        "",
-        user?.$id || "",
-        userMessage?.user?.$id || "",
-        newMessage,
-        fileUrl
-      );
+      const data = {
+        sender_id: user?.$id,
+        receiver_id: userMessage?.user?.$id,
+        lastMessage: newMessage,
+        senderProfile: profile?.imageURL,
+        receiverProfile: userMessage?.user?.imageURL,
+        senderName: user?.name,
+        receiverName: userMessage?.user?.username,
+        fileUrl: fileUrl ? fileUrl : ``,
+      };
+
+      console.log("Data to be sent: ", JSON.stringify(data, null, 2));
+
+      await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/sent-message`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
       setNewMessage("");
     } catch (error) {
@@ -253,6 +204,15 @@ export default function Messages() {
       return [];
     }
   };
+
+  useEffect(() => {
+    if (showDate) {
+      setTimeout(() => {
+        setShowDate(null);
+      }, 10000);
+    }
+  }, [showDate]);
+  console.log(showDate);
 
   return (
     <SafeAreaView className="bg-[rgb(63,31,17,.05)] flex-1 ">
@@ -269,7 +229,7 @@ export default function Messages() {
               <FontAwesome5
                 name="arrow-left"
                 size={20}
-                onPress={() => router.back()}
+                onPress={() => router.replace("/(message)")}
               />
               <Image
                 style={{ height: 48, width: 48 }}
@@ -295,93 +255,127 @@ export default function Messages() {
                 </AppText>
               </View>
             </View>
-            <MaterialIcons name="report" size={28} />
+            <Link
+              href={{
+                pathname: "/(message)/[user_id]",
+                params: { user_id: userMessage?.user?.$id || "" },
+              }}
+            >
+              <MaterialIcons name="report" size={28} color="red" />
+            </Link>
           </View>
-          <ScrollView
-            ref={scrollViewRef}
-            contentContainerStyle={{ flexGrow: 1, justifyContent: "flex-end" }}
-            onContentSizeChange={() =>
-              scrollViewRef.current?.scrollToEnd({ animated: true })
-            }
-            className="flex-1 px-4 pb-2"
-          >
-            {messages.map((msg, index) => {
-              return (
-                <View
-                  key={index}
-                  className={`min-w-48 max-w-72 p-3 rounded-lg mb-2 w-fit  ${
-                    msg.sender_id === user?.$id
-                      ? "bg-blue-500 text-white ml-auto text-right font-hind font-medium text-base "
-                      : "bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base"
-                  }`}
-                  style={
-                    msg.$id === user?.$id
-                      ? {
-                          borderTopLeftRadius: 24,
-                          borderBottomRightRadius: 24,
-                        }
-                      : {
-                          borderTopRightRadius: 24,
-                          borderBottomLeftRadius: 24,
-                        }
-                  }
-                >
-                  {msg?.imageUrl && (
-                    <Image
-                      className="h-12 w-12"
-                      source={{ uri: msg?.imageUrl }}
-                    />
-                  )}
-                  <AppText
-                    color={msg?.sender_id === user?.$id ? "light" : "dark"}
-                    className="mt-2 font-poppins font-semibold"
+          {loading ? (
+            <ActivityIndicator className="my-auto" size={"large"} animating />
+          ) : (
+            <ScrollView
+              ref={scrollViewRef}
+              contentContainerStyle={{
+                flexGrow: 1,
+                justifyContent: "flex-end",
+                gap: 12,
+              }}
+              onContentSizeChange={() =>
+                scrollViewRef.current?.scrollToEnd({ animated: true })
+              }
+              className="flex-1 px-4 pb-2"
+            >
+              {messages?.map((msg, index) => {
+                return (
+                  <View
+                    key={index}
+                    className={`${msg?.sender_id === user?.$id ? `flex-row-reverse` : `flex-row`} items-center gap-2`}
                   >
-                    {msg?.content}
-                  </AppText>
+                    <Image
+                      source={{
+                        uri:
+                          msg?.sender_id === user?.$id
+                            ? profile?.imageURL
+                            : userMessage?.user?.imageURL,
+                      }}
+                      className="h-8 w-8 rounded-full mt-4"
+                    />
+                    <TouchableOpacity
+                      onPress={() =>
+                        setShowDate((prev) => (prev === index ? null : index))
+                      }
+                      className={`min-w-48 max-w-72 p-3 rounded-md mb-2 w-fit  ${
+                        msg.sender_id === user?.$id
+                          ? "bg-blue-500 text-white ml-auto text-right font-hind font-medium text-base "
+                          : "bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base"
+                      }`}
+                      style={
+                        msg.$id === user?.$id
+                          ? {
+                              borderTopLeftRadius: 24,
+                              borderBottomRightRadius: 24,
+                            }
+                          : {
+                              borderTopRightRadius: 24,
+                              borderBottomLeftRadius: 24,
+                            }
+                      }
+                    >
+                      {msg?.imageUrl && (
+                        <Image
+                          className="h-12 w-12"
+                          source={{ uri: msg?.imageUrl }}
+                        />
+                      )}
+                      <AppText
+                        color={msg?.sender_id === user?.$id ? "light" : "dark"}
+                        className=" font-poppins font-semibold"
+                      >
+                        {msg?.content}
+                      </AppText>
+                      {index === showDate && (
+                        <AppText className="text-right text-xs mt-2">
+                          {msg.$createdAt.utc().local().format("hh:mm A")}
+                        </AppText>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          )}
+          {!loading && (
+            <View
+              className={`${
+                lines > 2 ? "h-[72px]" : "h-14"
+              } bg-[rgb(63,31,17,.25)] gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
+            >
+              <View className=" flex-row absolute bottom-14 left-12 gap-4">
+                {images.length > 0 && (
+                  <Image
+                    className="h-16 w-16 rounded-md"
+                    source={{ uri: images }}
+                  />
+                )}
+              </View>
 
-                  <AppText className="text-right text-xs mt-2">
-                    {msg?.$createdAt.local().format("hh:mm A")}
-                  </AppText>
-                </View>
-              );
-            })}
-          </ScrollView>
-          <View
-            className={`${
-              lines > 2 ? "h-[72px]" : "h-14"
-            } bg-[rgb(63,31,17,.25)] gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
-          >
-            <View className=" flex-row absolute bottom-14 left-12 gap-4">
-              {images.length > 0 && (
-                <Image
-                  className="h-16 w-16 rounded-md"
-                  source={{ uri: images }}
-                />
-              )}
+              <ViewPressable
+                onPress={pickAnImage}
+                className="h-10 w-10 bg-black rounded-full items-center justify-center"
+              >
+                <Entypo name="folder-images" size={20} color={"white"} />
+              </ViewPressable>
+
+              <TextInput
+                multiline
+                placeholder="Message ..."
+                className={`w-9/12 max-h-20 ${theme === "dark" ? `text-white` : `text-black`}`}
+                onContentSizeChange={handleContentSizeChange}
+                value={newMessage}
+                onChangeText={setNewMessage}
+              />
+              <ViewPressable
+                onPress={handleSend}
+                className="h-10 w-10 bg-black rounded-full items-center justify-center"
+              >
+                <Feather size={20} color={"white"} name="send" />
+              </ViewPressable>
             </View>
-
-            <ViewPressable
-              onPress={pickAnImage}
-              className="h-10 w-10 bg-black rounded-full items-center justify-center"
-            >
-              <Entypo name="folder-images" size={20} color={"white"} />
-            </ViewPressable>
-
-            <TextInput
-              multiline
-              placeholder="Message ..."
-              className="w-9/12 max-h-20"
-              onContentSizeChange={handleContentSizeChange}
-              value={newMessage}
-              onChangeText={setNewMessage}
-            />
-            <ViewPressable
-              onPress={handleSend}
-              className="h-10 w-10 bg-black rounded-full items-center justify-center"
-            >
-              <Feather size={20} color={"white"} name="send" />
-            </ViewPressable>
-          </View>
+          )}
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -80,12 +80,15 @@ export default function IndexScreen() {
   useEffect(() => {
     const checkAppwriteAvailability = async () => {
       try {
-        const response = await fetch("https://syd.cloud.appwrite.io/v1", {
-          method: "OPTIONS",
-          headers: {
-            "X-Appwrite-Project": "68614784002861622db7",
-          },
-        });
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}`,
+          {
+            method: "OPTIONS",
+            headers: {
+              "X-Appwrite-Project": `${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}`,
+            },
+          }
+        );
 
         if (response.ok) {
           console.log("✅ Appwrite reachable and healthy");

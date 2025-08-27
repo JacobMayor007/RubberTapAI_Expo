@@ -9,8 +9,8 @@
     "slug": "rubbertapai",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "rubbertapai",
+    "icon": "./assets/images/RubberTapAiLoadingScreen.png",
+    "scheme": "appwrite-callback-68614784002861622db7",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -31,7 +31,7 @@
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
+      "output": "server",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [

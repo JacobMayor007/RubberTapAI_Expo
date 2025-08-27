@@ -16,6 +16,17 @@ type User = {
   emailVerification: boolean;
 } | null;
 
+type Profile = {
+  $id: string;
+  $createdAt?: string;
+  email: string;
+  username: string;
+  notifSettings: string;
+  themeSettings: string;
+  subscription: Boolean;
+  imageURL: string;
+} | null;
+
 type AuthContextType = {
   user: User;
   loading: boolean;
@@ -28,7 +39,6 @@ type AuthContextType = {
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User>(null);
   const [isReady, setIsReady] = useState(false);
@@ -60,6 +70,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     await account.deleteSession("current");
     setUser(null);
+    router.dismissAll();
     router.replace("/(auth)");
   };
 

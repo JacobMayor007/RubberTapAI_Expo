@@ -1,19 +1,19 @@
-import { getOthersProduct, getUserProduct } from "@/src/action/productAction";
 import AddProduct from "@/src/components/AddProduct";
 import { AppText } from "@/src/components/AppText";
+import Loading from "@/src/components/LoadingComponent";
+import NavigationBar from "@/src/components/Navigation";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
+import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { account } from "@/src/lib/appwrite";
 import { Product } from "@/types";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import { useRouter } from "expo-router";
+import { default as FontAwesome6 } from "@expo/vector-icons/FontAwesome6";
+import { Link, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Image,
   Modal,
@@ -34,36 +34,69 @@ export default function Market() {
   const [otherProduct, setOtherProduct] = useState<Product[]>([]);
   const [viewModal, setViewModal] = useState(false);
   const [viewProduct, setViewProduct] = useState<Product | null>(null);
+  const [loadngProduct, setLoadingProduct] = useState(false);
   const [userVerification, setUserVerification] = useState(false);
   const { theme } = useTheme();
 
   useEffect(() => {
     const getMyProduct = async () => {
       try {
-        const product = await getUserProduct(user?.$id || "");
-        setMyProduct(product);
+        const response = await globalFunction.fetchWithTimeout(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/my-product/${user?.$id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          },
+          15000
+        );
+
+        const data = await response.json();
+
+        setMyProduct(data);
       } catch (error) {
-        console.error(error);
+        console.error("Upload error:", error);
       } finally {
         setLoading(false);
       }
     };
     getMyProduct();
-  }, []);
+  }, [user?.$id]);
 
   useEffect(() => {
-    const getMyProduct = async () => {
+    const getOtherProduct = async () => {
       try {
-        const product = await getOthersProduct(user?.$id || "");
-        setOtherProduct(product);
-      } catch (error) {
+        setLoadingProduct(true);
+
+        const response = await globalFunction.fetchWithTimeout(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/other-products/${user?.$id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "multipart/form-data",
+              Accept: "application/json",
+            },
+          },
+          30000
+        );
+
+        const data = await response.json();
+        setOtherProduct(data);
+      } catch (error: any) {
+        if (error.name === "Error") {
+          Alert.alert(
+            "Request timeout",
+            "Internet connectivity is having trouble issues, please try again!"
+          );
+        }
         console.error(error);
       } finally {
-        setLoading(false);
+        setLoadingProduct(false);
       }
     };
-    getMyProduct();
-  }, []);
+    getOtherProduct();
+  }, [user?.$id]);
 
   const isUserVerified = () => {
     if (!user?.emailVerification) {
@@ -101,7 +134,7 @@ export default function Market() {
   return (
     <SafeAreaView className="flex-1">
       <View
-        className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#E8DFD0]`} flex-col justify-between`}
+        className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-col justify-between`}
       >
         <View className="px-6 pt-10 flex-1  ">
           <View className="flex-row items-center justify-between mb-4">
@@ -119,12 +152,13 @@ export default function Market() {
                 Marketplace
               </AppText>
             </View>
-            <AntDesign
-              name="message1"
-              size={23}
-              onPress={() => router.push("/(message)")}
-              color={theme === "dark" ? "white" : "black"}
-            />
+            <Link href={{ pathname: "/(message)" }}>
+              <AntDesign
+                name="message1"
+                size={23}
+                color={theme === "dark" ? "white" : "black"}
+              />
+            </Link>
           </View>
           <View className="flex-row items-center justify-between mb-2">
             <AppText
@@ -149,7 +183,9 @@ export default function Market() {
           </View>
 
           {loading ? (
-            <ActivityIndicator animating size={"large"} />
+            <View className="items-center">
+              <Loading className="h-12 w-12" />
+            </View>
           ) : (
             <ScrollView
               contentContainerStyle={{ flexGrow: 1, paddingBottom: 12 }}
@@ -193,7 +229,7 @@ export default function Market() {
                         color={theme === "dark" ? "light" : "dark"}
                         className="ml-1"
                       >
-                        {data?.price.toString()} /Kg
+                        {data?.price.toString()} /kg
                       </AppText>
                     </View>
                     <AppText
@@ -203,7 +239,13 @@ export default function Market() {
                       {data?.category}
                     </AppText>
                     <View className="ml-2 mt-2 pr-2">
-                      <Text numberOfLines={1} ellipsizeMode="tail">
+                      <Text
+                        numberOfLines={1}
+                        ellipsizeMode="tail"
+                        className={
+                          theme === "dark" ? "text-white" : "text-black"
+                        }
+                      >
                         {data?.city}
                       </Text>
                     </View>
@@ -212,12 +254,9 @@ export default function Market() {
                         setViewProduct(data);
                         setViewModal(true);
                       }}
-                      className="h-9 bg-[#10B981] mx-2 rounded-full items-center justify-center mt-4"
+                      className={`h-9 ${theme === "dark" ? `bg-green-800` : `bg-[#10B981]`} mx-2 rounded-full items-center justify-center mt-4`}
                     >
-                      <AppText
-                        color={theme === "dark" ? "light" : "dark"}
-                        className="text-xs"
-                      >
+                      <AppText color={"light"} className="text-xs">
                         View Details
                       </AppText>
                     </TouchableOpacity>
@@ -231,106 +270,72 @@ export default function Market() {
               >
                 Other Farmers Products
               </AppText>
-              <View className="gap-4 flex-row flex-wrap justify-between">
-                {otherProduct?.map((data, index) => (
-                  <Pressable
-                    key={index}
-                    style={{
-                      boxShadow:
-                        "1px 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
-                    }}
-                    className={`${theme === "dark" ? `bg-slate-700` : `bg-[#F3E0C1]`} whitespace-nowrap rounded-lg w-[47%] h-64 pb-3 overflow-hidden`}
-                  >
-                    <Image
-                      className="h-[40%] rounded-t-lg "
-                      source={{ uri: data?.productURL }}
-                    />
-                    <View className="ml-2 mt-3  flex-row items-center">
-                      <FontAwesome6
-                        name="peso-sign"
-                        size={15}
-                        color={theme === "dark" ? "white" : "black"}
+              {loadngProduct ? (
+                <View className="items-center">
+                  <Loading className="h-12 w-12" />
+                </View>
+              ) : (
+                <View className="gap-4 flex-row flex-wrap justify-between">
+                  {otherProduct?.map((data, index) => (
+                    <Pressable
+                      key={index}
+                      style={{
+                        boxShadow:
+                          "1px 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+                      }}
+                      className={`${theme === "dark" ? `bg-slate-700` : `bg-[#F3E0C1]`} whitespace-nowrap rounded-lg w-[47%] h-64 pb-3 overflow-hidden`}
+                    >
+                      <Image
+                        className="h-[40%] rounded-t-lg "
+                        source={{ uri: data?.productURL }}
                       />
+                      <View className="ml-2 mt-3  flex-row items-center">
+                        <FontAwesome6
+                          name="peso-sign"
+                          size={15}
+                          color={theme === "dark" ? "white" : "black"}
+                        />
+                        <AppText
+                          color={theme === "dark" ? "light" : "dark"}
+                          className="ml-1"
+                        >
+                          {data?.price.toString()} /kg
+                        </AppText>
+                      </View>
                       <AppText
                         color={theme === "dark" ? "light" : "dark"}
-                        className="ml-1"
+                        className=" capitalize ml-2 mt-2"
                       >
-                        {data?.price.toString()} /Kg
+                        {data?.category}
                       </AppText>
-                    </View>
-                    <AppText
-                      color={theme === "dark" ? "light" : "dark"}
-                      className=" capitalize ml-2 mt-2"
-                    >
-                      {data?.category}
-                    </AppText>
-                    <View className="ml-2 mt-2 pr-2 ">
-                      <Text
-                        className={`${theme === "dark" ? `text-white` : `text-black`}`}
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
+                      <View className="ml-2 mt-2 pr-2 ">
+                        <Text
+                          className={`${theme === "dark" ? `text-white` : `text-black`}`}
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                        >
+                          {data?.city}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => {
+                          setViewProduct(data);
+                          setViewModal(true);
+                        }}
+                        className={`h-9 ${theme === "dark" ? `bg-green-800` : `bg-[#10B981]`} mx-2 rounded-full items-center justify-center mt-4`}
                       >
-                        {data?.city}
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setViewProduct(data);
-                        setViewModal(true);
-                      }}
-                      className={`h-9 ${theme === "dark" ? `bg-green-800` : `bg-[#10B981]`} mx-2 rounded-full items-center justify-center mt-4`}
-                    >
-                      <AppText color="light" className="text-xs">
-                        View Details
-                      </AppText>
-                    </TouchableOpacity>
-                  </Pressable>
-                ))}
-              </View>
+                        <AppText color="light" className="text-xs">
+                          View Details
+                        </AppText>
+                      </TouchableOpacity>
+                    </Pressable>
+                  ))}
+                </View>
+              )}
             </ScrollView>
           )}
         </View>
-        <View
-          className={`mt-2 ${theme === "dark" ? `bg-gray-900 border-t-[1px] border-white` : `bg-white`} h-20 flex-row items-center  justify-between px-7 pb-2`}
-        >
-          <Feather
-            name="menu"
-            size={24}
-            onPress={() => router.push("/(tabs)/menu")}
-            color={theme === "dark" ? `white` : `black`}
-          />
-
-          <Feather
-            name="camera"
-            size={24}
-            onPress={() => router.push("/(camera)")}
-            color={theme === "dark" ? `white` : `black`}
-          />
-          <Entypo
-            name="home"
-            size={32}
-            onPress={() => router.push("/(tabs)")}
-            color={theme === "dark" ? `white` : `black`}
-          />
-          <View
-            className={`mb-16 h-20 w-20 rounded-full ${theme === "dark" ? `bg-gray-900 border-[1px] border-white` : `bg-white`} items-center justify-center p-1.5`}
-          >
-            <View
-              className={`${theme === "dark" ? `bg-gray-900` : `bg-white`}h-full w-full rounded-full items-center justify-center`}
-            >
-              <FontAwesome6
-                name="arrow-trend-up"
-                size={20}
-                color={theme === "dark" ? `white` : `black`}
-              />
-            </View>
-          </View>
-          <FontAwesome6
-            name="clock-rotate-left"
-            size={20}
-            color={theme === "dark" ? `white` : `black`}
-          />
-        </View>
+        <NavigationBar active="market" />
       </View>
       <Modal
         onRequestClose={() => setAddProductModal(false)}
@@ -351,7 +356,7 @@ export default function Market() {
             style={{
               flexGrow: 1,
             }}
-            className="items-center, justify-center px-4 "
+            className="items-center, justify-center px-4 border-2"
           >
             <View
               className={`${theme === "dark" ? `bg-gray-900` : `bg-[#F3E0C1]`} p-6 h-[27%] rounded-xl flex-row gap-4`}
@@ -365,12 +370,13 @@ export default function Market() {
                   position: "absolute",
                   right: 12,
                   top: 8,
+                  padding: 5,
                 }}
               />
               <View className="gap-2 w-[45%] ">
                 <Image
                   className="h-24  rounded-md"
-                  source={{ uri: viewProduct?.productURL }}
+                  src={`${viewProduct?.productURL}`}
                 />
                 <AppText
                   color={theme === "dark" ? "light" : "dark"}
@@ -428,8 +434,7 @@ export default function Market() {
                     className="text-sm font-poppins py-0.5 leading-6 tracking-wider"
                     numberOfLines={4}
                   >
-                    {viewProduct?.description}{" "}
-                    alksdjalsdasjasdkjaslkdjlkasjdlkajsdlkajsa
+                    {viewProduct?.description}
                   </AppText>
                 </View>
                 <TouchableOpacity className="py-2 items-center rounded-full justify-center bg-[#75A90A]">

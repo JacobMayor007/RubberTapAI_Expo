@@ -1,19 +1,13 @@
-import { getChatRoom } from "@/src/action/messageAction";
-import {
-  getChatMate,
-  getUserByIdDirect,
-  queryUser,
-} from "@/src/action/userAction";
 import { AppText } from "@/src/components/AppText";
 import Logo from "@/src/components/Logo";
 import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
-import { ChatRoom, User } from "@/types";
+import { ChatRoom, Profile } from "@/types";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import dayjs from "dayjs";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -29,10 +23,10 @@ export default function ChatBox() {
   const router = useRouter();
   const [visibleModal, setVisibleModal] = useState(false);
   const [searchValue, setSearchValue] = useState("");
-  const [searchUser, setSearchUser] = useState<User[]>([]);
+  const [searchUser, setSearchUser] = useState<Profile[]>([]);
   const [chatHistory, setChatHistory] = useState<ChatRoom[]>([]);
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<User | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const messageUser = useMessage();
   const { user } = useAuth();
 
@@ -50,9 +44,21 @@ export default function ChatBox() {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      if (user?.$id) {
-        const userProfile = await getUserByIdDirect(user.$id);
-        setProfile(userProfile);
+      try {
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        const data = await response.json();
+        setProfile(data);
+      } catch (error) {
+        console.error("Upload error:", error);
       }
     };
     fetchProfile();
@@ -60,11 +66,23 @@ export default function ChatBox() {
 
   const getChat = async (user_id: string) => {
     try {
-      const chatRooms = await getChatRoom(user_id);
-      console.log(chatRooms);
-      setChatHistory(chatRooms);
-    } catch (e) {
-      console.error(e);
+      setLoading(true);
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/chat-room/${user?.$id}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      setChatHistory(data);
+    } catch (error) {
+      console.error("Upload error:", error);
     } finally {
       setLoading(false);
     }
@@ -80,10 +98,22 @@ export default function ChatBox() {
       const fetchProfile = async () => {
         try {
           setLoading(true);
-          const userProfile = await queryUser(searchValue);
-          setSearchUser(userProfile);
+
+          const response = await fetch(
+            `${process.env.EXPO_PUBLIC_BASE_URL}/search-user/${searchValue}`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+              },
+            }
+          );
+
+          const data = await response.json();
+
+          setSearchUser(data);
         } catch (error) {
-          console.error(error);
+          console.error("Upload error:", error);
         } finally {
           setLoading(false);
         }
@@ -108,12 +138,21 @@ export default function ChatBox() {
     try {
       if (!chatMate_id) {
         messageUser?.setUser(profile);
-        router.push("/(message)/messages");
       } else {
-        const chatMate = await getChatMate(chatMate_id);
-        messageUser?.setUser(chatMate);
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/chat-mate/${chatMate_id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        messageUser?.setUser(data);
         console.log("Chat Mate Not Self: ", messageUser?.user);
-        router.push("/(message)/messages");
       }
     } catch (error) {
       console.error(error);
@@ -128,7 +167,7 @@ export default function ChatBox() {
             <FontAwesome5
               name="arrow-left"
               size={20}
-              onPress={() => router.back()}
+              onPress={() => router.push("/(tabs)/market")}
             />
             <AppText
               color={"dark"}
@@ -152,24 +191,23 @@ export default function ChatBox() {
         {loading ? (
           <ActivityIndicator animating size={"large"} />
         ) : (
-          <ScrollView className="flex-1 py-2">
+          <ScrollView className="flex-1 py-2 gap-2">
             {chatHistory.map((chat, chatIndex) => {
               const other = getOtherParticipant(chat);
 
               return (
-                <ViewPressable
-                  onPress={() => handleMessageUser(other.id)}
+                <Link
+                  onPress={async () => await handleMessageUser(other.id)}
+                  href={"/(message)/messages"}
                   key={chat.$id || chatIndex}
-                  className="flex-row items-center gap-4 p-4"
+                  className="flex-row py-2 mt-2 items-center"
                 >
                   <Image
                     source={
                       chat.senderId === profile?.$id &&
                       chat.receiverId === profile?.$id
                         ? { uri: profile?.imageURL }
-                        : other.profileURL
-                          ? { uri: other.profileURL }
-                          : require("@/assets/images/anonymous_profile.png")
+                        : { uri: other.profileURL }
                     }
                     style={{
                       width: 45,
@@ -178,32 +216,36 @@ export default function ChatBox() {
                     }}
                   />
 
-                  <View className="flex-1">
+                  <View
+                    style={{
+                      marginLeft: 10,
+                    }}
+                  >
                     <AppText
                       color="dark"
-                      className="font-poppins font-bold text-lg"
+                      className="font-poppins font-bold text-lg ml-2"
                     >
                       {other.username || "You"}
                     </AppText>
 
-                    <View className="flex-row items-center gap-2">
+                    <View className="flex-row items-center gap-2 pl-2 ">
                       <AppText className="text-sm font-light" color="dark">
                         {chat.senderId === profile?.$id
                           ? "You:"
-                          : `${other.username}:`}{" "}
-                        {chat.lastMessage}
+                          : `${other.username.split(" ")[0]}:`}{" "}
+                        {chat.lastMessage.length > 24
+                          ? `${chat?.lastMessage.slice(0, 24)}...`
+                          : chat?.lastMessage}
                       </AppText>
-
                       <AppText color="dark" className="font-bold">
                         &#8226;
                       </AppText>
-
                       <AppText color="dark" className="text-sm font-light">
                         {dayjs(chat.$createdAt).local().format("hh:mm A")}
                       </AppText>
                     </View>
                   </View>
-                </ViewPressable>
+                </Link>
               );
             })}
           </ScrollView>

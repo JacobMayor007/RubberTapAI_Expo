@@ -21,7 +21,11 @@ export function AppText({
   return (
     <Text
       onPress={onPress}
-      className={cn("text-white", color === "dark" && "text-black", className)}
+      className={cn(
+        "text-white",
+        color === "dark" && "text-[#442111]",
+        className
+      )}
       numberOfLines={numberOfLines}
       ellipsizeMode={ellipsizeMode || undefined}
     >

@@ -1,4 +1,3 @@
-import { BlurView } from "expo-blur";
 import React from "react";
 import { Pressable, View } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
@@ -12,7 +11,7 @@ export default function Logout({ setVisibleModal }: AppearanceProps) {
   const { logout } = useAuth();
 
   return (
-    <BlurView intensity={50} className={`flex-1 px-6 justify-end`}>
+    <View className={`flex-1 px-6 justify-end bg-black/40`}>
       <View className="h-[30%] items-center justify-center gap-5">
         <Pressable
           onPress={logout}
@@ -31,6 +30,6 @@ export default function Logout({ setVisibleModal }: AppearanceProps) {
           </AppText>
         </Pressable>
       </View>
-    </BlurView>
+    </View>
   );
 }

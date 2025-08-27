@@ -6,11 +6,12 @@ import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { account } from "@/src/lib/appwrite";
 import AntDesign from "@expo/vector-icons/AntDesign";
+import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import * as Linking from "expo-linking";
-import { useRouter } from "expo-router";
-import { openAuthSessionAsync } from "expo-web-browser";
-import { useState } from "react";
+import { makeRedirectUri } from "expo-auth-session";
+import { Redirect, useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -27,16 +28,30 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function Login() {
   const router = useRouter();
   const auth = useAuth();
+  const { user } = useAuth();
   const [focusedInput, setFocusedInput] = useState("");
   const [forgotModal, setForgotModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [userInfo, setUserInfo] = useState({
     email: "",
     password: "",
   });
 
+  useEffect(() => {
+    const isLoggedIn = async () => {
+      if (user) {
+        return <Redirect href={"/(tabs)"} />;
+      }
+    };
+
+    isLoggedIn();
+  }, [user]);
+
   const handleLogin = async () => {
     try {
+      setLoading(true);
       await auth.login(userInfo.email, userInfo.password);
 
       router.replace("/(tabs)");
@@ -44,49 +59,81 @@ export default function Login() {
       console.log("Login error", err);
 
       Alert.alert("Login Attempt Failed", `${err}`);
+    } finally {
+      setLoading(false);
     }
   };
 
   const googleAuth = async () => {
+    // try {
+    //   const redirectUri = Linking.createURL("/");
+
+    //   // Request OAuth2 Token URL
+    //   const response = account.createOAuth2Token(
+    //     OAuthProvider.Google,
+    //     redirectUri
+    //   );
+
+    //   if (!response) throw new Error("Failed to start login");
+
+    //   // Open Auth session
+    //   const browserResult = await openAuthSessionAsync(
+    //     response.toString(),
+    //     redirectUri
+    //   );
+
+    //   if (browserResult.type !== "success") {
+    //     throw new Error("Failed to login");
+    //   }
+
+    //   // Extract credentials from URL
+    //   const url = new URL(browserResult.url);
+    //   const secret = url.searchParams.get("secret")?.toString();
+    //   const userId = url.searchParams.get("userId")?.toString();
+
+    //   if (!userId || !secret) {
+    //     throw new Error("Missing credentials from redirect");
+    //   }
+    //   const session = await account.createSession(userId, secret);
+    //   if (!session) throw new Error("Failed to create session");
+
+    //   const user = await account.get();
+    //   auth.setUser(user);
+    //   router.replace("/(tabs)");
+    //   return true;
+    // } catch (error) {
+    //   console.log("Google Auth error:", error);
+    //   return false;
+    // }
     try {
-      const redirectUri = Linking.createURL("/");
+      const deepLink = makeRedirectUri({ preferLocalhost: true });
+      const scheme = new URL(deepLink).protocol;
 
-      // Request OAuth2 Token URL
-      const response = account.createOAuth2Token(
-        OAuthProvider.Google,
-        redirectUri
-      );
+      const loginUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/account/sessions/oauth2/${OAuthProvider.Google}?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&success=${encodeURIComponent(deepLink)}&failure=${encodeURIComponent(deepLink)}`;
 
-      if (!response) throw new Error("Failed to start login");
+      const result = await WebBrowser.openAuthSessionAsync(loginUrl, scheme);
 
-      // Open Auth session
-      const browserResult = await openAuthSessionAsync(
-        response.toString(),
-        redirectUri
-      );
+      if (result.type === "success" && result.url) {
+        const urlObj = new URL(result.url);
+        const userId = urlObj.searchParams.get("userId");
+        const secret = urlObj.searchParams.get("secret");
 
-      if (browserResult.type !== "success") {
-        throw new Error("Failed to login");
+        if (!userId || !secret) {
+          console.error("Missing credentials in redirect URL:", result.url);
+          return;
+        }
+
+        await account.createSession(userId, secret);
+
+        router.replace("/(tabs)");
+
+        account
+          .get()
+          .then((user) => auth.setUser(user))
+          .catch((err) => console.error("Failed to fetch user:", err));
       }
-
-      // Extract credentials from URL
-      const url = new URL(browserResult.url);
-      const secret = url.searchParams.get("secret")?.toString();
-      const userId = url.searchParams.get("userId")?.toString();
-
-      if (!userId || !secret) {
-        throw new Error("Missing credentials from redirect");
-      }
-      const session = await account.createSession(userId, secret);
-      if (!session) throw new Error("Failed to create session");
-
-      const user = await account.get();
-      auth.setUser(user);
-      router.replace("/(tabs)");
-      return true;
-    } catch (error) {
-      console.log("Google Auth error:", error);
-      return false;
+    } catch (err) {
+      console.error("OAuth flow error:", err);
     }
   };
 
@@ -128,15 +175,15 @@ export default function Login() {
                   }`}
                   onChangeText={(e) => setUserInfo({ ...userInfo, email: e })}
                 />
-                <View>
+                <View className="relative">
                   <TextInput
                     value={userInfo.password}
-                    secureTextEntry={true}
+                    secureTextEntry={!showPassword}
                     placeholderTextColor={"#797979"}
                     onFocus={() => setFocusedInput("second")}
                     onBlur={() => setFocusedInput("")}
                     placeholder="Password"
-                    className={`h-14 text-slate-800 border-2 rounded-md px-4 ${
+                    className={`h-14 text-slate-800 border-2 rounded-md pl-4 pr-12 ${
                       focusedInput === "second"
                         ? "border-[#6B8E23] border-2"
                         : "border-[#727272]"
@@ -145,6 +192,16 @@ export default function Login() {
                       setUserInfo({ ...userInfo, password: e })
                     }
                   />
+                  <Pressable
+                    onPress={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-4 top-4"
+                  >
+                    {showPassword ? (
+                      <Feather name="eye" size={20} />
+                    ) : (
+                      <Feather name="eye-off" size={20} />
+                    )}
+                  </Pressable>
                 </View>
 
                 <Pressable onPress={() => setForgotModal(true)}>
@@ -162,9 +219,16 @@ export default function Login() {
             </View>
             <ViewPressable
               onPress={googleAuth}
-              className=" bg-white mx-10 w-20 h-16 mt-8 rounded-xl justify-center items-center"
+              style={{
+                boxShadow:
+                  "4px 8px 1px 0px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+              }}
+              className=" bg-white mx-10 w-10/12 gap-2 flex-row h-14 mt-8 rounded-xl justify-center items-center"
             >
               <AntDesign size={32} name="google" color={"green"} />
+              <AppText className="font-poppins font-bold text-lg text-green-700">
+                Google
+              </AppText>
             </ViewPressable>
             <View className="flex-row justify-center mt-5 gap-2">
               <AppText className="text-black">Don't have an account?</AppText>
