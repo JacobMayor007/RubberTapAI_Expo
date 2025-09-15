@@ -3,12 +3,12 @@ import { ID } from "react-native-appwrite";
 import { globalFunction } from "../global/fetchWithTimeout";
 import { storage } from "../lib/appwrite";
 
-const saveTreeToPlot = async (
+const saveLeafToTreeToPlot = async (
   user_id: string,
   plot_id: string,
+  tree_id: string,
   image_plot: string,
   status: string,
-  plot_name: string,
   key: string,
   confidence: number
 ) => {
@@ -44,7 +44,7 @@ const saveTreeToPlot = async (
       status: status,
       confidence: confidence,
       plot_id: plot_id,
-      plot_name: plot_name,
+      tree_id: tree_id,
       API_KEY: key,
     };
 
@@ -70,4 +70,4 @@ const saveTreeToPlot = async (
   }
 };
 
-export { saveTreeToPlot };
+export { saveLeafToTreeToPlot };

@@ -1,5 +1,6 @@
 import AppearanceSettings from "@/src/components/AppearanceSettings";
 import { AppText } from "@/src/components/AppText";
+import EditProfile from "@/src/components/EditProfile";
 import HelpAndSupport from "@/src/components/HelpAndSupport";
 import Logo from "@/src/components/Logo";
 import Logout from "@/src/components/Logout";
@@ -14,7 +15,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Image, Modal, Pressable, View } from "react-native";
+import { Image, Modal, Pressable, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Menu() {
@@ -103,14 +104,18 @@ export default function Menu() {
                   color={theme === "dark" ? "light" : "dark"}
                   className="font-poppins font-bold text-lg pt-4 text-ellipsis text-nowrap whitespace-nowrap"
                 >
-                  {user?.name}
+                  {profile?.fullName}
                 </AppText>
               </View>
-              <View
+              <TouchableOpacity
+                onPress={() => {
+                  setVisibleModal(true);
+                  setModalShown("editProfile");
+                }}
                 className={`${theme !== "dark" ? `bg-[#75A90A]` : `bg-gray-600`} h-7 w-16 justify-center items-center rounded-full`}
               >
                 <AppText color={`light`}>Edit</AppText>
-              </View>
+              </TouchableOpacity>
             </View>
             <View
               className={`"flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#f5eee4]`} m-4 rounded-xl drop-shadow-2xl flex-col py-2 px-4 gap-1"`}
@@ -122,7 +127,7 @@ export default function Menu() {
                 Username
               </AppText>
               <AppText color={theme === "dark" ? "light" : "dark"}>
-                {profile?.username}
+                {profile?.fullName}
               </AppText>
               <AppText
                 color={theme === "dark" ? "light" : "dark"}
@@ -214,6 +219,7 @@ export default function Menu() {
         visible={visibleModal}
         animationType="slide"
         transparent={modalShown === "logout" ? true : false}
+        onRequestClose={() => setVisibleModal(false)}
       >
         {modalShown === "notification" && (
           <NotificationSettings setVisibleModal={setVisibleModal} />
@@ -226,6 +232,9 @@ export default function Menu() {
         )}
         {modalShown === "logout" && (
           <Logout setVisibleModal={setVisibleModal} />
+        )}
+        {modalShown === "editProfile" && (
+          <EditProfile setVisibleModal={setVisibleModal} />
         )}
       </Modal>
     </SafeAreaView>

@@ -1,6 +1,6 @@
 import { AppText } from "@/src/components/AppText";
-import { Button } from "@/src/components/Button";
 import ForgotPassword from "@/src/components/ForgotPassword";
+import Loading from "@/src/components/LoadingComponent";
 import Logo from "@/src/components/Logo";
 import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -15,11 +15,13 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
+  ImageBackground,
   KeyboardAvoidingView,
   Modal,
   Pressable,
   ScrollView,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { OAuthProvider } from "react-native-appwrite";
@@ -50,8 +52,18 @@ export default function Login() {
   }, [user]);
 
   const handleLogin = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
+      if (!userInfo.email) {
+        Alert.alert("Required field", "Please enter your email");
+        return;
+      }
+
+      if (!userInfo.password) {
+        Alert.alert("Required field", "Please enter password");
+        return;
+      }
+
       await auth.login(userInfo.email, userInfo.password);
 
       router.replace("/(tabs)");
@@ -106,6 +118,8 @@ export default function Login() {
     //   return false;
     // }
     try {
+      setLoading(true);
+
       const deepLink = makeRedirectUri({ preferLocalhost: true });
       const scheme = new URL(deepLink).protocol;
 
@@ -134,117 +148,140 @@ export default function Login() {
       }
     } catch (err) {
       console.error("OAuth flow error:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center">
+        <ImageBackground
+          source={require("@/assets/images/RubberFarmImage.png")}
+          fadeDuration={300}
+          className="flex-1 bg-black/80 items-center  w-full justify-center"
+        >
+          <Loading className="h-20 w-20" />
+        </ImageBackground>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-[#FFECCC]">
-      <KeyboardAvoidingView behavior="height" keyboardVerticalOffset={0}>
-        <ScrollView>
-          <View className="py-6 px-2">
-            <MaterialIcons
-              name="keyboard-arrow-left"
-              size={40}
-              onPress={() => router.replace("/getStarted")}
-            />
-            <View className="flex-col items-center justify-center pt-14 ">
-              <Logo className="h-24 w-24" />
-              <View className="flex-col ">
-                <Image
-                  source={require("@/assets/images/RubberTapText.png")}
-                  className="h-16 w-56"
-                />
-                <AppText className="text-right text-[#75A90A] font-medium text-xl font-poppins">
-                  AI
-                </AppText>
-              </View>
-              <View className="w-full gap-4 px-10">
-                <AppText className="font-poppins font-extrabold text-center text-black text-3xl mb-2">
-                  Welcome
-                </AppText>
-                <TextInput
-                  value={userInfo.email}
-                  onFocus={() => setFocusedInput("first")}
-                  onBlur={() => setFocusedInput("")}
-                  placeholder="Email"
-                  placeholderTextColor={"#797979"}
-                  className={`h-14 text-slate-800 border-2 rounded-md px-4 ${
-                    focusedInput === "first"
-                      ? "border-[#6B8E23] border-2"
-                      : "border-[#727272]"
-                  }`}
-                  onChangeText={(e) => setUserInfo({ ...userInfo, email: e })}
-                />
-                <View className="relative">
-                  <TextInput
-                    value={userInfo.password}
-                    secureTextEntry={!showPassword}
-                    placeholderTextColor={"#797979"}
-                    onFocus={() => setFocusedInput("second")}
-                    onBlur={() => setFocusedInput("")}
-                    placeholder="Password"
-                    className={`h-14 text-slate-800 border-2 rounded-md pl-4 pr-12 ${
-                      focusedInput === "second"
-                        ? "border-[#6B8E23] border-2"
-                        : "border-[#727272]"
-                    }`}
-                    onChangeText={(e) =>
-                      setUserInfo({ ...userInfo, password: e })
-                    }
+      <ImageBackground
+        className="flex-1 bg-black/80"
+        source={require("@/assets/images/RubberFarmImage.png")}
+      >
+        <KeyboardAvoidingView behavior="height" keyboardVerticalOffset={0}>
+          <ScrollView>
+            <View className="py-6 px-2">
+              <MaterialIcons
+                name="keyboard-arrow-left"
+                size={40}
+                onPress={() => router.replace("/getStarted")}
+              />
+              <View className="flex-col items-center justify-center pt-14 ">
+                <Logo className="h-24 w-24" />
+                <View className="flex-col ">
+                  <Image
+                    source={require("@/assets/images/RubberTapText.png")}
+                    className="h-16 w-56"
                   />
-                  <Pressable
-                    onPress={() => setShowPassword((prev) => !prev)}
-                    className="absolute right-4 top-4"
-                  >
-                    {showPassword ? (
-                      <Feather name="eye" size={20} />
-                    ) : (
-                      <Feather name="eye-off" size={20} />
-                    )}
-                  </Pressable>
-                </View>
-
-                <Pressable onPress={() => setForgotModal(true)}>
-                  <AppText className="font-poppins font-bold text-[#064B0E] text-right">
-                    Forgot Password?
+                  <AppText className="text-right text-[#75A90A] font-medium text-xl font-poppins">
+                    AI
                   </AppText>
-                </Pressable>
+                </View>
+                <View className="w-full gap-4 px-10">
+                  <AppText className="font-poppins font-extrabold text-center text-[#F3E0C1] text-2xl mb-2">
+                    Welcome!
+                  </AppText>
+                  <TextInput
+                    value={userInfo.email}
+                    onFocus={() => setFocusedInput("first")}
+                    onBlur={() => setFocusedInput("")}
+                    placeholder="Email"
+                    placeholderTextColor={"#A8BBA3"}
+                    className={`h-14 text-white border-2 rounded-md px-4 ${
+                      focusedInput === "first"
+                        ? "border-[#E8C282] border-[2px]  bg-[#E8C282]/30"
+                        : "border-[#E8C282] border-[1px]"
+                    }`}
+                    onChangeText={(e) => setUserInfo({ ...userInfo, email: e })}
+                  />
+                  <View className="relative">
+                    <TextInput
+                      value={userInfo.password}
+                      secureTextEntry={!showPassword}
+                      placeholderTextColor={"#A8BBA3"}
+                      onFocus={() => setFocusedInput("second")}
+                      onBlur={() => setFocusedInput("")}
+                      placeholder="Password"
+                      className={`h-14 text-white border-2 rounded-md pl-4 pr-12 ${
+                        focusedInput === "second"
+                          ? "border-[#E8C282] border-[2px] bg-[#E8C282]/30"
+                          : "border-[#E8C282] border-[1px]"
+                      }`}
+                      onChangeText={(e) =>
+                        setUserInfo({ ...userInfo, password: e })
+                      }
+                    />
+                    <Pressable
+                      onPress={() => setShowPassword((prev) => !prev)}
+                      className="absolute right-4 top-4"
+                    >
+                      {showPassword ? (
+                        <Feather name="eye" size={20} color={"#CCCCCC"} />
+                      ) : (
+                        <Feather name="eye-off" color={"#CCCCCC"} size={20} />
+                      )}
+                    </Pressable>
+                  </View>
 
-                <Button
-                  title="Login"
-                  onPress={handleLogin}
-                  className="rounded-full font-bold font-poppins text-lg py-1"
-                />
+                  <Pressable onPress={() => setForgotModal(true)}>
+                    <AppText className="font-poppins font-bold text-[#F3E0C1] text-right">
+                      Forgot Password?
+                    </AppText>
+                  </Pressable>
+                  <TouchableOpacity
+                    onPress={handleLogin}
+                    className="bg-[#6B8E23]  items-center justify-center py-2 rounded-full"
+                  >
+                    <AppText className="text-lg font-bold">Login</AppText>
+                  </TouchableOpacity>
+                </View>
+              </View>
+              <ViewPressable
+                onPress={googleAuth}
+                style={{
+                  boxShadow:
+                    "4px 8px 1px 0px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+                }}
+                className=" bg-white mx-10 w-10/12 gap-2 flex-row h-14 mt-8 rounded-xl justify-center items-center"
+              >
+                <AntDesign size={32} name="google" color={"green"} />
+                <AppText className="font-poppins font-bold text-lg text-green-700">
+                  Google
+                </AppText>
+              </ViewPressable>
+              <View className="flex-row justify-center items-center mt-5 gap-2">
+                <AppText className="text-[#F3E0C1]">
+                  Don't have an account?
+                </AppText>
+                <AppText
+                  className="text-[#F3E0C1] font-bold text-lg underline"
+                  onPress={() => router.push("/(auth)/register")}
+                >
+                  Sign up
+                </AppText>
               </View>
             </View>
-            <ViewPressable
-              onPress={googleAuth}
-              style={{
-                boxShadow:
-                  "4px 8px 1px 0px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
-              }}
-              className=" bg-white mx-10 w-10/12 gap-2 flex-row h-14 mt-8 rounded-xl justify-center items-center"
-            >
-              <AntDesign size={32} name="google" color={"green"} />
-              <AppText className="font-poppins font-bold text-lg text-green-700">
-                Google
-              </AppText>
-            </ViewPressable>
-            <View className="flex-row justify-center mt-5 gap-2">
-              <AppText className="text-black">Don't have an account?</AppText>
-              <AppText
-                className="text-black underline"
-                onPress={() => router.push("/(auth)/register")}
-              >
-                Sign up
-              </AppText>
-            </View>
-          </View>
-        </ScrollView>
-        <Modal visible={forgotModal} animationType="slide">
-          <ForgotPassword setForgotModal={setForgotModal} />
-        </Modal>
-      </KeyboardAvoidingView>
+          </ScrollView>
+          <Modal visible={forgotModal} animationType="slide">
+            <ForgotPassword setForgotModal={setForgotModal} />
+          </Modal>
+        </KeyboardAvoidingView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }

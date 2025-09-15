@@ -1,4 +1,4 @@
-import { Profile } from "@/types";
+import { Product, Profile } from "@/types";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
@@ -21,22 +21,29 @@ import {
   Pressable,
   ScrollView,
   TextInput,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { ID } from "react-native-appwrite";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
 import { useLocation } from "../contexts/LocationContext";
+import { globalFunction } from "../global/fetchWithTimeout";
 import { storage } from "../lib/appwrite";
 import { AppText } from "./AppText";
 import { Button } from "./Button";
+import Loading from "./LoadingComponent";
 import { ViewPressable } from "./ViewPressable";
 
-type AddProductProps = {
+type EditProductProps = {
   setAddProductModal: (visible: boolean) => void;
+  chosenProduct: Product | null;
 };
 
-export default function AddProduct({ setAddProductModal }: AddProductProps) {
+export default function EditProduct({
+  setAddProductModal,
+  chosenProduct,
+}: EditProductProps) {
   const router = useRouter();
   const [category, setCategory] = useState("");
   const { user } = useAuth();
@@ -50,6 +57,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
   const cameraRef = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const address = useLocation();
 
@@ -103,6 +111,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        setLoading(true);
         const response = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
           {
@@ -114,9 +123,18 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
         );
 
         const data = await response.json();
+
+        if (chosenProduct) {
+          setCategory(chosenProduct?.category);
+          setPrice(chosenProduct?.price.toString());
+          setDescription(chosenProduct?.description);
+        }
+
         setProfile(data);
       } catch (error) {
         console.error("Upload error:", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProfile();
@@ -164,13 +182,22 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
 
   const validating = () => {
     try {
-      if (!uri || !category || !price || !description || !address) {
-        Alert.alert("Adding error", "Please input all fields");
+      if (
+        (!uri && !chosenProduct?.productURL) ||
+        !category ||
+        !price ||
+        !description ||
+        !chosenProduct?.country ||
+        !chosenProduct?.description ||
+        !chosenProduct?.price ||
+        !chosenProduct?.category
+      ) {
+        Alert.alert("Updating error", "Please input all fields");
         setConfirmModal(false);
         return;
       }
 
-      if (!address?.address) {
+      if (!address?.address && !chosenProduct?.address) {
         Alert.alert("To add product, please allow to share your location");
         setConfirmModal(false);
         return;
@@ -185,7 +212,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
     }
   };
 
-  const addProduct = async () => {
+  const updateProduct = async () => {
     try {
       let fileUrl = "";
 
@@ -211,81 +238,114 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
           fileUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}/files/${result.$id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&mode=admin`;
 
           const data = {
-            address: address?.address?.formattedAddress || "",
-            user_id: profile?.$id || "",
-            user_username: profile?.username || "",
-            user_email: profile?.email || "",
-            farmerProfile: profile?.imageURL || "",
+            plot_id: chosenProduct?.$id || "",
+            address: chosenProduct?.address || "",
+            userId: chosenProduct?.user_id || "",
+            user_username: chosenProduct?.user_username || "",
+            user_email: chosenProduct?.user_email || "",
+            farmerProfile: chosenProduct?.farmerProfile || "",
             productURL: fileUrl,
             category: category?.toLowerCase() || "",
             description: description || "",
             price: Number(price),
-            city: address?.address?.city || "",
-            region: address?.address?.region || "",
-            country: address?.address?.country || "",
+            city: chosenProduct?.city || "",
+            region: chosenProduct?.region || "",
+            country: chosenProduct?.country || "",
+            API_KEY: profile?.API_KEY || "",
           };
 
-          const response = await fetch(
-            `${process.env.EXPO_PUBLIC_BASE_URL}/product`,
+          const response = await globalFunction.fetchWithTimeout(
+            `${process.env.EXPO_PUBLIC_BASE_URL}/products`,
             {
-              method: "POST",
+              method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json",
               },
               body: JSON.stringify(data),
-            }
+            },
+            30000
           );
 
-          const responseData = await response.json();
+          await response.json();
 
-          if (response.ok) {
-            Alert.alert(
-              responseData.message || "Successfully added your new product!"
-            );
-          } else {
-            Alert.alert(
-              responseData.message ||
-                "Adding new product failed. Make sure to input all necessary fields"
-            );
-          }
+          setUri("");
+          router.push("/(tabs)/market");
+
+          setCategory("");
+          setPrice("");
+          setDescription("");
+          return;
         }
+      } else if (chosenProduct?.productURL) {
+        const data = {
+          address: chosenProduct?.address || "",
+          userId: chosenProduct?.user_id || "",
+          user_username: chosenProduct?.user_username || "",
+          user_email: chosenProduct?.user_email || "",
+          farmerProfile: chosenProduct?.farmerProfile || "",
+          productURL: chosenProduct?.productURL,
+          category: category?.toLowerCase() || "",
+          description: description || "",
+          price: Number(price),
+          city: chosenProduct?.city || "",
+          region: chosenProduct?.region || "",
+          country: chosenProduct?.country || "",
+          plot_id: chosenProduct?.$id || "",
+          API_KEY: profile?.API_KEY,
+        };
 
+        const response = await globalFunction.fetchWithTimeout(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/products`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify(data),
+          },
+          30000
+        );
+
+        const result = await response.json();
+
+        Alert.alert(result.title, result.message);
+
+        router.push("/(tabs)/market");
+        setCategory("");
+        setPrice("");
+        setDescription("");
         setUri("");
+
+        return;
       } else {
         Alert.alert("Missing product photo");
+
+        return;
       }
-
-      // await addNewProduct(
-      //   address?.address.formattedAddress || "",
-      //   profile?.$id || "",
-      //   profile?.username || "",
-      //   profile?.email || "",
-      //   fileUrl,
-      //   profile?.imageURL || "",
-      //   category.toLowerCase(),
-      //   description,
-      //   Number(price),
-      //   address?.address.city || "",
-      //   address?.address.region || "",
-      //   address?.address.country || ""
-      // );
-
-      setCategory("");
-      setPrice("");
-      setDescription("");
     } catch (error) {
       console.error(error);
     }
-
-    // finally {
-    //   setConfirmModal(false);
-    //   router.replace("/(tabs)/market");
-    // }
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView
+        style={{
+          flexGrow: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: "#FFECCC",
+        }}
+      >
+        <Loading className="h-14 w-14" />
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView className="flex-1 bg-[#FFECCC] border">
+    <View className="flex-1 bg-[#FFECCC] border">
       <KeyboardAvoidingView
         behavior="height"
         keyboardVerticalOffset={0}
@@ -308,7 +368,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
                 color={"dark"}
                 className="font-poppins font-extrabold text-2xl"
               >
-                Marketplace
+                Edit Product
               </AppText>
             </View>
           </View>
@@ -325,13 +385,20 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
             You can sell your harvest latex and waste rubber here.
           </AppText>
 
-          {uri ? (
-            <View
+          {chosenProduct?.productURL ? (
+            <TouchableOpacity
               style={{ height: 150 }}
               className="border mt-2 rounded-xl items-center justify-center"
+              onPress={() => {
+                setCameraModal(true);
+                requestCameraPermission();
+              }}
             >
-              <Image className="h-36 w-36" source={{ uri: uri }} />
-            </View>
+              <Image
+                className="h-36 w-36"
+                src={uri ? uri : chosenProduct?.productURL}
+              />
+            </TouchableOpacity>
           ) : (
             <View
               style={{ height: 150 }}
@@ -439,25 +506,25 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
           >
             Sellers Details
           </AppText>
-          <View className="h-24 border flex-row rounded-lg mb-7 items-center px-7 gap-4">
+          <View className="h-28 border flex-row rounded-lg mb-7 items-center px-7 gap-4">
             <Image
               className="h-12 w-12 rounded-full"
               source={{ uri: profile?.imageURL }}
             />
             <View className="flex-col gap-1 text-wrap">
               <AppText color={"dark"} className="font-poppins font-bold">
-                {profile?.username}
+                {chosenProduct?.user_username}
               </AppText>
               <AppText
                 color={"dark"}
-                className="w-7/12 font-poppins font-extralight text-sm"
+                className="w-4/12 font-poppins font-extralight text-sm text-wrap overflow-hidden "
               >
-                {address?.address?.formattedAddress}
+                {chosenProduct?.address}
               </AppText>
             </View>
           </View>
           <Button
-            title="Post Item"
+            title="Update Item"
             onPress={validating}
             className="my-2 py-1 rounded-full font-poppins font-bold text-xl"
           />
@@ -481,7 +548,16 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
                 onPress={() => setCameraModal(false)}
               />
 
-              <View className="items-center  flex-row justify-center">
+              <View className="items-center  flex-row justify-between">
+                <ViewPressable className=" h-20 w-20 flex-row rounded-full items-center justify-center bg-slate-500">
+                  <Entypo
+                    onPress={pickAnImage}
+                    name="folder-images"
+                    size={40}
+                    color={"white"}
+                  />
+                </ViewPressable>
+
                 <Pressable
                   style={{
                     height: 60,
@@ -502,7 +578,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
                   onPress={() =>
                     setFlip((prev) => (prev === "back" ? "front" : "back"))
                   }
-                  className="absolute left-[70%] bg-white p-2 rounded-full"
+                  className="bg-white p-2 rounded-full"
                 >
                   <MaterialIcons name="cameraswitch" size={32} />
                 </ViewPressable>
@@ -538,7 +614,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
                   color={"light"}
                   className="py-2 px-6 bg-[#75A90A] rounded-lg font-poppins font-semibold"
                   onPress={() => {
-                    addProduct();
+                    updateProduct();
                     setConfirmModal(false);
                   }}
                 >
@@ -549,6 +625,6 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
           </BlurView>
         </Modal>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

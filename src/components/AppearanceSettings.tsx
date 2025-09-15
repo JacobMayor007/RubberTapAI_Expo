@@ -21,11 +21,14 @@ const AppearanceSettings = ({ setVisibleModal }: AppearanceProps) => {
         const storedThemeType = await AsyncStorage.getItem("appearance");
         const storedTheme = await AsyncStorage.getItem("theme");
 
+        console.log("theme?: ", storedThemeType);
+        console.log("label?: ", storedTheme);
+
         setTheme(
           storedTheme === "System" ? systemTheme || "" : storedThemeType || ""
         );
         if (storedThemeType) setThemeType(storedTheme || "");
-        if (storedThemeType) setTheme(storedThemeType);
+        if (storedTheme) setTheme(storedTheme);
       } catch (error) {
         console.error(error);
       }
@@ -42,6 +45,7 @@ const AppearanceSettings = ({ setVisibleModal }: AppearanceProps) => {
       console.error(error);
     }
   };
+
   const themeMode = [
     {
       key: 0,
@@ -60,7 +64,8 @@ const AppearanceSettings = ({ setVisibleModal }: AppearanceProps) => {
     },
   ];
 
-  console.log("setTheme: ", themeType);
+  console.log("What is the theme?: ", theme);
+  console.log("What is the label?: ", themeType);
 
   return (
     <SafeAreaView

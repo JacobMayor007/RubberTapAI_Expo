@@ -2,19 +2,17 @@ import { AppText } from "@/src/components/AppText";
 import { Button } from "@/src/components/Button";
 import Loading from "@/src/components/LoadingComponent";
 import Logo from "@/src/components/Logo";
-import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { account, database } from "@/src/lib/appwrite";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Checkbox from "expo-checkbox";
 import * as Linking from "expo-linking";
-import { useRouter } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import { openAuthSessionAsync } from "expo-web-browser";
 import React, { useState } from "react";
 import {
   Alert,
+  ImageBackground,
   KeyboardAvoidingView,
   Pressable,
   ScrollView,
@@ -263,29 +261,38 @@ export default function Register() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-[#FFECCC]">
-      <KeyboardAvoidingView behavior="height" keyboardVerticalOffset={0}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <View className="px-4 h-full py-10">
-            <View className="flex-row justify-between items-center">
-              <MaterialIcons
-                name="keyboard-arrow-left"
-                size={40}
-                onPress={() => router.replace("/getStarted")}
+    <SafeAreaView className="flex-1 ">
+      <ImageBackground
+        source={require("@/assets/images/Get Started.png")}
+        className="flex-1 bg-black"
+      >
+        <KeyboardAvoidingView
+          style={{
+            flexGrow: 1,
+            flexDirection: "column",
+            justifyContent: "center",
+          }}
+          keyboardVerticalOffset={0}
+          behavior="padding"
+        >
+          <ScrollView contentContainerStyle={{ padding: 24 }}>
+            <View className="flex items-center justify-between flex-row">
+              <Feather
+                onPress={() => router.back()}
+                name="arrow-left"
+                size={24}
+                color="white"
               />
-              <Logo className="h-11 w-11" />
+              <Logo className="h-12 w-12" />
             </View>
-            <View className="mt-4 flex-col gap-2">
+            <View className="items-center gap-5 my-4">
               <AppText
-                color="dark"
-                className="text-center font-poppins font-bold text-3xl"
+                className="font-poppins font-bold text-2xl"
+                color="light"
               >
                 Create an Account
               </AppText>
-              <AppText
-                color="dark"
-                className="text-center font-poppins font-medium"
-              >
+              <AppText className="text-center" color="light">
                 Create an account so you can explore the tapping features.
               </AppText>
             </View>
@@ -293,59 +300,62 @@ export default function Register() {
               <TextInput
                 placeholder="First Name"
                 value={userInfo.fName}
-                placeholderTextColor={"#797979"}
+                autoCapitalize="words"
+                placeholderTextColor={"#CCCCCC"}
                 onFocus={() => setFocusedInput("first")}
                 onBlur={() => setFocusedInput("")}
                 onChangeText={(e) => setUserInfo({ ...userInfo, fName: e })}
-                className={`h-14 text-slate-800 border-2 rounded-md px-4 ${
+                className={`h-14 text-slate-200 rounded-md px-4 ${
                   focusedInput === "first"
-                    ? "border-[#6B8E23] border-2"
-                    : "border-[#727272]"
+                    ? "border-[#E8C282] border-[2px] bg-[#E8C282]/30"
+                    : "border-[#E8C282] border-[1px]"
                 }`}
               />
               <TextInput
                 placeholder="Last Name"
                 value={userInfo.lName}
-                placeholderTextColor={"#797979"}
+                autoCapitalize="words"
+                placeholderTextColor={"#CCCCCC"}
                 onFocus={() => setFocusedInput("second")}
                 onBlur={() => setFocusedInput("")}
                 onChangeText={(e) => setUserInfo({ ...userInfo, lName: e })}
-                className={`h-14 text-slate-800 border-2 rounded-md px-4 ${
+                className={`h-14 text-slate-100 border-2 rounded-md px-4 ${
                   focusedInput === "second"
-                    ? "border-[#6B8E23] border-2"
-                    : "border-[#727272]"
+                    ? "border-[#E8C282] border-[2px] bg-[#E8C282]/30"
+                    : "border-[#E8C282] border-[1px]"
                 }`}
               />
               <TextInput
                 placeholder="Email"
                 value={userInfo.email}
                 onChangeText={(e) => setUserInfo({ ...userInfo, email: e })}
+                autoCapitalize="none"
                 onFocus={() => setFocusedInput("third")}
-                placeholderTextColor={"#797979"}
+                placeholderTextColor={"#CCCCCC"}
                 onBlur={() => setFocusedInput("")}
-                className={`h-14 text-slate-800 border-2 rounded-md px-4 ${
+                className={`h-14 text-slate-100 border-2 rounded-md px-4 ${
                   focusedInput === "third"
-                    ? "border-[#6B8E23] border-2"
-                    : "border-[#727272]"
+                    ? "border-[#E8C282] border-[2px] bg-[#E8C282]/30"
+                    : "border-[#E8C282] border-[1px]"
                 }`}
               />
               <TextInput
                 placeholder="Username"
                 value={userInfo.userName}
-                placeholderTextColor={"#797979"}
+                placeholderTextColor={"#CCCCCC"}
                 onChangeText={(e) => setUserInfo({ ...userInfo, userName: e })}
                 onFocus={() => setFocusedInput("fourth")}
                 onBlur={() => setFocusedInput("")}
-                className={`h-14 text-slate-800 border-2 rounded-md px-4 ${
+                className={`h-14 text-slate-100 border-2 rounded-md px-4 ${
                   focusedInput === "fourth"
-                    ? "border-[#6B8E23] border-2"
-                    : "border-[#727272]"
+                    ? "border-[#E8C282] border-[2px] bg-[#E8C282]/30"
+                    : "border-[#E8C282] border-[1px]"
                 }`}
               />
               <View className="relative">
                 <TextInput
                   value={userInfo.password}
-                  placeholderTextColor={"#797979"}
+                  placeholderTextColor={"#CCCCCC"}
                   onChangeText={(e) =>
                     setUserInfo({ ...userInfo, password: e })
                   }
@@ -353,10 +363,10 @@ export default function Register() {
                   secureTextEntry={!showPassword}
                   onFocus={() => setFocusedInput("fifth")}
                   onBlur={() => setFocusedInput("")}
-                  className={`h-14 text-slate-800 border-2 rounded-md px-4 ${
+                  className={`h-14 text-slate-100 border-2 rounded-md px-4 ${
                     focusedInput === "fifth"
-                      ? "border-[#6B8E23] border-2"
-                      : "border-[#727272]"
+                      ? "border-[#E8C282] border-[2px] bg-[#E8C282]/30"
+                      : "border-[#E8C282] border-[1px]"
                   }`}
                 />
                 <Pressable
@@ -364,9 +374,9 @@ export default function Register() {
                   className="absolute right-4 top-4"
                 >
                   {showPassword ? (
-                    <Feather name="eye" size={20} />
+                    <Feather name="eye" size={20} color={"#CCCCCC"} />
                   ) : (
-                    <Feather name="eye-off" size={20} />
+                    <Feather name="eye-off" color={"#CCCCCC"} size={20} />
                   )}
                 </Pressable>
               </View>
@@ -378,14 +388,14 @@ export default function Register() {
                     setUserInfo({ ...userInfo, confirmPassword: e })
                   }
                   secureTextEntry={!showConfirmPassword}
-                  placeholderTextColor={"#797979"}
+                  placeholderTextColor={"#CCCCCC"}
                   placeholder="Confirm Password"
                   onFocus={() => setFocusedInput("sixth")}
                   onBlur={() => setFocusedInput("")}
-                  className={`h-14 text-slate-800 border-2 rounded-md px-4 ${
+                  className={`h-14 text-slate-100 border-2 rounded-md px-4 ${
                     focusedInput === "sixth"
-                      ? "border-[#6B8E23] border-2"
-                      : "border-[#727272]"
+                      ? "border-[#E8C282] border-[2px] bg-[#E8C282]/30"
+                      : "border-[#E8C282] border-[1px]"
                   }`}
                 />
                 <Pressable
@@ -393,22 +403,35 @@ export default function Register() {
                   className="absolute right-4 top-4"
                 >
                   {showConfirmPassword ? (
-                    <Feather name="eye" size={20} />
+                    <Feather name="eye" size={20} color={"#CCCCCC"} />
                   ) : (
-                    <Feather name="eye-off" size={20} />
+                    <Feather name="eye-off" color={"#CCCCCC"} size={20} />
                   )}
                 </Pressable>
               </View>
             </View>
-            <View className="flex-row gap-2 mt-8">
-              <Checkbox
-                value={agree}
-                onValueChange={() => setAgree((prev) => !prev)}
-                className={agree ? "#4630EB" : undefined}
-              />
-              <AppText className="text-[#6B8E23] font-semibold font-poppins">
-                Agree to terms & conditions
-              </AppText>
+            <View className="flex-row justify-between mt-8">
+              <View className="flex-row gap-2 ">
+                <Checkbox
+                  value={agree}
+                  onValueChange={() => setAgree((prev) => !prev)}
+                  className={agree ? "#4630EB" : undefined}
+                />
+                <AppText className="text-[#a3c461] font-semibold font-poppins">
+                  Agree to terms & conditions
+                </AppText>
+              </View>
+              <View className="flex-col items-center gap-2 mb-5">
+                <AppText className="font-bold text-[#F3E0C1] text-center">
+                  Already have an {"\n"}account?
+                </AppText>
+                <Link
+                  href="/(auth)"
+                  className="font-bold underline text-[#F3E0C1]"
+                >
+                  Sign In
+                </Link>
+              </View>
             </View>
             <View className="mt-4">
               <Button
@@ -417,15 +440,9 @@ export default function Register() {
                 className="text-xl font-bold tracking-widest py-1.5"
               />
             </View>
-            <ViewPressable
-              onPress={googleAuth}
-              className=" bg-white w-20 h-16 mt-2 rounded-xl justify-center items-center"
-            >
-              <AntDesign size={32} name="google" color={"green"} />
-            </ViewPressable>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </ImageBackground>
     </SafeAreaView>
   );
 }

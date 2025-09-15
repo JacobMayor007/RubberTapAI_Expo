@@ -4,12 +4,13 @@ interface Profile {
   $id: string;
   $createdAt?: string;
   email: string;
-  username: string;
+  fullName: string;
   fName: string;
   lName: string;
   notifSettings: string;
   themeSettings: string;
   subscription: Boolean;
+  username: string;
   imageURL: string;
   API_KEY: string;
 }
@@ -29,8 +30,18 @@ interface Tree_Record {
   plot_id: string;
   user_id: string;
   image_url: string;
-  confidence: Number;
   status: string;
+}
+
+interface Leaves_Record {
+  $id: string;
+  $createdAt: Dayjs;
+  plot_id: string;
+  tree_id: string;
+  user_id: string;
+  image_leaf: string;
+  status: string;
+  confidence: string;
 }
 
 interface MessageHistory {
@@ -71,4 +82,12 @@ interface Product {
   region: string;
 }
 
-export { ChatRoom, MessageHistory, Plot, Product, Profile, Tree_Record };
+export {
+  ChatRoom,
+  Leaves_Record,
+  MessageHistory,
+  Plot,
+  Product,
+  Profile,
+  Tree_Record,
+};

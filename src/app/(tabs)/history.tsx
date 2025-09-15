@@ -208,8 +208,8 @@ export default function History() {
               onPress={() => {
                 {
                   router.push({
-                    pathname: "/(history)/[id]",
-                    params: { id: data?.$id },
+                    pathname: "/(history)/tree/[plot_id]",
+                    params: { plot_id: data?.$id },
                   });
                 }
               }}
