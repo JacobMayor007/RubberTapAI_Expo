@@ -14,17 +14,11 @@ export default function NewUser() {
         className="flex-1 bg-black py-7 px-4 justify-between"
       >
         <View>
-          <View className="flex-row justify-between items-center p-4">
+          <View className="flex-row justify-end items-center p-4">
             <Image
-              className="h-10 w-10"
+              className="h-14 w-14"
               source={require("@/assets/images/Logo.png")}
             />
-            <Text
-              onPress={() => router.push("/(auth)")}
-              className="text-white font-bold font-poppins underline"
-            >
-              Sign In
-            </Text>
           </View>
           <View className="mt-20">
             <AppText className="font-poppins font-bold text-3xl pl-5 pr-20">
@@ -41,6 +35,12 @@ export default function NewUser() {
             className="py-1.5 text-lg font-bold"
             onPress={() => router.push("/(auth)/register")}
           />
+          <Text
+            onPress={() => router.push("/(auth)")}
+            className="text-white font-bold font-poppins text-lg underline text-center mt-10"
+          >
+            Sign In
+          </Text>
         </View>
       </ImageBackground>
     </SafeAreaView>

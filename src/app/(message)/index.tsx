@@ -152,7 +152,6 @@ export default function ChatBox() {
         const data = await response.json();
 
         messageUser?.setUser(data);
-        console.log("Chat Mate Not Self: ", messageUser?.user);
       }
     } catch (error) {
       console.error(error);
@@ -203,11 +202,11 @@ export default function ChatBox() {
                   className="flex-row py-2 mt-2 items-center"
                 >
                   <Image
-                    source={
+                    src={
                       chat.senderId === profile?.$id &&
                       chat.receiverId === profile?.$id
-                        ? { uri: profile?.imageURL }
-                        : { uri: other.profileURL }
+                        ? profile?.imageURL
+                        : other.profileURL
                     }
                     style={{
                       width: 45,

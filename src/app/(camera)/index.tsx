@@ -1,10 +1,11 @@
-import { saveTreeToPlot } from "@/src/action/treeAction";
+import { saveLeafToTreeToPlot } from "@/src/action/leafAction";
 import { AppText } from "@/src/components/AppText";
+import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
 import Loading from "@/src/components/LoadingComponent";
-import RegisterPlot from "@/src/components/RegisterTreePlot";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
-import { Plot, Profile } from "@/types";
+import { globalFunction } from "@/src/global/fetchWithTimeout";
+import { Plot, Profile, Tree_Record } from "@/types";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
@@ -49,12 +50,21 @@ export default function CameraLeaf() {
   const { theme } = useTheme();
   const [saveModal, setSaveModal] = useState(false);
   const [registerModal, setRegisterModal] = useState(false);
+  const [treeModal, setTreeModal] = useState(false);
   const [myPlot, setMyPlot] = useState<Plot[]>([]);
+  const [myTrees, setMyTrees] = useState<Tree_Record[]>([]);
+  const [treeId, setTreeId] = useState("");
+  const [chosenPlot, setChosenPlot] = useState("");
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>();
   const [takes, setTakes] = useState(0);
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
+
+  useEffect(() => {
+    MyPlot();
+    myTree();
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -78,46 +88,112 @@ export default function CameraLeaf() {
     fetchProfile();
   }, [user?.$id]);
 
-  useEffect(() => {
-    const MyPlot = async () => {
-      try {
-        setPageLoading(true);
+  const MyPlot = async () => {
+    try {
+      setPageLoading(true);
 
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/my-plot/${user?.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        const data = await response.json();
-
-        if (data.length < 1) {
-          Alert.alert(
-            "No Registered Plot",
-            "Please register plot first to use camera leaf detection!",
-            [
-              {
-                text: "OK",
-                onPress: () => router.navigate("/(tabs)/history"),
-                style: "default",
-              },
-            ]
-          );
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/my-plot/${user?.$id}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
         }
+      );
 
-        setMyPlot(data);
-      } catch (error) {
-        console.error("Upload error:", error);
-      } finally {
-        setPageLoading(false);
+      const data = await response.json();
+
+      if (data.length === 0) {
+        Alert.alert(
+          "No Registered Plot",
+          "Please register plot first to use camera leaf detection!",
+          [
+            {
+              text: "OK",
+              onPress: () => router.navigate("/(tabs)/history"),
+              style: "default",
+            },
+          ]
+        );
       }
-    };
-    MyPlot();
-  }, [user?.$id]);
+
+      setMyPlot(data);
+    } catch (error) {
+      console.error("Upload error:", error);
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
+  const myTree = async () => {
+    try {
+      setPageLoading(true);
+      const response = await globalFunction.fetchWithTimeout(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/trees/${user?.$id}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        },
+        20000
+      );
+
+      const data = await response.json();
+
+      if (data.length === 0) {
+        Alert.alert(
+          "No Registered Tree",
+          "Please register tree first to use camera leaf detection!",
+          [
+            {
+              text: "OK",
+              onPress: () => router.navigate("/(tabs)/history"),
+              style: "default",
+            },
+          ]
+        );
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+    } finally {
+      setPageLoading(false);
+    }
+  };
+
+  const toSaveLeafToTree = async (plot_id: string) => {
+    try {
+      setPageLoading(true);
+
+      const response = await globalFunction.fetchWithTimeout(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/trees/${plot_id}/${user?.$id}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        },
+        20000
+      );
+
+      const data = await response.json();
+
+      if (data.length === 0) {
+        Alert.alert(
+          "No Registered Tree",
+          "Please register tree first to use camera leaf detection!"
+        );
+      }
+
+      setMyTrees(data);
+    } catch (error) {
+      console.error("Upload error:", error);
+    } finally {
+      setPageLoading(false);
+      setChosenPlot(plot_id);
+    }
+  };
 
   const takePhoto = async () => {
     if (!cameraRef.current) return;
@@ -211,7 +287,7 @@ export default function CameraLeaf() {
     }
   };
 
-  const saveTree = async (plot_id: string, name: string) => {
+  const saveLeaf = async () => {
     try {
       setLoading(true);
       const status = results?.predictions.reduce(
@@ -219,20 +295,19 @@ export default function CameraLeaf() {
           item.probability > max.probability ? item : max,
         { probability: 0, className: "" }
       ).className;
-      const plot_name = name;
 
       const confidence = results?.predictions?.[0]
         ? parseFloat((results.predictions[0].probability * 100).toFixed(2))
-        : 0;
+        : 100;
 
       console.log(confidence);
 
-      const data = await saveTreeToPlot(
+      const data = await saveLeafToTreeToPlot(
         user?.$id || "",
-        plot_id,
+        chosenPlot || "",
+        treeId,
         uri || "",
         status || "",
-        plot_name,
         profile?.API_KEY || "",
         confidence
       );
@@ -266,6 +341,8 @@ export default function CameraLeaf() {
       </SafeAreaView>
     );
   }
+
+  console.log(chosenPlot);
 
   return (
     <SafeAreaView style={{ flexGrow: 1 }}>
@@ -386,7 +463,7 @@ export default function CameraLeaf() {
           </View>
         ) : (
           <View
-            className={`flex-1 justify-between border ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} px-16 `}
+            className={`flex-1 justify-between border ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} `}
           >
             <View>
               <Image
@@ -396,6 +473,7 @@ export default function CameraLeaf() {
                   marginVertical: 20,
                   borderRadius: 30,
                 }}
+                className="mx-auto"
                 source={{ uri: uri || "" }}
               />
 
@@ -461,13 +539,13 @@ export default function CameraLeaf() {
               </View>
               <AppText
                 color={theme === "dark" ? `light` : `dark`}
-                className="font-extrabold text-lg font-poppins mt-10"
+                className="font-extrabold text-lg font-poppins mt-10 mx-16"
               >
                 Method: Leaf Disease Detection
               </AppText>
               <AppText
                 color={theme === "dark" ? `light` : `dark`}
-                className="font-bold font-poppins"
+                className="font-bold font-poppins mx-16"
               >
                 Date: {dayjs().format("MMMM DD, YYYY hh:mm A")}
               </AppText>
@@ -481,7 +559,7 @@ export default function CameraLeaf() {
                   setSaveModal(true);
                   setResultModal(false);
                 }}
-                className={`${theme === "dark" ? `bg-green-500` : `bg-gray-500`} rounded-lg h-12 px-4  items-center justify-center`}
+                className={`${theme === "dark" ? `bg-green-500` : `bg-gray-500`} rounded-lg h-12 px-4  items-center justify-center mr-4`}
               >
                 <Text
                   style={{
@@ -497,6 +575,7 @@ export default function CameraLeaf() {
           </View>
         )}
       </Modal>
+
       <Modal
         visible={saveModal}
         animationType="fade"
@@ -551,12 +630,16 @@ export default function CameraLeaf() {
                   style={{ fontWeight: 700 }}
                   className={`${theme === "dark" ? `text-white` : `text-black`} mb-6 text-lg tracking-wide`}
                 >
-                  Select Tree Plots
+                  Select Plots
                 </Text>
                 {myPlot.map((data, index) => (
                   <TouchableOpacity
                     key={index}
-                    onPress={() => saveTree(data.$id, data.name)}
+                    onPress={async () => {
+                      setSaveModal(false);
+                      await toSaveLeafToTree(data?.$id);
+                      setTreeModal(true);
+                    }}
                     style={{
                       boxShadow:
                         "1px 1px 1px 1px rgba(0, 0, 0, 0.2), 0 6px 15px 0 rgba(0, 0, 0, 0.19)",
@@ -597,11 +680,125 @@ export default function CameraLeaf() {
           )}
         </View>
       </Modal>
+
+      <Modal visible={treeModal} animationType="fade" className={`flex-1`}>
+        <View
+          className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-1 p-6 `}
+        >
+          <View className="flex-row items-center justify-between ">
+            <FontAwesome5
+              name="arrow-left"
+              size={20}
+              onPress={() => setTreeModal(false)}
+            />
+            <View className="flex-row items-center justify-between">
+              <Text
+                className={`font-poppins text-lg font-bold ${theme === "dark" ? `text-white` : `text-black`}`}
+              >
+                Choose tree to{"\n"}save the leaf
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => {
+                myTrees.length === 3 && !profile?.subscription
+                  ? Alert.alert(
+                      "We're sorry, but you used up all your Free Tier Plot Register. Subscribe to have unlimited Register Tree Plots"
+                    )
+                  : setTreeModal(false);
+                setRegisterModal(true);
+              }}
+              className={`${theme === "dark" ? `bg-slate-500` : `bg-green-500`}  h-11 px-7 gap-4 rounded-full items-center flex-row justify-center`}
+            >
+              <Text className="text-white font-bold text-center">
+                Register{`\n`}Tree
+              </Text>
+              <Feather name="plus-circle" size={24} color={"white"} />
+            </TouchableOpacity>
+          </View>
+
+          {myTrees.length < 1 && (
+            <AppText
+              className="m-auto font-bold text-lg pb-2"
+              color={theme === "dark" ? `light` : `dark`}
+            >
+              You have no Tree Registered yet
+            </AppText>
+          )}
+
+          {myTrees.length > 0 && (
+            <ScrollView className="mt-6 flex-1 ">
+              <View>
+                <Text
+                  style={{ fontWeight: 700 }}
+                  className={`${theme === "dark" ? `text-white` : `text-black`} mb-6 text-lg tracking-wide`}
+                >
+                  Select A Tree
+                </Text>
+                {myTrees.map((data, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => {
+                      setRegisterModal(true);
+                      setTreeId(data?.$id);
+                    }}
+                    style={{
+                      boxShadow:
+                        "1px 1px 1px 1px rgba(0, 0, 0, 0.2), 0 6px 15px 0 rgba(0, 0, 0, 0.19)",
+                    }}
+                    className="w-[47%] h-52  mr-4 rounded-lg"
+                  >
+                    {data?.image_url ? (
+                      <Image
+                        source={{ uri: data?.image_url }}
+                        style={{
+                          borderTopLeftRadius: 8,
+                          borderTopRightRadius: 8,
+                        }}
+                        className="h-[60%]"
+                      />
+                    ) : (
+                      <View
+                        className={`h-[60%] items-center justify-center px-2 rounded-s-lg ${theme === "dark" ? `bg-slate-200` : `bg-slate-500`}`}
+                      >
+                        <AppText
+                          color={theme === "dark" ? `dark` : `light`}
+                          className="text-center"
+                        >
+                          No Leaf Registered on this tree yet
+                        </AppText>
+                      </View>
+                    )}
+                    <AppText
+                      className="m-4 text-lg pb-0.5 font-bold font-poppins"
+                      color={theme === "dark" ? `light` : `dark`}
+                    >
+                      Tree #{index + 1}
+                    </AppText>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </ScrollView>
+          )}
+        </View>
+      </Modal>
       <Modal visible={registerModal} animationType="slide" transparent>
-        <RegisterPlot
-          setRegisterModal={setRegisterModal}
-          setSaveModal={setSaveModal}
-        />
+        <ConfirmCancelModal
+          heightSize={60}
+          blurIntensity={70}
+          padding={12}
+          borderRounded={10}
+          onCancel={() => setRegisterModal(false)}
+          onClose={() => setRegisterModal(false)}
+          onOk={() => {
+            setRegisterModal(false);
+            saveLeaf();
+          }}
+        >
+          <AppText color="dark" className="m-auto p-4 font-bold text-xl">
+            Are you sure to save this leaf?
+          </AppText>
+        </ConfirmCancelModal>
       </Modal>
     </SafeAreaView>
   );

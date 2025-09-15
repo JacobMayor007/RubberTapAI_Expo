@@ -139,7 +139,7 @@ export default function Messages() {
     return () => {
       unsubscribe();
     };
-  }, [user?.$id, userMessage?.user?.$id]);
+  }, [user?.$id, userMessage?.user?.$id, messages]);
 
   const handleSend = async () => {
     setNewMessage("");
@@ -187,8 +187,6 @@ export default function Messages() {
         fileUrl: fileUrl ? fileUrl : ``,
       };
 
-      console.log("Data to be sent: ", JSON.stringify(data, null, 2));
-
       await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/sent-message`, {
         method: "POST",
         headers: {
@@ -212,7 +210,6 @@ export default function Messages() {
       }, 10000);
     }
   }, [showDate]);
-  console.log(showDate);
 
   return (
     <SafeAreaView className="bg-[rgb(63,31,17,.05)] flex-1 ">
@@ -342,7 +339,7 @@ export default function Messages() {
             <View
               className={`${
                 lines > 2 ? "h-[72px]" : "h-14"
-              } bg-[rgb(63,31,17,.25)] gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
+              } ${theme === "dark" ? `bg-[#FFECCC]/70` : `bg-[rgb(63,31,17,.25)]`} gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
             >
               <View className=" flex-row absolute bottom-14 left-12 gap-4">
                 {images.length > 0 && (

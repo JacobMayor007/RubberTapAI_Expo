@@ -12,7 +12,9 @@ const globalFunction = {
         ...options,
         signal: controller.signal,
       });
+
       clearTimeout(id);
+      
       return response;
     } catch (error: any) {
       clearTimeout(id);

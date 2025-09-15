@@ -81,10 +81,9 @@ const editPlot = async (
       id: id,
       userId: user_id,
       newName: newName,
-      API_KEY: key,
+      API_KEY: key, 
     };
 
-    console.log("PLot Action: ", key);
 
     const response = await globalFunction.fetchWithTimeout(
       `${process.env.EXPO_PUBLIC_BASE_URL}/plots`,

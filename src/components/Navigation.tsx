@@ -1,11 +1,8 @@
-import { Plot } from "@/types";
 import Entypo from "@expo/vector-icons/Entypo";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Link } from "expo-router";
-import { useEffect, useState } from "react";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
-import { globalFunction } from "../global/fetchWithTimeout";
 import { AppText } from "./AppText";
 
 type NavigationProps = {
@@ -15,39 +12,6 @@ type NavigationProps = {
 
 export default function NavigationBar({ active, userId }: NavigationProps) {
   const { theme } = useTheme();
-  const [loading, setLoading] = useState(false);
-  const [myPlot, setMyPlot] = useState<Plot[]>([]);
-
-  useEffect(() => {
-    const MyPlot = async () => {
-      try {
-        setLoading(true);
-        const response = await globalFunction.fetchWithTimeout(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/my-plot/${userId}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          },
-          30000
-        );
-        const data = await response.json();
-        setMyPlot(data);
-      } catch (error: any) {
-        if (error === "TimeoutError") {
-          Alert.alert(
-            "Timeout Error",
-            "Internet connectivity is slow, please try again!"
-          );
-        }
-        console.error("Upload error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    MyPlot();
-  }, []);
 
   return (
     <View
@@ -55,7 +19,7 @@ export default function NavigationBar({ active, userId }: NavigationProps) {
     >
       <View className="flex-row items-center justify-around  w-full  py-2">
         <Link href={"/(tabs)/menu"}>
-          <View className="flex-col items-center justify-between gap-1 h-14 ">
+          <View className="flex-col items-center justify-between gap-1 h-14 w-11 ">
             <Entypo
               name="menu"
               size={27}
@@ -71,7 +35,7 @@ export default function NavigationBar({ active, userId }: NavigationProps) {
           </View>
         </Link>
         <Link href={`/(camera)`} className="">
-          <View className="flex-col items-center justify-between gap-1 h-14 ">
+          <View className="flex-col items-center justify-between gap-1 h-14 w-11 text-nowrap">
             <Entypo
               name="camera"
               size={25}
@@ -87,7 +51,7 @@ export default function NavigationBar({ active, userId }: NavigationProps) {
           </View>
         </Link>
         <Link href={"/(tabs)"}>
-          <View className="flex-col items-center justify-between gap-1 h-14">
+          <View className="flex-col items-center justify-between gap-1 h-14 w-11">
             <Entypo
               name="home"
               size={26}
@@ -103,7 +67,7 @@ export default function NavigationBar({ active, userId }: NavigationProps) {
           </View>
         </Link>
         <Link href={"/(tabs)/market"} className="">
-          <View className="flex-col items-center justify-between gap-1 h-14">
+          <View className="flex-col items-center justify-between gap-1 h-14 w-11">
             <Entypo
               name="shop"
               size={24}
@@ -118,7 +82,7 @@ export default function NavigationBar({ active, userId }: NavigationProps) {
           </View>
         </Link>
         <Link href={"/(tabs)/history"} className="">
-          <View className="flex-col items-center justify-between gap-1 h-14">
+          <View className="flex-col items-center justify-between gap-1 h-14 w-11">
             <FontAwesome6
               name="clock-rotate-left"
               size={23}
