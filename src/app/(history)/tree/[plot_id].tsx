@@ -6,6 +6,7 @@ import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { Profile, Tree_Record } from "@/types";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -24,9 +25,11 @@ export default function ListTrees() {
   const params = useLocalSearchParams();
   const { theme } = useTheme();
   const [myTrees, setMyTrees] = useState<Tree_Record[]>([]);
+  const [treeId, setTreeId] = useState("");
   const [modal, setModal] = useState(false);
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [whatModal, setWhatModal] = useState("");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -116,6 +119,47 @@ export default function ListTrees() {
 
       Alert.alert(result.title, result.message);
     } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+      MyTrees();
+    }
+  };
+
+  const deleteTree = async () => {
+    try {
+      setLoading(true);
+
+      const dataJson = {
+        tree_id: treeId,
+        API_KEY: profile?.API_KEY,
+        userId: profile?.$id,
+      };
+
+      console.log("Tree JSON data: ", dataJson);
+
+      const response = await globalFunction.fetchWithTimeout(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/tree`,
+        {
+          method: "DELETE",
+          headers: {
+            Accept: "application/json",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify(dataJson),
+        },
+        20000
+      );
+
+      const data = await response.json();
+      Alert.alert(data.title, data.message, [
+        {
+          text: "Ok",
+          onPress: () => MyTrees(),
+        },
+      ]);
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -131,14 +175,14 @@ export default function ListTrees() {
     );
   }
 
-  console.log(myTrees);
+  console.log(myTrees.length);
 
   return (
     <SafeAreaView className="flex-1">
       <ScrollView
         className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} p-6`}
       >
-        <View className="items-center flex-row mb-4 justify-between">
+        <View className="items-center flex-row justify-between">
           <View className="items-center flex-row gap-5">
             <FontAwesome5
               name="arrow-left"
@@ -154,7 +198,10 @@ export default function ListTrees() {
             </AppText>
           </View>
           <TouchableOpacity
-            onPress={() => setModal(true)}
+            onPress={() => {
+              setModal(true);
+              setWhatModal("addTree");
+            }}
             className="bg-green-500 px-4 py-1 rounded-full gap-2 flex-row items-center"
           >
             <AppText
@@ -175,7 +222,7 @@ export default function ListTrees() {
             </View>
           )}
         </View>
-        <View className="flex-row flex-wrap">
+        <View className="flex-row flex-wrap mb-14">
           {myTrees?.map((data, index) => {
             return (
               <TouchableOpacity
@@ -217,12 +264,24 @@ export default function ListTrees() {
                   </View>
                 )}
                 <View className="flex-col  p-2 ">
-                  <AppText
-                    color="dark"
-                    className="font-bold font-poppins text-lg"
-                  >
-                    Tree {`#${index + 1}`}
-                  </AppText>
+                  <View className="flex-row items-center justify-between">
+                    <AppText
+                      color="dark"
+                      className="font-bold font-poppins text-lg"
+                    >
+                      Tree {`#${index + 1}`}
+                    </AppText>
+                    <MaterialIcons
+                      onPress={() => {
+                        setModal(true);
+                        setTreeId(data?.$id);
+                        setWhatModal("deleteTree");
+                      }}
+                      name="delete-outline"
+                      color={"red"}
+                      size={24}
+                    />
+                  </View>
                   <AppText color="dark">
                     {data?.$createdAt.format("MM/DD/YYYY")}
                   </AppText>
@@ -238,25 +297,49 @@ export default function ListTrees() {
         onRequestClose={() => setModal(false)}
         transparent
       >
-        <ConfirmCancelModal
-          heightSize={60}
-          blurIntensity={70}
-          borderRounded={10}
-          padding={12}
-          onCancel={() => setModal(false)}
-          onClose={() => setModal(false)}
-          onOk={() => {
-            setModal(false);
-            addTree();
-          }}
-        >
-          <AppText
-            className="m-auto pb-4 font-bold font-poppins text-xl"
-            color="dark"
+        {whatModal === "addTree" && (
+          <ConfirmCancelModal
+            heightSize={60}
+            blurIntensity={70}
+            borderRounded={10}
+            padding={12}
+            onCancel={() => setModal(false)}
+            onClose={() => setModal(false)}
+            onOk={() => {
+              setModal(false);
+              addTree();
+            }}
           >
-            Confirmation on adding trees
-          </AppText>
-        </ConfirmCancelModal>
+            <AppText
+              className="m-auto pb-4 font-bold font-poppins text-xl"
+              color="dark"
+            >
+              Confirmation on adding trees
+            </AppText>
+          </ConfirmCancelModal>
+        )}
+        {whatModal === "deleteTree" && (
+          <ConfirmCancelModal
+            heightSize={60}
+            blurIntensity={70}
+            borderRounded={10}
+            padding={12}
+            onCancel={() => setModal(false)}
+            onClose={() => setModal(false)}
+            onOk={() => {
+              setModal(false);
+              deleteTree();
+            }}
+          >
+            <AppText
+              className=" font-bold font-poppins text-lg m-auto pb-2 text-center"
+              color="dark"
+            >
+              ⚠️ Warning: This will permanently delete the tree and all of its
+              contents. This action cannot be undone.
+            </AppText>
+          </ConfirmCancelModal>
+        )}
       </Modal>
     </SafeAreaView>
   );

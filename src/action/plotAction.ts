@@ -24,7 +24,7 @@ const savePlot = async (user_id: string, name: string) => {
   }
 };
 
-const deletePlot = async (plot_id: string) => {
+const deletePlot = async (plot_id: string, userId: string, key: string) => {
   try {
     if (!plot_id) {
       return Alert.alert(
@@ -33,13 +33,25 @@ const deletePlot = async (plot_id: string) => {
       );
     }
 
+    console.log("userId: ", userId);
+    console.log("API_KEY: ", key);
+
+    const jsonData = {
+      userId: userId,
+      API_KEY: key,
+    };
+
+    console.log("API_KEY, userId", jsonData);
+
     const response = await fetch(
       `${process.env.EXPO_PUBLIC_BASE_URL}/plot/${plot_id}`,
       {
         method: "DELETE",
         headers: {
           Accept: "application/json",
+          "content-type": "application/json",
         },
+        body: JSON.stringify(jsonData),
       }
     );
 
@@ -81,9 +93,8 @@ const editPlot = async (
       id: id,
       userId: user_id,
       newName: newName,
-      API_KEY: key, 
+      API_KEY: key,
     };
-
 
     const response = await globalFunction.fetchWithTimeout(
       `${process.env.EXPO_PUBLIC_BASE_URL}/plots`,

@@ -113,7 +113,11 @@ export default function History() {
   const onOk = async () => {
     try {
       setModal(false);
-      const response = await deletePlot(ediDelID);
+      const response = await deletePlot(
+        ediDelID,
+        profile?.$id || "",
+        profile?.API_KEY || ""
+      );
 
       const data = response;
 
@@ -325,8 +329,8 @@ export default function History() {
               <TextInput
                 onChangeText={(e) => setUpdatePlot(e)}
                 placeholder="Input new name of your plot"
-                placeholderTextColor={"#797979"}
-                className="w-full h-12 border-[1px] rounded-md "
+                placeholderTextColor={"#708993"}
+                className="w-full h-12 border-[1px] text-[#19183B] rounded-md"
               />
             </View>
           </ConfirmCancelModal>

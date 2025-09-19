@@ -99,7 +99,7 @@ export default function RegisterPlot({
               color={theme === "dark" ? `light` : `dark`}
               className="font-bold text-lg tracking-wide"
             >
-              Register Tree Plot
+              Register Plot
             </AppText>
             <Feather
               name="x-circle"
@@ -121,7 +121,7 @@ export default function RegisterPlot({
               boxShadow:
                 "1px 1px 1px 1px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
             }}
-            placeholder="Enter Tree Plot Name:"
+            placeholder="Enter Plot Name:"
             className={`px-4 h-12 rounded-md items-center ${focusedInput ? `border-[1px] border-blue-500` : `border-none`}`}
           />
         </View>

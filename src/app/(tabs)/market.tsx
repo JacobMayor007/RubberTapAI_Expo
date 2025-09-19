@@ -445,9 +445,6 @@ export default function Market() {
                     {chosenProduct?.description}
                   </AppText>
                 </View>
-                <TouchableOpacity className="py-2 items-center rounded-full justify-center bg-[#75A90A]">
-                  <AppText color={`light`}>View Farmer</AppText>
-                </TouchableOpacity>
               </View>
             </View>
           </View>

@@ -40,6 +40,8 @@ export default function Leaves() {
       const data = await response.json();
       setMyLeaves(data);
     } catch (error) {
+      console.error(error);
+      
     } finally {
       setLoading(false);
     }
