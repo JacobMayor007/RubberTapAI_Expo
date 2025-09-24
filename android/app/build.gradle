@@ -151,10 +151,6 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
-    // Add these lines for Reanimated
-    implementation project(':react-native-reanimated')  // <-- Add this line
-    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:${expoLibs.versions.kotlin.get()}")  // Recommended for Reanimated
-
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
     def isWebpAnimatedEnabled = (findProperty('expo.webp.animated') ?: "") == "true";
@@ -179,3 +175,5 @@ dependencies {
         implementation jscFlavor
     }
 }
+
+apply plugin: 'com.google.gms.google-services'

@@ -23,6 +23,8 @@ interface ForecastDay {
       text: string;
       icon: string;
     };
+    will_it_rain: number;
+    chance_of_rain: number;
   }>;
 }
 
@@ -41,6 +43,7 @@ const WeatherForecast = () => {
         if (!address?.city) return;
 
         const weatherData = await fetchForecastWeather(address.city);
+
         setForecastDays(weatherData.forecast.forecastday);
       } catch (err) {
         setError("Failed to fetch weather data");
@@ -60,6 +63,19 @@ const WeatherForecast = () => {
   if (error || forecastDays.length < 1) {
     return <Text>{error}</Text>;
   }
+
+  forecastDays.forEach((day, dayIndex) => {
+    console.log(`--- Day ${dayIndex + 1}: ${day.date} ---`);
+    day.hour.forEach((hourObj, hourIndex) => {
+      console.log(
+        `Time: ${hourObj.time}, Temp: ${hourObj.temp_c}°C, Condition: ${hourObj.condition.text}`
+      );
+    });
+  });
+
+  console.log(JSON.stringify(forecastDays[0].hour[dayjs().hour()], null, 2));
+  console.log(address);
+
   return (
     <View>
       <AppText
@@ -68,6 +84,7 @@ const WeatherForecast = () => {
       >
         Weather Forecast
       </AppText>
+      <AppText></AppText>
       <View
         style={{
           borderRadius: 16,
@@ -76,7 +93,7 @@ const WeatherForecast = () => {
         }}
         className={`h-72 py-4 ${theme === "dark" ? `bg-gray-900 border-[1px] border-white` : ``} justify-center gap-1 flex-row`}
       >
-        {forecastDays?.slice(1, 7).map((data, index) => {
+        {forecastDays?.map((data, index) => {
           return (
             <View
               key={index}
