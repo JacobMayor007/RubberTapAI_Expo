@@ -3,7 +3,7 @@ import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
-import { client, storage } from "@/src/lib/appwrite";
+import { storage } from "@/src/lib/appwrite";
 import { MessageHistory, Profile } from "@/types";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
@@ -128,17 +128,6 @@ export default function Messages() {
     };
 
     getMessages();
-
-    const channel = `databases.${process.env.EXPO_PUBLIC_APPWRITE_DATABASE_ID}.collections.${process.env.EXPO_PUBLIC_APPWRITE_MESS_COLLECTION_ID}.documents`;
-    const unsubscribe = client.subscribe(channel, (response) => {
-      if (response.events.includes("databases.*.collections.*.documents.*")) {
-        getMessages();
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
   }, [user?.$id, userMessage?.user?.$id, messages]);
 
   const handleSend = async () => {
@@ -177,7 +166,7 @@ export default function Messages() {
       }
 
       const data = {
-        sender_id: user?.$id,
+        userId: user?.$id,
         receiver_id: userMessage?.user?.$id,
         lastMessage: newMessage,
         senderProfile: profile?.imageURL,
@@ -185,6 +174,7 @@ export default function Messages() {
         senderName: user?.name,
         receiverName: userMessage?.user?.username,
         fileUrl: fileUrl ? fileUrl : ``,
+        API_KEY: profile?.API_KEY,
       };
 
       await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/sent-message`, {
@@ -326,7 +316,10 @@ export default function Messages() {
                       </AppText>
                       {index === showDate && (
                         <AppText className="text-right text-xs mt-2">
-                          {msg.$createdAt.utc().local().format("hh:mm A")}
+                          {msg.$createdAt
+                            .utc()
+                            .local()
+                            .format("MM/DD/YYYY hh:mm A")}
                         </AppText>
                       )}
                     </TouchableOpacity>

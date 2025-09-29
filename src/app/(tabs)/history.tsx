@@ -1,6 +1,7 @@
 import { deletePlot, editPlot } from "@/src/action/plotAction";
 import { AppText } from "@/src/components/AppText";
 import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
+import HeaderBackground from "@/src/components/HeaderBackground";
 import Loading from "@/src/components/LoadingComponent";
 import NavigationBar from "@/src/components/Navigation";
 import RegisterPlot from "@/src/components/RegisterTreePlot";
@@ -153,136 +154,139 @@ export default function History() {
   return (
     <SafeAreaView className="flex-1 flex-col justify-between">
       <View
-        className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} p-6`}
+        className={` flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`}`}
       >
-        <View className="items-center flex-row mb-4 justify-between">
-          <View className="flex-row items-center gap-5">
-            <FontAwesome5
-              name="arrow-left"
-              size={20}
-              onPress={() => router.back()}
-            />
+        <HeaderBackground />
+        <View className={`flex-1  p-6 z-20`}>
+          <View className="items-center flex-row mb-4 justify-between">
+            <View className="flex-row items-center gap-5">
+              <FontAwesome5
+                name="arrow-left"
+                size={28}
+                onPress={() => router.back()}
+              />
+              <AppText
+                color={theme === "dark" ? `light` : `dark`}
+                className="text-xl font-bold"
+              >
+                History Logs
+              </AppText>
+            </View>
+            <TouchableOpacity
+              onPress={() => setRegisterModal(true)}
+              className="bg-green-500 px-4 py-1 rounded-full gap-2 flex-row items-center"
+            >
+              <AppText color={`light`} className="text-[14px] font-poppins">
+                Add Plot
+              </AppText>
+              <Feather name="plus-circle" size={24} color={"white"} />
+            </TouchableOpacity>
+          </View>
+          {myPlot?.length < 1 ? (
             <AppText
               color={theme === "dark" ? `light` : `dark`}
-              className="text-xl font-bold"
+              className="font-poppins text-lg font-bold mt-4 mx-auto"
             >
-              History Logs
+              You have no history logs yet
             </AppText>
-          </View>
-          <TouchableOpacity
-            onPress={() => setRegisterModal(true)}
-            className="bg-green-500 px-4 py-1 rounded-full gap-2 flex-row items-center"
-          >
-            <AppText color={`light`} className="text-[14px] font-poppins">
-              Add Plot
-            </AppText>
-            <Feather name="plus-circle" size={24} color={"white"} />
-          </TouchableOpacity>
-        </View>
-        {myPlot?.length < 1 ? (
-          <AppText
-            color={theme === "dark" ? `light` : `dark`}
-            className="font-poppins text-lg font-bold mt-4 mx-auto"
-          >
-            You have no history logs yet
-          </AppText>
-        ) : (
-          <Text
-            style={{ fontWeight: 700 }}
-            className={`${theme === "dark" ? `text-white` : `text-black`} mb-6  tracking-wide`}
-          >
-            Select Tree Plots
-          </Text>
-        )}
-        <ScrollView
-          contentContainerStyle={{
-            flexDirection: "row",
-            flexWrap: "wrap",
-            gap: 14,
-          }}
-        >
-          {myPlot?.map((data, index) => (
-            <TouchableOpacity
-              key={index}
-              style={{
-                boxShadow:
-                  "2px 4px 1px 1px rgba(255, 255, 255, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
-              }}
-              className="w-[47%] h-64 rounded-lg relative"
-              onPress={() => {
-                {
-                  router.push({
-                    pathname: "/(history)/tree/[plot_id]",
-                    params: { plot_id: data?.$id },
-                  });
-                }
-              }}
+          ) : (
+            <Text
+              style={{ fontWeight: 700 }}
+              className={`${theme === "dark" ? `text-white` : `text-black`} mb-6  tracking-wide`}
             >
-              {data?.image_plot ? (
-                <Image
-                  className="h-[60%]"
-                  style={{
-                    borderTopLeftRadius: 8,
-                    borderTopRightRadius: 8,
-                  }}
-                  source={{ uri: data.image_plot }}
-                />
-              ) : (
-                <View
-                  className={`h-[60%] items-center justify-center px-2 rounded-s-lg ${theme === "dark" ? `bg-slate-200` : `bg-slate-500`}`}
-                >
-                  <AppText
-                    color={theme === "dark" ? `dark` : `light`}
-                    className="text-center"
+              Select Tree Plots
+            </Text>
+          )}
+          <ScrollView
+            contentContainerStyle={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 14,
+            }}
+          >
+            {myPlot?.map((data, index) => (
+              <TouchableOpacity
+                key={index}
+                style={{
+                  boxShadow:
+                    "2px 4px 1px 1px rgba(255, 255, 255, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+                }}
+                className="w-[47%] h-64 rounded-lg relative"
+                onPress={() => {
+                  {
+                    router.push({
+                      pathname: "/(history)/tree/[plot_id]",
+                      params: { plot_id: data?.$id },
+                    });
+                  }
+                }}
+              >
+                {data?.image_plot ? (
+                  <Image
+                    className="h-[60%]"
+                    style={{
+                      borderTopLeftRadius: 8,
+                      borderTopRightRadius: 8,
+                    }}
+                    source={{ uri: data.image_plot }}
+                  />
+                ) : (
+                  <View
+                    className={`h-[60%] items-center justify-center px-2 rounded-s-lg ${theme === "dark" ? `bg-slate-200` : `bg-slate-500`}`}
                   >
-                    No Tree Registered on {data?.name} yet
+                    <AppText
+                      color={theme === "dark" ? `dark` : `light`}
+                      className="text-center"
+                    >
+                      No Tree Registered on {data?.name} yet
+                    </AppText>
+                  </View>
+                )}
+                <View className="flex-row justify-between items-center pr-4">
+                  <AppText
+                    className="m-4 text-lg pb-0.5 font-bold font-poppins"
+                    color={theme === "dark" ? `light` : `dark`}
+                  >
+                    {data?.name}
                   </AppText>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setModal(true);
+                      setEditDelete("edit");
+                      setEdiDelID(data?.$id);
+                    }}
+                  >
+                    <MaterialIcons
+                      name="edit"
+                      color={theme === "dark" ? "blue" : "black"}
+                      size={24}
+                    />
+                  </TouchableOpacity>
                 </View>
-              )}
-              <View className="flex-row justify-between items-center pr-4">
-                <AppText
-                  className="m-4 text-lg pb-0.5 font-bold font-poppins"
-                  color={theme === "dark" ? `light` : `dark`}
-                >
-                  {data?.name}
-                </AppText>
-                <TouchableOpacity
-                  onPress={() => {
-                    setModal(true);
-                    setEditDelete("edit");
-                    setEdiDelID(data?.$id);
-                  }}
-                >
-                  <MaterialIcons
-                    name="edit"
-                    color={theme === "dark" ? "blue" : "black"}
-                    size={24}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View className="absolute right-4 bottom-2 flex-row gap-2">
-                <TouchableOpacity
-                  onPress={() => {
-                    setModal(true);
-                    setEdiDelID(data?.$id);
-                    setEditDelete("delete");
-                  }}
-                >
-                  <MaterialIcons
-                    name="delete-outline"
-                    color={"red"}
-                    size={24}
-                  />
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+                <View className="absolute right-4 bottom-2 flex-row gap-2">
+                  <TouchableOpacity
+                    onPress={() => {
+                      setModal(true);
+                      setEdiDelID(data?.$id);
+                      setEditDelete("delete");
+                    }}
+                  >
+                    <MaterialIcons
+                      name="delete-outline"
+                      color={"red"}
+                      size={24}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <NavigationBar active="history" />
       </View>
 
       {/* Navigation */}
-
-      <NavigationBar active="history" />
 
       <Modal visible={registerModal} transparent>
         <RegisterPlot

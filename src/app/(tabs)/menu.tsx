@@ -1,15 +1,15 @@
 import AppearanceSettings from "@/src/components/AppearanceSettings";
 import { AppText } from "@/src/components/AppText";
 import EditProfile from "@/src/components/EditProfile";
+import HeaderBackground from "@/src/components/HeaderBackground";
+import HeaderNav from "@/src/components/HeaderNav";
 import HelpAndSupport from "@/src/components/HelpAndSupport";
-import Logo from "@/src/components/Logo";
 import Logout from "@/src/components/Logout";
 import NavigationBar from "@/src/components/Navigation";
 import NotificationSettings from "@/src/components/NotificationSettings";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { Profile } from "@/types";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -61,32 +61,18 @@ export default function Menu() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="flex-1 flex-col justify-between">
-        <View
-          className={`${theme === "dark" ? `bg-gray-900` : `bg-[#E8DFD0]`} flex-1 px-6 py-10 flex-col`}
-        >
-          <View className="flex-row items-center justify-between ">
-            <View className="flex-row items-center gap-4">
-              <FontAwesome5
-                name="arrow-left"
-                size={20}
-                color={theme === "dark" ? "white" : "black"}
-                onPress={() => router.back()}
-              />
-              <AppText
-                color={theme === "dark" ? "light" : "dark"}
-                className="font-poppins font-extrabold text-2xl"
-              >
-                Menu
-              </AppText>
-            </View>
-            <Logo className="w-12 h-12" />
-          </View>
+      <View
+        className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-1 flex-col justify-between`}
+      >
+        <HeaderBackground />
+        <View className={` flex-1 px-6 py-10 flex-col z-20`}>
+          <HeaderNav title="Menu" arrow={true} />
+
           <View
             className={`h-72 rounded-2xl ${theme === "dark" ? `bg-black` : `bg-white`} drop-shadow-lg mt-8`}
           >
             <LinearGradient
-              colors={["#75A90A", "#046A10"]}
+              colors={["#FFFFFF", "#75A90A"]}
               style={{
                 width: "100%",
                 height: 80,

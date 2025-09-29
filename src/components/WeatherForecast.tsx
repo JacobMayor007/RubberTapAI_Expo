@@ -64,18 +64,6 @@ const WeatherForecast = () => {
     return <Text>{error}</Text>;
   }
 
-  forecastDays.forEach((day, dayIndex) => {
-    console.log(`--- Day ${dayIndex + 1}: ${day.date} ---`);
-    day.hour.forEach((hourObj, hourIndex) => {
-      console.log(
-        `Time: ${hourObj.time}, Temp: ${hourObj.temp_c}°C, Condition: ${hourObj.condition.text}`
-      );
-    });
-  });
-
-  console.log(JSON.stringify(forecastDays[0].hour[dayjs().hour()], null, 2));
-  console.log(address);
-
   return (
     <View>
       <AppText
