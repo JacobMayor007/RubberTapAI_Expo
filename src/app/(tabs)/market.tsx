@@ -3,6 +3,8 @@ import AddProduct from "@/src/components/AddProduct";
 import { AppText } from "@/src/components/AppText";
 import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
 import EditProduct from "@/src/components/EditProduct";
+import HeaderBackground from "@/src/components/HeaderBackground";
+import HeaderNav from "@/src/components/HeaderNav";
 import Loading from "@/src/components/LoadingComponent";
 import NavigationBar from "@/src/components/Navigation";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -10,12 +12,9 @@ import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { account } from "@/src/lib/appwrite";
 import { Product, Profile } from "@/types";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
-import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import { default as FontAwesome6 } from "@expo/vector-icons/FontAwesome6";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Link, useRouter } from "expo-router";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -151,150 +150,102 @@ export default function Market() {
       <View
         className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-col justify-between`}
       >
-        <View className="px-6 pt-10 flex-1  ">
-          <View className="flex-row items-center justify-between mb-4">
-            <View className="flex-row items-center gap-4">
-              <FontAwesome5
-                name="arrow-left"
-                size={20}
-                onPress={() => router.back()}
-                color={theme === "dark" ? "white" : "black"}
-              />
+        <ScrollView contentContainerClassName="flex-1">
+          <HeaderBackground />
+          <View className="px-6 pt-10 flex-1  z-20">
+            {/*Header Navbar*/}
+            <HeaderNav title="Marketplace" arrow={true} />
+
+            <View className="flex-row items-center justify-between mb-2">
               <AppText
                 color={theme === "dark" ? "light" : "dark"}
-                className="font-poppins font-extrabold text-2xl"
+                className="font-poppins font-bold text-xl"
               >
-                Marketplace
+                {`Latex & \nWaste Rubber Trade`}
               </AppText>
-            </View>
-            <Link href={{ pathname: "/(message)" }}>
-              <AntDesign
-                name="message1"
-                size={23}
-                color={theme === "dark" ? "white" : "black"}
-              />
-            </Link>
-          </View>
-          <View className="flex-row items-center justify-between mb-2">
-            <AppText
-              color={theme === "dark" ? "light" : "dark"}
-              className="font-poppins font-bold text-xl"
-            >
-              {`Latex & \nWaste Rubber Trade`}
-            </AppText>
-            <TouchableOpacity
-              onPress={() => {
-                !user?.emailVerification
-                  ? isUserVerified()
-                  : setAddProductModal(true);
-                setAddEditModal("add");
-              }}
-              className={`${theme === "dark" ? `bg-green-700` : `bg-[#75A90A]`} flex-row gap-2 items-center px-4 py-2 rounded-full `}
-            >
-              <AppText color={`light`} className="font-poppins font-semibold">
-                Add Your Product
-              </AppText>
-              <Feather size={20} color={"white"} name="plus-circle" />
-            </TouchableOpacity>
-          </View>
-
-          {loading ? (
-            <View className="items-center">
-              <Loading className="h-12 w-12" />
-            </View>
-          ) : (
-            <ScrollView
-              contentContainerStyle={{ flexGrow: 1, paddingBottom: 12 }}
-            >
-              <View className="flex-row justify-between items-center mb-2">
-                <AppText
-                  color={theme === "dark" ? "light" : "dark"}
-                  className="font-poppins font-bold text-lg"
-                >
-                  Your Products
+              <TouchableOpacity
+                onPress={() => {
+                  !user?.emailVerification
+                    ? isUserVerified()
+                    : setAddProductModal(true);
+                  setAddEditModal("add");
+                }}
+                className={`${theme === "dark" ? `bg-green-700` : `bg-[#75A90A]`} flex-row gap-2 items-center px-4 py-2 rounded-full `}
+              >
+                <AppText color={`light`} className="font-poppins font-semibold">
+                  Add Your Product
                 </AppText>
+                <Feather size={20} color={"white"} name="plus-circle" />
+              </TouchableOpacity>
+            </View>
+
+            {loading ? (
+              <View className="items-center">
+                <Loading className="h-12 w-12" />
               </View>
-              <View className="gap-2 py-2">
-                {myProduct?.slice(0, 2).map((data, index) => (
-                  <Pressable
-                    style={{
-                      boxShadow:
-                        "1px 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
-                    }}
-                    className={`${theme === "dark" ? `bg-slate-700` : `bg-[#F3E0C1]`} whitespace-nowrap rounded-lg w-[47%] h-64 pb-3 overflow-hidden`}
-                    key={index}
+            ) : (
+              <View style={{ flexGrow: 1, paddingBottom: 12 }}>
+                <View className="flex-row justify-between items-center mb-2">
+                  <AppText
+                    color={theme === "dark" ? "light" : "dark"}
+                    className="font-poppins font-bold text-lg"
                   >
-                    <Image
-                      className="h-[40%] rounded-t-lg"
-                      src={data?.productURL}
-                    />
-                    <View className="ml-2 mt-3 flex-row items-center">
-                      <FontAwesome6
-                        name="peso-sign"
-                        size={15}
-                        color={theme === "dark" ? "light" : "dark"}
-                      />
-                      <AppText
-                        color={theme === "dark" ? "light" : "dark"}
-                        className="ml-1"
-                      >
-                        {data?.price.toString()} /kg
-                      </AppText>
-                    </View>
-                    <AppText
-                      color={theme === "dark" ? "light" : "dark"}
-                      className="capitalize ml-2 mt-2"
-                    >
-                      {data?.category}
-                    </AppText>
-                    <View className="ml-2 mt-2 pr-2 flex-row justify-between">
-                      <Text
-                        numberOfLines={1}
-                        ellipsizeMode="tail"
-                        className={
-                          theme === "dark" ? "text-white" : "text-black"
-                        }
-                      >
-                        {data?.city}
-                      </Text>
-                      <MaterialIcons
-                        name="edit"
-                        color={theme === "dark" ? "blue" : "black"}
-                        size={16}
-                        onPress={() => {
-                          setChosenProduct(data);
-                          setAddProductModal(true);
-                          setAddEditModal("edit");
-                        }}
-                      />
-                      <MaterialIcons
-                        name="delete"
-                        color={theme === "dark" ? "blue" : "black"}
-                        size={16}
-                        onPress={() => {
-                          setChosenProduct(data);
-                          setAddProductModal(true);
-                          setAddEditModal("delete");
-                        }}
-                      />
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setChosenProduct(data);
-                        setViewModal(true);
+                    Your Products
+                  </AppText>
+                </View>
+                <View className="gap-2 py-2  w-full">
+                  {myProduct?.slice(0, 2).map((data, index) => (
+                    <Pressable
+                      style={{
+                        boxShadow:
+                          "1px 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
                       }}
-                      className={`h-9 ${theme === "dark" ? `bg-green-800` : `bg-[#10B981]`} mx-2 rounded-full items-center justify-center mt-4`}
+                      className={`flex-row items-center ${theme === "dark" ? `bg-slate-700` : `bg-[#F3E0C1]`} w-full whitespace-nowrap rounded-lg p-4 overflow-hidden`}
+                      key={index}
                     >
-                      <AppText color={"light"} className="text-xs">
-                        View Details
-                      </AppText>
-                    </TouchableOpacity>
-                  </Pressable>
-                ))}
+                      <Image className="h-36 w-36" src={data?.productURL} />
+                      <View className="ml-2 mt-3 flex-1 flex-col">
+                        <AppText
+                          color={theme === "dark" ? "light" : "dark"}
+                          className="capitalize font-bold text-xl"
+                        >
+                          {data?.category}
+                        </AppText>
+
+                        <AppText
+                          color={theme === "dark" ? "light" : "dark"}
+                          className="ml-1"
+                        >
+                          {data?.price.toString()} /kg
+                        </AppText>
+
+                        <Text
+                          numberOfLines={1}
+                          ellipsizeMode="tail"
+                          className={
+                            theme === "dark" ? "text-white" : "text-black"
+                          }
+                        >
+                          {data?.city}
+                        </Text>
+
+                        <TouchableOpacity
+                          onPress={() => {
+                            setChosenProduct(data);
+                            setViewModal(true);
+                          }}
+                          className={`h-9 px-4 ${theme === "dark" ? `bg-green-800` : `bg-[#10B981]`} rounded-full items-center justify-center self-end mt-2`}
+                        >
+                          <AppText color={"light"}>View Details</AppText>
+                        </TouchableOpacity>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
               </View>
-            </ScrollView>
-          )}
-        </View>
+            )}
+          </View>
+        </ScrollView>
         <NavigationBar active="market" />
       </View>
       <Modal
@@ -359,15 +310,15 @@ export default function Market() {
         transparent
         onRequestClose={() => setViewModal(false)}
       >
-        <View className="bg-black/30 flex-1">
+        <View className="bg-black/30 flex-1 flex-col">
           <View
             style={{
               flexGrow: 1,
             }}
-            className="items-center, justify-center px-4"
+            className="items-center flex-col justify-center px-4"
           >
             <View
-              className={`${theme === "dark" ? `bg-gray-900` : `bg-[#F3E0C1]`} p-6 h-[40%] pt-14 rounded-xl flex-row gap-4`}
+              className={`${theme === "dark" ? `bg-gray-900` : `bg-[#F3E0C1]`} p-6 h-[40%] pt-14  rounded-xl gap-4 flex-col`}
             >
               <Feather
                 name="x"
@@ -380,28 +331,23 @@ export default function Market() {
                   top: 8,
                   padding: 5,
                 }}
+                className=""
               />
-              <View className="gap-2 w-[45%] ">
-                <Image
-                  className="h-24  rounded-md"
-                  src={`${chosenProduct?.productURL}`}
-                />
-                <AppText
-                  color={theme === "dark" ? "light" : "dark"}
-                  className="font-extralight font-poppins text-sm"
-                >
-                  Seller's Details
-                </AppText>
-                <View className="flex-row items-center gap-2 overflow-hidden ">
+              <View className=" gap-4 flex-row">
+                <View className="w-[47%]">
                   <Image
-                    className="h-9 w-9 rounded-full"
-                    source={
-                      !chosenProduct?.farmerProfile
-                        ? require("@/assets/images/anonymous_profile.png")
-                        : { uri: chosenProduct?.farmerProfile }
-                    }
+                    className="h-36 rounded-md"
+                    src={`${chosenProduct?.productURL}`}
                   />
-                  <View className="flex-col gap-1 justify-center overflow-hidden flex-wrap">
+                </View>
+                <View className="gap-1 w-[50%]  overflow-hidden flex-col ">
+                  <AppText
+                    color={theme === "dark" ? "light" : "dark"}
+                    className="font-extralight font-poppins text-sm"
+                  >
+                    Seller's Details
+                  </AppText>
+                  <View className=" overflow-hidden flex-wrap">
                     <AppText
                       color={theme === "dark" ? "light" : "dark"}
                       className="font-poppins capitalize font-bold text-lg"
@@ -413,39 +359,37 @@ export default function Market() {
                     <AppText
                       color={theme === "dark" ? "light" : "dark"}
                       className="font-poppins font-light capitalize"
-                      numberOfLines={2}
                       ellipsizeMode="tail"
                     >
-                      {chosenProduct?.region},{`\n`}
                       {chosenProduct?.city}
+                    </AppText>
+                    <AppText
+                      color={theme === "dark" ? "light" : "dark"}
+                      className="font-poppins font-bold capitalize"
+                    >
+                      {chosenProduct?.category}
+                    </AppText>
+                    <AppText
+                      color={theme === "dark" ? "light" : "dark"}
+                      className="font-poppins text-lg font-bold capitalize"
+                    >
+                      <FontAwesome6
+                        name="peso-sign"
+                        size={14}
+                        color={"black"}
+                      />
+                      {chosenProduct?.price} / Kg
                     </AppText>
                   </View>
                 </View>
               </View>
-              <View className="gap-2 w-[50%] overflow-hidden flex-col justify-between ">
-                <View>
-                  <AppText
-                    color={theme === "dark" ? "light" : "dark"}
-                    className="font-poppins font-bold capitalize"
-                  >
-                    {chosenProduct?.category}
-                  </AppText>
-                  <AppText
-                    color={theme === "dark" ? "light" : "dark"}
-                    className="font-poppins text-lg font-bold capitalize"
-                  >
-                    <FontAwesome6 name="peso-sign" size={14} color={"black"} />{" "}
-                    {chosenProduct?.price} / Kg
-                  </AppText>
-                  <AppText
-                    color={theme === "dark" ? "light" : "dark"}
-                    className="text-sm font-poppins py-0.5 leading-6 tracking-wider"
-                    numberOfLines={4}
-                  >
-                    {chosenProduct?.description}
-                  </AppText>
-                </View>
-              </View>
+              <AppText
+                color={theme === "dark" ? "light" : "dark"}
+                className="text-sm font-poppins py-0.5 leading-6 max-h-32 tracking-wider"
+                numberOfLines={5}
+              >
+                {chosenProduct?.description}
+              </AppText>
             </View>
           </View>
         </View>

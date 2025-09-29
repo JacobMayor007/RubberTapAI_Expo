@@ -1,6 +1,6 @@
-import { AppText } from "@/src/components/AppText";
 import CurrentWeather from "@/src/components/CurrentWeather";
-import Logo from "@/src/components/Logo";
+import HeaderBackground from "@/src/components/HeaderBackground";
+import HeaderNav from "@/src/components/HeaderNav";
 import NavigationBar from "@/src/components/Navigation";
 import WeatherForecast from "@/src/components/WeatherForecast";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -8,7 +8,6 @@ import { useLocation } from "@/src/contexts/LocationContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { Profile } from "@/types";
-import Ionicons from "@expo/vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
@@ -16,7 +15,7 @@ import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Platform, View } from "react-native";
+import { Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 Notifications.setNotificationHandler({
@@ -202,33 +201,21 @@ export default function Home() {
     }
   };
 
+  console.log(`${process.env.EXPO_PUBLIC_BASE_URL}`);
+
   return (
     <SafeAreaView className="flex-1 ">
-      <View
-        className={`flex-1 ${theme === "dark" ? "bg-gray-900" : "bg-[#FFECCC]"} flex-col justify-between`}
+      <ScrollView
+        contentContainerClassName={`flex-1 ${theme === "dark" ? "bg-gray-900" : "bg-[#FFECCC]"} flex-col justify-between`}
       >
-        <View className=" px-6 py-10 flex-col gap-4">
-          <View className="flex-row items-center justify-between mb-4">
-            <View className="flex-row items-center gap-4">
-              <Logo className="w-12 h-12" />
-              <AppText
-                color={theme === "dark" ? "light" : "dark"}
-                className="font-poppins font-extrabold text-2xl"
-              >
-                Dashboard
-              </AppText>
-            </View>
-            <Ionicons
-              name="notifications-outline"
-              size={24}
-              color={theme === "dark" ? "white" : "black"}
-            />
-          </View>
+        <HeaderBackground />
+        <View className=" px-6 py-10 flex-col gap-4 z-20">
+          <HeaderNav title="Dashboard" />
           <CurrentWeather />
           <WeatherForecast />
         </View>
         <NavigationBar active="home" userId={user?.$id} />
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

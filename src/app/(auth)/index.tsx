@@ -161,7 +161,7 @@ export default function Login() {
           fadeDuration={300}
           className="flex-1 bg-black/80 items-center  w-full justify-center"
         >
-          <Loading className="h-20 w-20" />
+          <Loading className="h-28 w-28" />
         </ImageBackground>
       </SafeAreaView>
     );

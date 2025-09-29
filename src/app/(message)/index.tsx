@@ -1,5 +1,6 @@
 import { AppText } from "@/src/components/AppText";
 import Logo from "@/src/components/Logo";
+import NavigationBar from "@/src/components/Navigation";
 import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
@@ -160,96 +161,100 @@ export default function ChatBox() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className="flex-1 flex-col gap-2 p-6 bg-[#E8DFD0] border">
-        <View className="flex-row items-center  gap-2 justify-between">
-          <View className="flex-row gap-4 items-center">
-            <FontAwesome5
-              name="arrow-left"
-              size={20}
-              onPress={() => router.push("/(tabs)/market")}
-            />
+      <View className="flex-1 flex-col bg-[#E8DFD0]">
+        <View className="flex-1 flex-col gap-2 p-6 ">
+          <View className="flex-row items-center  gap-2 justify-between">
+            <View className="flex-row gap-4 items-center">
+              <FontAwesome5
+                name="arrow-left"
+                size={20}
+                onPress={() => router.push("/(tabs)/market")}
+              />
+              <AppText
+                color={"dark"}
+                className="font-poppins font-bold text-2xl tracking-wider"
+              >
+                Chat
+              </AppText>
+            </View>
+            <Logo className="h-11 w-11" />
+          </View>
+          <View className="mt-2  bg-[rgb(43,43,43,0.2)] h-11 rounded-2xl flex-row items-center gap-3 px-4">
+            <Fontisto name="search" size={20} color={`white`} />
             <AppText
-              color={"dark"}
-              className="font-poppins font-bold text-2xl tracking-wider"
+              color={"light"}
+              onPress={() => setVisibleModal(true)}
+              className="w-11/12 h-full pt-2.5"
             >
-              Chat
+              Search
             </AppText>
           </View>
-          <Logo className="h-11 w-11" />
-        </View>
-        <View className="mt-2  bg-[rgb(43,43,43,0.2)] h-11 rounded-2xl flex-row items-center gap-3 px-4">
-          <Fontisto name="search" size={20} color={`white`} />
-          <AppText
-            color={"light"}
-            onPress={() => setVisibleModal(true)}
-            className="w-11/12 h-full pt-2.5"
-          >
-            Search
-          </AppText>
-        </View>
-        {loading ? (
-          <ActivityIndicator animating size={"large"} />
-        ) : (
-          <ScrollView className="flex-1 py-2 gap-2">
-            {chatHistory.map((chat, chatIndex) => {
-              const other = getOtherParticipant(chat);
+          {loading ? (
+            <ActivityIndicator animating size={"large"} />
+          ) : (
+            <ScrollView className="flex-1 py-2 gap-2">
+              {chatHistory.map((chat, chatIndex) => {
+                const other = getOtherParticipant(chat);
 
-              return (
-                <Link
-                  onPress={async () => await handleMessageUser(other.id)}
-                  href={"/(message)/messages"}
-                  key={chat.$id || chatIndex}
-                  className="flex-row py-2 mt-2 items-center"
-                >
-                  <Image
-                    src={
-                      chat.senderId === profile?.$id &&
-                      chat.receiverId === profile?.$id
-                        ? profile?.imageURL
-                        : other.profileURL
-                    }
-                    style={{
-                      width: 45,
-                      height: 45,
-                      borderRadius: 22.5,
-                    }}
-                  />
-
-                  <View
-                    style={{
-                      marginLeft: 10,
-                    }}
+                return (
+                  <Link
+                    onPress={async () => await handleMessageUser(other.id)}
+                    href={"/(message)/messages"}
+                    key={chat.$id || chatIndex}
+                    className="flex-row py-2 mt-2 items-center"
                   >
-                    <AppText
-                      color="dark"
-                      className="font-poppins font-bold text-lg ml-2"
-                    >
-                      {other.username || "You"}
-                    </AppText>
+                    <Image
+                      src={
+                        chat.senderId === profile?.$id &&
+                        chat.receiverId === profile?.$id
+                          ? profile?.imageURL
+                          : other.profileURL
+                      }
+                      style={{
+                        width: 45,
+                        height: 45,
+                        borderRadius: 22.5,
+                      }}
+                    />
 
-                    <View className="flex-row items-center gap-2 pl-2 ">
-                      <AppText className="text-sm font-light" color="dark">
-                        {chat.senderId === profile?.$id
-                          ? "You:"
-                          : `${other.username.split(" ")[0]}:`}{" "}
-                        {chat.lastMessage.length > 24
-                          ? `${chat?.lastMessage.slice(0, 24)}...`
-                          : chat?.lastMessage}
+                    <View
+                      style={{
+                        marginLeft: 10,
+                      }}
+                    >
+                      <AppText
+                        color="dark"
+                        className="font-poppins font-bold text-lg ml-2"
+                      >
+                        {other.username || "You"}
                       </AppText>
-                      <AppText color="dark" className="font-bold">
-                        &#8226;
-                      </AppText>
-                      <AppText color="dark" className="text-sm font-light">
-                        {dayjs(chat.$createdAt).local().format("hh:mm A")}
-                      </AppText>
+
+                      <View className="flex-row items-center gap-2 pl-2 ">
+                        <AppText className="text-sm font-light" color="dark">
+                          {chat.senderId === profile?.$id
+                            ? "You:"
+                            : `${other.username.split(" ")[0]}:`}{" "}
+                          {chat.lastMessage.length > 24
+                            ? `${chat?.lastMessage.slice(0, 24)}...`
+                            : chat?.lastMessage}
+                        </AppText>
+                        <AppText color="dark" className="font-bold">
+                          &#8226;
+                        </AppText>
+                        <AppText color="dark" className="text-sm font-light">
+                          {dayjs(chat.$createdAt).local().format("hh:mm A")}
+                        </AppText>
+                      </View>
                     </View>
-                  </View>
-                </Link>
-              );
-            })}
-          </ScrollView>
-        )}
+                  </Link>
+                );
+              })}
+            </ScrollView>
+          )}
+        </View>
+        <NavigationBar active="market" />
       </View>
+
       <Modal
         visible={visibleModal}
         animationType="slide"
