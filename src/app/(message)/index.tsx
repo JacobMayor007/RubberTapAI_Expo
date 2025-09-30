@@ -163,7 +163,7 @@ export default function ChatBox() {
     <SafeAreaView className="flex-1">
       <View className="flex-1 flex-col bg-[#E8DFD0]">
         <View className="flex-1 flex-col gap-2 p-6 ">
-          <View className="flex-row items-center  gap-2 justify-between">
+          <View className="flex-row items-center gap-2 justify-between">
             <View className="flex-row gap-4 items-center">
               <FontAwesome5
                 name="arrow-left"

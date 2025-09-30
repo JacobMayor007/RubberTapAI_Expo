@@ -31,7 +31,7 @@ export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
   const { theme } = useTheme();
-  const [notifToken, setNotifToken] = useState("");
+
   const [profile, setProfile] = useState<Profile | null>(null);
 
   const location = useLocation();
@@ -67,16 +67,45 @@ export default function Home() {
     fetchProfile();
   }, [user?.$id]);
 
+  const updateLocation = async (city: string) => {
+    try {
+      const result = await globalFunction.fetchWithTimeout(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/city`,
+        {
+          method: "PATCH",
+          headers: {
+            "content-type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            userId: user?.$id,
+            API_KEY: profile?.API_KEY,
+            city: city,
+          }),
+        },
+        20000
+      );
+
+      const response = await result.json();
+
+      console.log(response);
+    } catch (error) {
+      console.error("Update Location: ", error);
+    }
+  };
+
   useEffect(() => {
     (async () => {
       try {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
-          router.replace("/(tabs)/market");
+          router.replace("/(tabs)");
           return;
         }
 
         const coords = await Location.getCurrentPositionAsync();
+        console.log(coords);
+
         if (coords) {
           const { latitude, longitude } = coords.coords;
 
@@ -86,9 +115,11 @@ export default function Home() {
           });
 
           const res = response[0];
+          const city = res.city;
           if (res) {
             location.setAddress(res);
             await AsyncStorage.setItem("user_address", JSON.stringify(res));
+            updateLocation(city || "");
           } else {
             console.warn("No reverse geocode result");
           }
@@ -174,8 +205,6 @@ export default function Home() {
 
   const insertNotificationToken = async (pushToken: string) => {
     try {
-      setNotifToken(pushToken);
-
       const result = await globalFunction.fetchWithTimeout(
         `${process.env.EXPO_PUBLIC_BASE_URL}/push-token`,
         {
@@ -200,8 +229,6 @@ export default function Home() {
       console.error(error);
     }
   };
-
-  console.log(`${process.env.EXPO_PUBLIC_BASE_URL}`);
 
   return (
     <SafeAreaView className="flex-1 ">
