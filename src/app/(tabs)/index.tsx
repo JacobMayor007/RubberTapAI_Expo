@@ -1,8 +1,4 @@
-import CurrentWeather from "@/src/components/CurrentWeather";
-import HeaderBackground from "@/src/components/HeaderBackground";
-import HeaderNav from "@/src/components/HeaderNav";
-import NavigationBar from "@/src/components/Navigation";
-import WeatherForecast from "@/src/components/WeatherForecast";
+import DashboardBackground from "@/src/components/DashboardBackground";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useLocation } from "@/src/contexts/LocationContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
@@ -15,7 +11,7 @@ import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Platform, ScrollView, View } from "react-native";
+import { Platform, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 Notifications.setNotificationHandler({
@@ -67,32 +63,36 @@ export default function Home() {
     fetchProfile();
   }, [user?.$id]);
 
-  const updateLocation = async (city: string) => {
-    try {
-      const result = await globalFunction.fetchWithTimeout(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/city`,
-        {
-          method: "PATCH",
-          headers: {
-            "content-type": "application/json",
-            Accept: "application/json",
+  useEffect(() => {
+    const updateLocation = async () => {
+      try {
+        const result = await globalFunction.fetchWithTimeout(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/city`,
+          {
+            method: "PATCH",
+            headers: {
+              "content-type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              userId: user?.$id,
+              API_KEY: profile?.API_KEY,
+              city: location?.address?.city,
+            }),
           },
-          body: JSON.stringify({
-            userId: user?.$id,
-            API_KEY: profile?.API_KEY,
-            city: city,
-          }),
-        },
-        20000
-      );
+          20000
+        );
 
-      const response = await result.json();
+        const response = await result.json();
 
-      console.log(response);
-    } catch (error) {
-      console.error("Update Location: ", error);
-    }
-  };
+        console.log(response);
+      } catch (error) {
+        console.error("Update Location: ", error);
+      }
+    };
+
+    updateLocation();
+  }, [profile?.API_KEY, location?.address?.city]);
 
   useEffect(() => {
     (async () => {
@@ -104,7 +104,6 @@ export default function Home() {
         }
 
         const coords = await Location.getCurrentPositionAsync();
-        console.log(coords);
 
         if (coords) {
           const { latitude, longitude } = coords.coords;
@@ -119,7 +118,6 @@ export default function Home() {
           if (res) {
             location.setAddress(res);
             await AsyncStorage.setItem("user_address", JSON.stringify(res));
-            updateLocation(city || "");
           } else {
             console.warn("No reverse geocode result");
           }
@@ -231,17 +229,11 @@ export default function Home() {
   };
 
   return (
-    <SafeAreaView className="flex-1 ">
+    <SafeAreaView className="flex-1">
       <ScrollView
-        contentContainerClassName={`flex-1 ${theme === "dark" ? "bg-gray-900" : "bg-[#FFECCC]"} flex-col justify-between`}
+        contentContainerClassName={`bg-black/0 relative flex-1 flex-col justify-between`}
       >
-        <HeaderBackground />
-        <View className=" px-6 py-10 flex-col gap-4 z-20">
-          <HeaderNav title="Dashboard" />
-          <CurrentWeather />
-          <WeatherForecast />
-        </View>
-        <NavigationBar active="home" userId={user?.$id} />
+        <DashboardBackground />
       </ScrollView>
     </SafeAreaView>
   );

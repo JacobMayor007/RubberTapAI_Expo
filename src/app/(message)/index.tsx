@@ -1,4 +1,5 @@
 import { AppText } from "@/src/components/AppText";
+import Loading from "@/src/components/LoadingComponent";
 import Logo from "@/src/components/Logo";
 import NavigationBar from "@/src/components/Navigation";
 import { ViewPressable } from "@/src/components/ViewPressable";
@@ -11,7 +12,6 @@ import dayjs from "dayjs";
 import { Link, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   Modal,
   ScrollView,
@@ -85,7 +85,9 @@ export default function ChatBox() {
     } catch (error) {
       console.error("Upload error:", error);
     } finally {
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
     }
   };
 
@@ -116,7 +118,9 @@ export default function ChatBox() {
         } catch (error) {
           console.error("Upload error:", error);
         } finally {
-          setLoading(false);
+          setTimeout(() => {
+            setLoading(false);
+          }, 300);
         }
       };
 
@@ -190,7 +194,7 @@ export default function ChatBox() {
             </AppText>
           </View>
           {loading ? (
-            <ActivityIndicator animating size={"large"} />
+            <Loading className="h-16 w-16 mx-auto" />
           ) : (
             <ScrollView className="flex-1 py-2 gap-2">
               {chatHistory.map((chat, chatIndex) => {
@@ -283,13 +287,9 @@ export default function ChatBox() {
               </TouchableOpacity>
             </View>
           </View>
-          <ScrollView>
+          <ScrollView className={loading ? `pt-10` : `pt-0`}>
             {loading ? (
-              <ActivityIndicator
-                style={{ marginTop: 20 }}
-                animating
-                size="large"
-              />
+              <Loading className="h-16 w-16  mx-auto" />
             ) : (
               <View className="mt-4">
                 {searchValue.length < 1 && (

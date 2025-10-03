@@ -1,5 +1,6 @@
 import { AppText } from "@/src/components/AppText";
 import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
+import Loading from "@/src/components/LoadingComponent";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
@@ -170,7 +171,7 @@ export default function ListTrees() {
       <SafeAreaView
         className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-1 items-center justify-center`}
       >
-        <ActivityIndicator animating size={"large"} />
+        <Loading className="h-24 w-24"/>
       </SafeAreaView>
     );
   }

@@ -5,6 +5,7 @@ import "react-native-reanimated";
 import { LocationProvider } from "../contexts/LocationContext";
 import { MessageProvider } from "../contexts/MessageContext";
 import { ThemeProvider } from "../contexts/ThemeContext";
+import { WeatherProvider } from "../contexts/WeatherContext";
 
 export default function RootLayout() {
   return (
@@ -12,7 +13,9 @@ export default function RootLayout() {
       <ThemeProvider>
         <MessageProvider>
           <LocationProvider>
-            <Slot />
+            <WeatherProvider>
+              <Slot />
+            </WeatherProvider>
           </LocationProvider>
         </MessageProvider>
       </ThemeProvider>

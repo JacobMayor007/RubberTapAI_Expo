@@ -15,7 +15,7 @@ export default function NavigationBar({ active, userId }: NavigationProps) {
 
   return (
     <View
-      className={`${theme === "dark" ? `bg-gray-900 border-t-[1px] border-white` : `bg-[#FFE2B1]`} mb-4 mx-4 rounded-full h-24 pt-1 flex-row items-center justify-between pb-2 `}
+      className={`${theme === "dark" ? `bg-gray-900 border-t-[1px] border-white` : `bg-[#FFE2B1]`} mb-4 ${active === "home" ? `` : `mx-4`} rounded-full h-24 pt-1 flex-row items-center justify-between pb-2 `}
     >
       <View className="flex-row items-center justify-around  w-full  py-2">
         <Link href={"/(tabs)/menu"}>

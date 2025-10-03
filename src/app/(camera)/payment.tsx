@@ -1,5 +1,6 @@
 import { AppText } from "@/src/components/AppText";
 import CheckoutPlan from "@/src/components/CheckoutPlan";
+import Loading from "@/src/components/LoadingComponent";
 import PaymentMethod from "@/src/components/PaymentMethod";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
@@ -8,14 +9,7 @@ import Feather from "@expo/vector-icons/Feather";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  Image,
-  Modal,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, Modal, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 type PlanType = {
@@ -110,7 +104,7 @@ export default function Payment() {
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-[#FFECCC] items-center justify-center">
-        <ActivityIndicator size={"large"} animating />
+        <Loading className="h-20 w-20" />
       </SafeAreaView>
     );
   }

@@ -9,22 +9,22 @@ import NavigationBar from "@/src/components/Navigation";
 import NotificationSettings from "@/src/components/NotificationSettings";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
+import { useWeather } from "@/src/contexts/WeatherContext";
 import { Profile } from "@/types";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, Modal, Pressable, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Menu() {
-  const router = useRouter();
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [emailHide, setEmailHide] = useState("");
   const [visibleModal, setVisibleModal] = useState(false);
   const [modalShown, setModalShown] = useState("");
+  const { rain } = useWeather();
 
   const { theme } = useTheme();
 
@@ -72,7 +72,7 @@ export default function Menu() {
             className={`h-72 rounded-2xl ${theme === "dark" ? `bg-black` : `bg-white`} drop-shadow-lg mt-8`}
           >
             <LinearGradient
-              colors={["#FFFFFF", "#75A90A"]}
+              colors={rain ? ["#7BDEE0", "#F1FDDA"] : ["#BFE07B", "#79B400"]}
               style={{
                 width: "100%",
                 height: 80,

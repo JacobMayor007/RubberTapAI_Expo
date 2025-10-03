@@ -16,7 +16,6 @@ import * as ImagePicker from "expo-image-picker";
 import { Link, router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Image,
   Modal,
@@ -60,6 +59,7 @@ export default function CameraLeaf() {
   const [profile, setProfile] = useState<Profile | null>();
   const [takes, setTakes] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [dropdown, setDropdown] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
 
   useEffect(() => {
@@ -396,24 +396,54 @@ export default function CameraLeaf() {
       >
         <View
           style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
+            flexDirection: "column",
+            alignItems: "center",
             paddingTop: 40,
+            position: "relative",
           }}
         >
-          <Feather
-            name="x"
-            size={30}
-            color={"white"}
-            onPress={() => router.push("/(tabs)")}
-          />
-          <Ionicons
-            name={flash === "off" ? "flash-off" : "flash"}
-            size={30}
-            color={"white"}
-            onPress={() => setFlash((prev) => (prev === "off" ? "on" : "off"))}
-          />
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-around",
+            }}
+            className="w-full"
+          >
+            <Feather
+              name="x"
+              size={30}
+              color={"white"}
+              onPress={() => router.push("/(tabs)")}
+            />
+            <TouchableOpacity
+              onPress={() => setDropdown((prev) => !prev)}
+              className={`gap-5 flex-row bg-black/50 items-center px-7 py-2 rounded-full`}
+            >
+              <AppText>Camera Detection</AppText>
+              {dropdown ? (
+                <Ionicons name="caret-up" color="white" size={28} />
+              ) : (
+                <Ionicons name="caret-down" color="white" size={28} />
+              )}
+            </TouchableOpacity>
+            <Ionicons
+              name={flash === "off" ? "flash-off" : "flash"}
+              size={30}
+              color={"white"}
+              onPress={() =>
+                setFlash((prev) => (prev === "off" ? "on" : "off"))
+              }
+            />
+          </View>
+          {dropdown ? (
+            <TouchableOpacity className="px-12 py-3 rounded-full  bg-black/50 z-20">
+              <Link href="/(camera)/measure">
+                <AppText>Measure Tree Trunk</AppText>
+              </Link>
+            </TouchableOpacity>
+          ) : null}
         </View>
+
         <View className="bg-black/40 h-32 items-center justify-center flex-row">
           <Pressable
             onPress={pickAnImage}
@@ -494,7 +524,7 @@ export default function CameraLeaf() {
               }}
             />
             <View className="flex-1 justify-center items-center flex-col ">
-              <ActivityIndicator size={"large"} />
+              <Loading className="h-20 w-20" />
               <AppText>Analyzing Images</AppText>
             </View>
           </View>
