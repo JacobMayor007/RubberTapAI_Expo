@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Image, View } from "react-native";
+import { View } from "react-native";
 import { useLocation } from "../contexts/LocationContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { currentWeather } from "../services/weatherApi";
 import { AppText } from "./AppText";
+import Loading from "./LoadingComponent";
 
 interface Current {
   location: {
@@ -46,7 +47,7 @@ export default function CurrentWeather() {
   }, [address?.city]);
 
   if (loading) {
-    return <ActivityIndicator size="large" />;
+    return <Loading className="h-24 w-24" />;
   }
 
   if (error) {
@@ -54,29 +55,13 @@ export default function CurrentWeather() {
   }
 
   return (
-    <View className="flex-row">
-      <Image
-        className="h-14 w-14"
-        source={{ uri: `https:${current?.current.condition.icon}` }}
-      />
-      <View>
-        {current?.current.temp_c ? (
-          <AppText
-            color={theme === "dark" ? "light" : "dark"}
-            className="font-poppins font-bold text-lg"
-          >
-            {current?.current.temp_c}&deg;c
-          </AppText>
-        ) : (
-          <AppText className="text-red-500">No weather data</AppText>
-        )}
-        <AppText
-          color={theme === "dark" ? "light" : "dark"}
-          className="font-poppins font-medium"
-        >
-          {current?.current.condition.text}
-        </AppText>
-      </View>
+    <View className="flex-col z-20 mx-auto">
+      <AppText className="font-bold text-6xl text-[#3F1F11]">
+        {current?.current.temp_c}&#176;
+      </AppText>
+      <AppText className="text-[#3F1F11] text-lg font-bold">
+        {current?.current.condition.text}
+      </AppText>
     </View>
   );
 }
