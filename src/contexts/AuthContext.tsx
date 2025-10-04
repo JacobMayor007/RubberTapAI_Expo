@@ -14,7 +14,6 @@ type User = {
   name: string;
   email: string;
   emailVerification: boolean;
-  rain: boolean;
 } | null;
 
 type Profile = {
@@ -49,7 +48,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const getUser = async () => {
     try {
       const userData = await account.get();
-      setUser({ ...userData, rain: false });
+      setUser({ ...userData });
     } catch {
       setUser(null);
     } finally {
