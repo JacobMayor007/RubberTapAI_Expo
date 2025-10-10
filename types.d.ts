@@ -1,6 +1,6 @@
 import { Dayjs } from "dayjs";
 
-interface Profile {
+type Profile = {
   $id: string;
   $createdAt?: string;
   email: string;
@@ -11,7 +11,7 @@ interface Profile {
   username: string;
   imageURL: string;
   API_KEY: string;
-}
+};
 
 type SubscriptionData = {
   $id: string;
@@ -27,25 +27,25 @@ type SubscriptionData = {
   period: string;
 };
 
-interface Plot {
+type Plot = {
   $id: string;
   $createdAt: Dayjs;
   name: string;
   image_plot: string;
   user_id: string;
   status: string;
-}
+};
 
-interface Tree_Record {
+type Tree_Record = {
   $id: string;
   $createdAt: Dayjs;
   plot_id: string;
   user_id: string;
   image_url: string;
   status: string;
-}
+};
 
-interface Leaves_Record {
+type Leaves_Record = {
   $id: string;
   $createdAt: Dayjs;
   plot_id: string;
@@ -54,9 +54,9 @@ interface Leaves_Record {
   image_leaf: string;
   status: string;
   confidence: string;
-}
+};
 
-interface MessageHistory {
+type MessageHistory = {
   $id: string;
   $createdAt: Dayjs;
   product_id: string;
@@ -64,9 +64,9 @@ interface MessageHistory {
   sender_id: string;
   receiver_id: string;
   imageUrl: string;
-}
+};
 
-interface ChatRoom {
+type ChatRoom = {
   $id: string;
   $createdAt: Dayjs;
   participants: string[];
@@ -75,9 +75,9 @@ interface ChatRoom {
   lastMessage: string;
   senderId: string;
   receiverId: string;
-}
+};
 
-interface Product {
+type Product = {
   $id: string;
   $createdAt: Dayjs;
   address: string;
@@ -92,7 +92,7 @@ interface Product {
   city: string;
   country: string;
   region: string;
-}
+};
 
 export {
   ChatRoom,
