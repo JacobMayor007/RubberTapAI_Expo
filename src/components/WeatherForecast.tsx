@@ -86,8 +86,10 @@ const WeatherForecast = () => {
         const weatherData = await fetchForecastWeather(address.city);
         const forecast = weatherData.forecast.forecastday;
 
-        if (forecast[0].hour[0].will_it_rain) {
+        if (forecast[0].hour[dayjs().hour()].will_it_rain) {
           setRain(true);
+        } else {
+          setRain(false);
         }
         setForecastDays(forecast);
       } catch (err) {
@@ -108,8 +110,6 @@ const WeatherForecast = () => {
   if (error || forecastDays.length < 1) {
     return <Text>{error}</Text>;
   }
-
-  console.log("Rain Context: ", rain);
 
   return (
     <View
@@ -141,7 +141,7 @@ const WeatherForecast = () => {
           return (
             <View
               key={index}
-              className={`h-16 ${theme === "dark" ? "border-white" : "border-black"}  bg-white rounded-3xl flex-row items-center justify-around gap-1`}
+              className={`h-16  ${theme === "dark" ? "border-white" : "border-black"}  bg-white rounded-3xl flex-row items-center justify-around gap-1`}
             >
               <AppText
                 color={theme === "dark" ? "light" : "dark"}
@@ -156,20 +156,22 @@ const WeatherForecast = () => {
 
               <Image
                 className="h-12 w-12"
-                source={{ uri: `https://${data.hour[6].condition.icon}` }}
+                source={{
+                  uri: `https://${data.hour[dayjs().hour()].condition.icon}`,
+                }}
               />
 
               <AppText
                 color={theme === "dark" ? "light" : "dark"}
                 className=" font-poppins  font-extrabold text-center"
               >
-                6:00 AM
+                {dayjs().format("hh:00 A")}
               </AppText>
               <AppText
                 color={theme === "dark" ? "light" : "dark"}
                 className="text-[12px]"
               >
-                {data?.hour[6]?.temp_c}&deg;c
+                {data?.hour[dayjs().hour()]?.temp_c}&deg;c
               </AppText>
             </View>
           );

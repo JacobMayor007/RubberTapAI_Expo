@@ -7,13 +7,25 @@ interface Profile {
   fullName: string;
   fName: string;
   lName: string;
-  notifSettings: string;
-  themeSettings: string;
   subscription: Boolean;
   username: string;
   imageURL: string;
   API_KEY: string;
 }
+
+type SubscriptionData = {
+  $id: string;
+  $createdAt: Dayjs;
+  subscriptionType: string;
+  startDate: Dayjs;
+  endDate: Dayjs;
+  benefit_1: string;
+  paymentMethod: string;
+  price: number;
+  user_id: string;
+  benefit_2: string;
+  period: string;
+};
 
 interface Plot {
   $id: string;
@@ -89,5 +101,6 @@ export {
   Plot,
   Product,
   Profile,
+  SubscriptionData,
   Tree_Record,
 };

@@ -1,7 +1,8 @@
+import { Profile } from "@/types";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Fontisto from "@expo/vector-icons/Fontisto";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { paymentPost } from "../action/paymentAction";
 import { useAuth } from "../contexts/AuthContext";
@@ -59,6 +60,30 @@ export default function PaymentMethod({
   const { theme } = useTheme();
   const { user } = useAuth();
   const [payment, setPayment] = useState("");
+  const [profile, setProfile] = useState<Profile | null>(null);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [user?.$id]);
+
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+      const data = await response.json();
+      setProfile(data);
+    } catch (error) {
+      console.error("Upload error:", error);
+    }
+  };
 
   return (
     <ScrollView className="flex-1 bg-[#FFECCC] p-6">
@@ -178,10 +203,12 @@ export default function PaymentMethod({
         </View>
       </View>
       <TouchableOpacity
+        disabled={profile?.subscription ? true : false}
         onPress={async () => {
           setType("paymentMethod");
           await paymentPost(
             user?.$id || "",
+            profile?.API_KEY || "",
             choosePlan?.pricing || 0,
             choosePlan?.title || "",
             choosePlan?.period || "",
@@ -189,6 +216,7 @@ export default function PaymentMethod({
             choosePlan?.benefits?.benefit_2 || "",
             payment
           );
+          fetchProfile();
         }}
         style={{
           marginBottom: 64,
@@ -196,7 +224,7 @@ export default function PaymentMethod({
         className="bg-[#75A90A] w-full items-center justify-center py-3 rounded-full"
       >
         <AppText color="light" className="font-bold text-lg">
-          Complete Purchase
+          {profile?.subscription ? `Subscribed` : `Complete Purchase`}
         </AppText>
       </TouchableOpacity>
     </ScrollView>
