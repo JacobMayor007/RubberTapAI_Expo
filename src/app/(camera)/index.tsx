@@ -5,12 +5,11 @@ import Loading from "@/src/components/LoadingComponent";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
-import { Plot, Profile, Tree_Record } from "@/types";
+import { Plot, Profile, SubscriptionData, Tree_Record } from "@/types";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import dayjs from "dayjs";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
 import { Link, router } from "expo-router";
@@ -39,6 +38,40 @@ type TMResponse = {
   tmVersion?: string;
 };
 
+const diseasesDescription = [
+  {
+    key: 0,
+    label: "Oidium Heveae",
+    description:
+      "Oidium Heveae or Powdery mildew A condition where a rubber tree has white powdery growth on leaves, curling, distortion, and it is a serious threat to rubber-producing countries",
+    effect:
+      "A disease weakens the tree and shrub because it disrupts the absorption of sunlight's energy, which is essential for the metabolic energy system of the rubber tree",
+    causeBy:
+      "Both unpredicted weather, and nature's cycle causes the oidium heveae",
+    todo: "Getting rid of the leaves can help reduce spreading of the disease.",
+  },
+  {
+    key: 1,
+    label: "Anthracnose",
+    description:
+      "A fungal infection causes dark spots on rubber tree leaves, leading to early leaf fall and reduced productivity",
+    effect:
+      "It is one of the major factor that affects the development of the rubber industry",
+    causeBy: "Anthracnose is caused by a common fungal disease.",
+    todo: "Spray with Daconil, or Vitigran blue at least 4 rounds weekly",
+  },
+  {
+    key: 2,
+    label: "Leaf Spot",
+    description:
+      "A disease-causing round or irregular spots on rubber tree leaves, often brown or dark, can reduce latex yield.",
+    effect:
+      "A disease weakens the tree and shrub because it disrupts the absorption of sunlight's energy, which is essential for the metabolic energy system of the rubber tree",
+    causeBy: "Leaf spot is formed caused by Anthracnose.",
+    todo: "Spray with Daconil, or Vitigran blue at least 4 rounds weekly",
+  },
+];
+
 export default function CameraLeaf() {
   const [flash, setFlash] = useState<"off" | "on">("off");
   const cameraRef = useRef<CameraView>(null);
@@ -58,9 +91,11 @@ export default function CameraLeaf() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>();
   const [takes, setTakes] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [dropdown, setDropdown] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
+  const [subscription, setSubscription] = useState<SubscriptionData | null>();
 
   useEffect(() => {
     MyPlot();
@@ -79,7 +114,6 @@ export default function CameraLeaf() {
             },
           }
         );
-
         const data = await response.json();
         setProfile(data);
       } catch (error) {
@@ -366,6 +400,31 @@ export default function CameraLeaf() {
     }
   };
 
+  useEffect(() => {
+    const userPayment = async () => {
+      try {
+        const response = await globalFunction.fetchWithTimeout(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/payment/${user?.$id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          },
+          20000
+        );
+
+        const data = await response.json();
+        setSubscription(data);
+      } catch (error) {
+        console.error(error);
+        return null;
+      }
+    };
+
+    userPayment();
+  }, [user?.$id]);
+
   if (pageLoading) {
     return (
       <SafeAreaView
@@ -471,33 +530,40 @@ export default function CameraLeaf() {
               }}
             />
           </Pressable>
-          <Pressable className="absolute left-[68%] gap-1">
-            <View className="flex-row items-center gap-2">
+          {profile?.subscription ? (
+            <View className="absolute left-[64%] bg-gray-600 py-3 rounded-lg flex-row items-center gap-1 px-3 ">
               <FontAwesome5 name="crown" size={28} color={"yellow"} />
-              <TouchableOpacity
-                style={{ transform: "skewX(-10deg)" }}
-                className="font-poppins p-2  font-bold bg-gray-600"
-              >
-                <Text
-                  style={{
-                    color: "white",
-                    fontFamily: "Poppins",
-                    fontWeight: 900,
-                  }}
-                >
-                  {!takes ? 0 : takes}/25 Scan
-                </Text>
-              </TouchableOpacity>
+              <AppText className="font-bold ml-2 text-lg">Unlimited</AppText>
             </View>
-            <Link href={{ pathname: "/(camera)/payment" }}>
-              <AppText
-                color={"light"}
-                className="font-poppins text-center tracking-widest font-bold  underline"
-              >
-                Get Unlimited
-              </AppText>
-            </Link>
-          </Pressable>
+          ) : (
+            <Pressable className="absolute left-[68%] gap-1">
+              <View className="flex-row items-center gap-2">
+                <FontAwesome5 name="crown" size={28} color={"yellow"} />
+                <TouchableOpacity
+                  style={{ transform: "skewX(-10deg)" }}
+                  className="font-poppins p-2  font-bold bg-gray-600"
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontFamily: "Poppins",
+                      fontWeight: 900,
+                    }}
+                  >
+                    {!takes ? 0 : takes}/25 Scan
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <Link href={{ pathname: "/(camera)/payment" }}>
+                <AppText
+                  color={"light"}
+                  className="font-poppins text-center tracking-widest font-bold  underline"
+                >
+                  Get Unlimited
+                </AppText>
+              </Link>
+            </Pressable>
+          )}
         </View>
       </CameraView>
 
@@ -567,7 +633,7 @@ export default function CameraLeaf() {
                       </Text>
                     ) : (
                       <>
-                        <Text
+                        {/* <Text
                           style={{
                             fontSize: 18,
                             fontWeight: "bold",
@@ -589,49 +655,162 @@ export default function CameraLeaf() {
                               {(item.probability * 100).toFixed(2)}%
                             </Text>
                           )
-                        )}
-                        {results.predictions &&
-                          results.predictions.length > 0 && (
-                            <Text
-                              style={{
-                                marginTop: 10,
-                                fontFamily: "Poppins",
-                                fontWeight: 900,
-                                fontSize: 18,
-                                color: theme === "dark" ? "white" : "black",
-                              }}
-                            >
-                              Detected:
-                              {
-                                results.predictions.reduce(
-                                  (max: Prediction, item: Prediction) =>
-                                    item.probability > max.probability
-                                      ? item
-                                      : max,
-                                  { probability: 0, className: "" }
-                                ).className
-                              }
-                            </Text>
-                          )}
+                        )} */}
+                        {/* {results.predictions &&
+                          results.predictions.length > 0 && ( */}
+                        <Text
+                          style={{
+                            marginTop: 5,
+                            fontFamily: "Poppins",
+                            fontWeight: 900,
+                            fontSize: 18,
+                            color: theme === "dark" ? "white" : "black",
+                          }}
+                        >
+                          Detected:
+                          {
+                            results.predictions.reduce(
+                              (max: Prediction, item: Prediction) =>
+                                item.probability > max.probability ? item : max,
+                              { probability: 0, className: "" }
+                            ).className
+                          }
+                        </Text>
+                        {/* )} */}
+                        <Text
+                          style={{
+                            marginTop: 5,
+                            fontFamily: "Poppins",
+                            fontWeight: 900,
+                            fontSize: 18,
+                            color: theme === "dark" ? "white" : "black",
+                          }}
+                        >
+                          Probability:{" "}
+                          {(
+                            results.predictions.reduce(
+                              (max: Prediction, item: Prediction) =>
+                                item.probability > max.probability ? item : max,
+                              { probability: 0, className: "" }
+                            ).probability * 100
+                          ).toFixed(2)}
+                          %
+                        </Text>
                       </>
                     )}
                   </View>
                 )}
               </View>
-              <AppText
-                color={theme === "dark" ? `light` : `dark`}
-                className="font-extrabold text-lg font-poppins mt-10 mx-16"
-              >
-                Method: Leaf Disease Detection
-              </AppText>
-              <AppText
-                color={theme === "dark" ? `light` : `dark`}
-                className="font-bold font-poppins mx-16"
-              >
-                Date: {dayjs().format("MMMM DD, YYYY hh:mm A")}
-              </AppText>
+              <View className="mx-8 mt-2">
+                {diseasesDescription.map((data) => {
+                  return (
+                    <View key={data.key} className="">
+                      {data.label ===
+                        results?.predictions.reduce(
+                          (max: Prediction, item: Prediction) =>
+                            item.probability > max.probability ? item : max,
+                          { probability: 0, className: "" }
+                        ).className && (
+                        <View className="gap-4">
+                          <View
+                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 1 ? `flex` : `hidden`} h-40`}
+                            style={{
+                              boxShadow:
+                                "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
+                            }}
+                          >
+                            <AppText color="dark" className="font-bold text-xl">
+                              {data.label}:
+                            </AppText>
+                            <AppText color="dark" className="text-lg">
+                              {"  "}
+                              {data.description}
+                            </AppText>
+                          </View>
+                          <View
+                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 1 ? `flex` : `hidden`} h-40`}
+                            style={{
+                              boxShadow:
+                                "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
+                            }}
+                          >
+                            <AppText color="dark" className="font-bold text-xl">
+                              Negative Effect:
+                            </AppText>
+                            <AppText color="dark" className="text-lg">
+                              {"  "}
+                              {data.effect}
+                            </AppText>
+                          </View>
+                          <View
+                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 2 ? `flex` : `hidden`} h-40`}
+                            style={{
+                              boxShadow:
+                                "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
+                            }}
+                          >
+                            <AppText color="dark" className="font-bold text-xl">
+                              Causes:
+                            </AppText>
+                            <AppText color="dark" className="text-lg">
+                              {"  "}
+                              {data.causeBy}
+                            </AppText>
+                          </View>
+                          <View
+                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 2 ? `flex` : `hidden`} h-40`}
+                            style={{
+                              boxShadow:
+                                "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
+                            }}
+                          >
+                            <AppText color="dark" className="font-bold text-xl">
+                              Treatments:
+                            </AppText>
+                            <AppText color="dark" className="text-lg">
+                              {"  "}
+                              {data.todo}
+                            </AppText>
+                          </View>
+                          <View className="mx-auto flex-row gap-8 items-center">
+                            {page === 1 ? (
+                              <Ionicons
+                                onPress={() => setPage(1)}
+                                name="radio-button-on"
+                                size={22}
+                                color="black"
+                              />
+                            ) : (
+                              <Ionicons
+                                onPress={() => setPage(1)}
+                                name="radio-button-off"
+                                size={22}
+                                color="black"
+                              />
+                            )}
+                            {page === 2 ? (
+                              <Ionicons
+                                onPress={() => setPage(2)}
+                                name="radio-button-on"
+                                size={22}
+                                color="black"
+                              />
+                            ) : (
+                              <Ionicons
+                                onPress={() => setPage(2)}
+                                name="radio-button-off"
+                                size={22}
+                                color="black"
+                              />
+                            )}
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </View>
             </View>
-
             <View
               className={`pb-5 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} items-end `}
             >
@@ -640,7 +819,7 @@ export default function CameraLeaf() {
                   setSaveModal(true);
                   setResultModal(false);
                 }}
-                className={`${theme === "dark" ? `bg-green-500` : `bg-gray-500`} rounded-lg h-12 px-4  items-center justify-center mr-4`}
+                className={`${theme === "dark" ? `bg-green-500` : `bg-[#000000]/75`} rounded-full h-12 px-7 tracking-widest  items-center justify-center mr-4`}
               >
                 <Text
                   style={{
@@ -649,7 +828,7 @@ export default function CameraLeaf() {
                   }}
                   className="font-poppins"
                 >
-                  Save To Record?
+                  Save To Record
                 </Text>
               </TouchableOpacity>
             </View>
