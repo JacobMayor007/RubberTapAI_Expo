@@ -1,5 +1,8 @@
+import * as FileSystem from "expo-file-system";
+import { Alert } from "react-native";
+import { ID } from "react-native-appwrite";
 import { globalFunction } from "../global/fetchWithTimeout";
-import { account } from "../lib/appwrite";
+import { account, storage } from "../lib/appwrite";
 
 const editName = async (name: string, userId: string, key: string) => {
   try {
@@ -45,7 +48,9 @@ const editEmail = async (
     const result = await account.updateEmail(email, password);
 
     if (result.$updatedAt) {
-      await account.createVerification("https://rubbertapai.netlify.app/");
+      await account.createVerification(
+        `${process.env.EXPO_PUBLIC_VERIFICATION}/`
+      );
 
       const data = {
         userId: userId,
@@ -74,4 +79,64 @@ const editEmail = async (
   }
 };
 
-export { editEmail, editName };
+const updateProfileAction = async (
+  userId: string,
+  API_KEY: string,
+  uri: string
+) => {
+  try {
+    var fileUrl = "";
+
+    if (!uri) {
+      return Alert.alert("No Image", "Please enter an image");
+    }
+
+    const fileInfo = await FileSystem.getInfoAsync(uri);
+
+    if (!fileInfo.exists) {
+      return Alert.alert("No File Info");
+    }
+
+    if (fileInfo.exists) {
+      const result = await storage.createFile(
+        `${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}`,
+        ID.unique(),
+        {
+          uri: uri,
+          name: `image_${Date.now()}.jpg`,
+          type: "image/jpeg",
+          size: fileInfo.size,
+        }
+      );
+
+      fileUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}/files/${result.$id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&mode=admin`;
+
+      const data = {
+        userId,
+        API_KEY,
+        file: fileUrl,
+      };
+
+      const response = await globalFunction.fetchWithTimeout(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/profile`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(data),
+        },
+        20000
+      );
+
+      const jsonData = await response.json();
+
+      return Alert.alert(jsonData.title, jsonData.message);
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export { editEmail, editName, updateProfileAction };

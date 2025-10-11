@@ -1,6 +1,7 @@
 import { Profile } from "@/types";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import * as ImagePicker from "expo-image-picker";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -12,7 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { editEmail, editName } from "../action/userAction";
+import { editEmail, editName, updateProfileAction } from "../action/userAction";
 import { useAuth } from "../contexts/AuthContext";
 import { account } from "../lib/appwrite";
 import { AppText } from "./AppText";
@@ -33,6 +34,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
   const [newEmail, setNewEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [uri, setUri] = useState("");
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -47,10 +49,10 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
           }
         );
 
-        const data = await response.json();
+        const data: Profile = await response.json();
         setProfile(data);
         setEmail(data?.email);
-        setName(data?.username);
+        setName(data?.fullName);
       } catch (error) {
         console.error("Upload error:", error);
       }
@@ -73,6 +75,8 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
       console.error(error);
     } finally {
       setLoading(false);
+      setConfirmModal(false);
+      setEditProfile("");
     }
   };
 
@@ -112,7 +116,44 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
     }
   };
 
-  console.log(name);
+  const pickAnImage = async () => {
+    try {
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permissionResult.granted === false) {
+        alert("Permission to access camera roll is required!");
+        return;
+      }
+
+      let result = await ImagePicker.launchImageLibraryAsync({
+        quality: 1,
+        aspect: [1, 1],
+      });
+
+      if (!result.canceled) {
+        const selectedUris = result.assets[0].uri;
+        setUri(selectedUris);
+      }
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setEditProfile("confirmProfilePic");
+    }
+  };
+
+  const updateProfile = async () => {
+    try {
+      setLoading(true);
+      await updateProfileAction(user?.$id || "", profile?.API_KEY || "", uri);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setEditProfile("");
+      setConfirmModal(false);
+      setLoading(false);
+      useAuth();
+    }
+  };
 
   return (
     <View className="bg-[#FFECCC] flex-1 ">
@@ -134,11 +175,24 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
         }}
       />
       <View className="m-6">
-        <Image
-          src={profile?.imageURL}
-          fadeDuration={300}
-          className="h-16 w-16 rounded-full bg-[#fee0ac]"
-        />
+        <View className="flex-row items-end ">
+          <Image
+            src={uri ? uri : profile?.imageURL}
+            fadeDuration={300}
+            className="h-16 w-16 rounded-full bg-[#fee0ac]"
+          />
+          <TouchableOpacity>
+            <MaterialIcons
+              name="edit"
+              size={20}
+              onPress={() => {
+                setEditProfile("profile");
+                setConfirmModal(true);
+              }}
+              color="#001A6E"
+            />
+          </TouchableOpacity>
+        </View>
         <AppText color="dark" className="font-poppins font-bold text-lg mt-4">
           Name:
         </AppText>
@@ -294,6 +348,63 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
               >
                 Do you want to confirm your update on your email?
               </AppText>
+            )}
+          </ConfirmCancelModal>
+        )}
+        {editProfile === "profile" && (
+          <ConfirmCancelModal
+            heightSize={60}
+            blurIntensity={50}
+            padding={12}
+            borderRounded={7}
+            onCancel={() => {
+              setConfirmModal(false);
+              setEditProfile("");
+            }}
+            onClose={() => setConfirmModal(false)}
+            onOk={pickAnImage}
+          >
+            {loading ? (
+              <Loading className="h-14 w-14 m-auto pb-4" />
+            ) : (
+              <AppText
+                color="dark"
+                className="m-auto text-center font-bold text-lg"
+              >
+                Do you want to change your profile picture?
+              </AppText>
+            )}
+          </ConfirmCancelModal>
+        )}
+        {editProfile === "confirmProfilePic" && (
+          <ConfirmCancelModal
+            heightSize={96}
+            blurIntensity={100}
+            padding={12}
+            borderRounded={7}
+            onCancel={() => {
+              setConfirmModal(false);
+              setUri("");
+              setEditProfile("");
+            }}
+            onClose={() => {
+              setConfirmModal(false);
+              setUri("");
+            }}
+            onOk={updateProfile}
+          >
+            {loading ? (
+              <Loading className="h-14 w-14 m-auto pb-4" />
+            ) : (
+              <View className="flex-col items-center justify-center mt-2 gap-5">
+                <Image src={uri} width={102} height={102} borderRadius={50} />
+                <AppText
+                  color="dark"
+                  className="m-auto text-center font-bold text-lg"
+                >
+                  Do you want to use this as your profile picture?
+                </AppText>
+              </View>
             )}
           </ConfirmCancelModal>
         )}

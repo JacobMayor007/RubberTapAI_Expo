@@ -22,7 +22,7 @@ const saveLeafToTreeToPlot = async (
         console.error("File does not exist!");
       } else {
         const result = await storage.createFile(
-          "686bdf11001233285b53",
+          `${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}`,
           ID.unique(),
           {
             uri: image_plot,
@@ -34,7 +34,7 @@ const saveLeafToTreeToPlot = async (
 
         console.log("Image uploaded!", result);
 
-        fileUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/686bdf11001233285b53/files/${result.$id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&mode=admin`;
+        fileUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}/files/${result.$id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&mode=admin`;
       }
     }
 
