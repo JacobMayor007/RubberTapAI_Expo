@@ -108,6 +108,7 @@ export default function Messages() {
         const sentResponse = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_URL}/sent-messages/${user.$id}/${userMessage?.user?.$id}`
         );
+
         const sentMessages = await sentResponse.json();
 
         const receivedResponse = await fetch(
@@ -244,10 +245,12 @@ export default function Messages() {
     }
   };
 
-  console.log(feedback);
+  console.log(messages);
 
   return (
-    <SafeAreaView className="bg-[rgb(63,31,17,.05)] flex-1 ">
+    <SafeAreaView
+      className={`${theme === "dark" ? `bg-[rgb(63,31,17,.05)]` : `bg-[#FFECCC]`} flex-1 `}
+    >
       <KeyboardAvoidingView
         style={{
           flex: 1,

@@ -11,6 +11,11 @@ type Profile = {
   username: string;
   imageURL: string;
   API_KEY: string;
+  notif: boolean;
+  pushToken: string;
+  weatherAlert: boolean;
+  messageAlert: boolean;
+  marketAlert: boolean;
 };
 
 type SubscriptionData = {

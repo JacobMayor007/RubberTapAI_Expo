@@ -97,6 +97,25 @@ export default function Home() {
   useEffect(() => {
     (async () => {
       try {
+        const newToken = await registerForPushNotificationsAsync();
+
+        if (newToken && profile?.API_KEY) {
+          if (newToken !== profile?.pushToken) {
+            console.log("Token changed — updating Appwrite...");
+            await insertNotificationToken(newToken);
+          } else {
+            console.log("Token is up to date — no update needed.");
+          }
+        }
+      } catch (error) {
+        console.error("Push Notification Setup Error:", error);
+      }
+    })();
+  }, [profile?.API_KEY]);
+
+  useEffect(() => {
+    (async () => {
+      try {
         let { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== "granted") {
           router.replace("/(tabs)");
@@ -128,8 +147,6 @@ export default function Home() {
         }
       }
     })();
-
-    registerForPushNotificationsAsync();
   }, []);
 
   function handleRegistrationError(errorMessage: string) {
@@ -203,6 +220,8 @@ export default function Home() {
 
   const insertNotificationToken = async (pushToken: string) => {
     try {
+      console.log(pushToken);
+
       const result = await globalFunction.fetchWithTimeout(
         `${process.env.EXPO_PUBLIC_BASE_URL}/push-token`,
         {
