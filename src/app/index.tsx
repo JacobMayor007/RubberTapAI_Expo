@@ -62,6 +62,8 @@ export default function IndexScreen() {
         try {
           await account.get();
           console.log("User exists, redirecting to tabs");
+          console.log();
+
           setTimeout(() => router.replace("/(tabs)"), 1500);
         } catch (error) {
           console.log("No user, redirecting to getStarted");
@@ -70,7 +72,7 @@ export default function IndexScreen() {
       };
       navigate();
     }
-  }, [networkChecked, auth.isReady]);
+  }, [networkChecked, auth.isReady, auth.profile]);
 
   const rotate = spinValue.interpolate({
     inputRange: [0, 1],

@@ -229,6 +229,7 @@ const updateMessage = async (user: Profile | null) => {
     return Alert.alert("Error occured, please try again!");
   }
 };
+
 const updateMarket = async (user: Profile | null) => {
   try {
     const result = await globalFunction.fetchWithTimeout(
@@ -258,12 +259,60 @@ const updateMarket = async (user: Profile | null) => {
   }
 };
 
+const getMyUnreadNotif = async (userId: string, API_KEY: string) => {
+  try {
+    const response = await globalFunction.fetchWithTimeout(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/notifications`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, API_KEY }),
+      },
+      20000
+    );
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+const updateReadAllNotif = async (userId: string, API_KEY: string) => {
+  try {
+    const response = await globalFunction.fetchWithTimeout(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/notifications`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, API_KEY }),
+      },
+      20000
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export {
   editEmail,
   editName,
+  getMyUnreadNotif,
   updateMarket,
   updateMessage,
   updateNotif,
   updateProfileAction,
+  updateReadAllNotif,
   updateWeather,
 };

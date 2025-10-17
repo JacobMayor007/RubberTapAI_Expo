@@ -18,6 +18,17 @@ type Profile = {
   marketAlert: boolean;
 };
 
+type MyNotifications = {
+  $id: string;
+  $createdAt?: string;
+  type: string;
+  message: string;
+  isRead: boolean;
+  userId: string;
+  receiverId: string;
+  senderProfile: string;
+};
+
 type SubscriptionData = {
   $id: string;
   $createdAt: Dayjs;
@@ -103,6 +114,7 @@ export {
   ChatRoom,
   Leaves_Record,
   MessageHistory,
+  MyNotifications,
   Plot,
   Product,
   Profile,

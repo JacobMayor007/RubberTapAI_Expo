@@ -226,6 +226,10 @@ export default function Messages() {
             API_KEY: profile?.API_KEY,
             rate: rateUser,
             feedback: feedback,
+            ratedByName: profile?.fullName,
+            ratedByImage: profile?.imageURL,
+            ratedName: userMessage.user?.fullName,
+            ratedImage: userMessage?.user?.imageURL,
           }),
         },
         20000
@@ -244,8 +248,6 @@ export default function Messages() {
       }, 300);
     }
   };
-
-  console.log(messages);
 
   return (
     <SafeAreaView
@@ -500,7 +502,8 @@ export default function Messages() {
               textAlignVertical="top"
               value={feedback}
               onChangeText={setFeedback}
-              className="border-[1px] border-gray-500 h-28 w-72 rounded-lg"
+              placeholderTextColor="#6b7280"
+              className="border-[1px] text-slate-800 border-gray-500 h-28 w-72 rounded-lg"
             />
           </View>
         </ConfirmCancelModal>

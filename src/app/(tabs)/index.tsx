@@ -239,9 +239,7 @@ export default function Home() {
         20000
       );
 
-      const response = await result.json();
-
-      console.log(response.status);
+      await result.json();
     } catch (error) {
       console.error(error);
     }
