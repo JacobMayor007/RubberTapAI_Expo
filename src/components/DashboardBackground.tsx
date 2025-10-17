@@ -10,7 +10,7 @@ import NavigationBar from "./Navigation";
 import WeatherForecast from "./WeatherForecast";
 
 export default function DashboardBackground() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
   const { address } = useLocation();
   const { rain } = useWeather();
 
@@ -32,7 +32,7 @@ export default function DashboardBackground() {
         <AppText className="font-poppins text-2xl  text-[#3F1F11]">
           Hello,{" "}
           <AppText className="font-bold text-[#3F1F11]">
-            {user?.name.split(" ")[0]}!
+            {profile?.fullName.split(" ")[0]}!
           </AppText>
         </AppText>
         <AppText className="font-bold text-[#3F1F11] text-xl">

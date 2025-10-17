@@ -1,6 +1,9 @@
 import { Profile } from "@/types";
 import Entypo from "@expo/vector-icons/Entypo";
+import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
+import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Alert, Image, Modal, TouchableOpacity, View } from "react-native";
 import { reportUserFetch } from "../action/reportAction";
@@ -25,7 +28,10 @@ export default function ReportModal({
   const { theme } = useTheme();
   const [confirmModal, setConfirmModal] = useState(false);
   const [reportUser, setReportUser] = useState<Profile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [uri, setUri] = useState("");
   const { user } = useAuth();
+  const router = useRouter();
 
   const report = [
     {
@@ -84,29 +90,77 @@ export default function ReportModal({
     getUserId();
   }, [userId]);
 
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        const data = await response.json();
+        setProfile(data);
+      } catch (error) {
+        console.error("Upload error:", error);
+      }
+    };
+    fetchProfile();
+  }, [user?.$id]);
+
+  const pickAnImage = async () => {
+    try {
+      const permissionResult =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permissionResult.granted === false) {
+        alert("Permission to access camera roll is required!");
+        return;
+      }
+
+      let result = await ImagePicker.launchImageLibraryAsync({
+        quality: 1,
+        aspect: [1, 1],
+      });
+
+      if (!result.canceled) {
+        const selectedUris = result.assets[0].uri;
+        setUri(selectedUris);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const reportHandle = async () => {
     try {
       const result = await reportUserFetch(
+        profile?.$id || "",
+        profile?.fullName || "",
+        profile?.imageURL || "",
         userId,
-        user?.$id || "",
+        reportUser?.fullName || "",
+        reportUser?.imageURL || "",
+        description || "",
         label || "",
-        description || ""
+        uri,
+        profile?.API_KEY || ""
       );
 
-      // Handle successful response
       if (result.success) {
         Alert.alert("Success", result.message);
         setConfirmModal(false);
       }
     } catch (error) {
-      // Errors are already handled in reportUserFetch
       console.error("Report submission failed:", error);
     } finally {
       setConfirmModal(false);
+      router.push("/(message)/messages");
     }
   };
-
-  console.log(label, description, userId, user?.$id);
 
   return (
     <View className="flex-1 bg-[#FFECCC] justify-between">
@@ -122,7 +176,7 @@ export default function ReportModal({
           />
           <Image
             source={require("@/assets/images/report.png")}
-            className="h-[90%] w-[74%] m-auto"
+            className="h-[80%] w-[72%] m-auto"
           />
         </View>
         <View className="p-6">
@@ -162,6 +216,33 @@ export default function ReportModal({
               )
             );
           })}
+
+          <View className="flex-row justify-between mt-4">
+            <TouchableOpacity
+              onPress={pickAnImage}
+              className="border-[6px] border-dashed h-52 w-1/2 flex-col items-center justify-center gap-4"
+            >
+              <FontAwesome5 name="upload" size={40} color="#8F8F8F" />
+              <AppText
+                color="light"
+                className="bg-[#F09D58] font-poppins text-xl px-4 py-2 rounded-full"
+              >
+                Browse Files
+              </AppText>
+            </TouchableOpacity>
+            <View className="flex-row">
+              <Image src={uri} width={100} height={208} />
+              {uri && (
+                <Feather
+                  name="x-circle"
+                  onPress={() => setUri("")}
+                  size={24}
+                  color="red"
+                  className="absolute right-0 -top-4"
+                />
+              )}
+            </View>
+          </View>
         </View>
       </View>
       <TouchableOpacity

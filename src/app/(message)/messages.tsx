@@ -108,6 +108,7 @@ export default function Messages() {
         const sentResponse = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_URL}/sent-messages/${user.$id}/${userMessage?.user?.$id}`
         );
+
         const sentMessages = await sentResponse.json();
 
         const receivedResponse = await fetch(
@@ -225,6 +226,10 @@ export default function Messages() {
             API_KEY: profile?.API_KEY,
             rate: rateUser,
             feedback: feedback,
+            ratedByName: profile?.fullName,
+            ratedByImage: profile?.imageURL,
+            ratedName: userMessage.user?.fullName,
+            ratedImage: userMessage?.user?.imageURL,
           }),
         },
         20000
@@ -244,10 +249,10 @@ export default function Messages() {
     }
   };
 
-  console.log(feedback);
-
   return (
-    <SafeAreaView className="bg-[rgb(63,31,17,.05)] flex-1 ">
+    <SafeAreaView
+      className={`${theme === "dark" ? `bg-[rgb(63,31,17,.05)]` : `bg-[#FFECCC]`} flex-1 `}
+    >
       <KeyboardAvoidingView
         style={{
           flex: 1,
@@ -497,7 +502,8 @@ export default function Messages() {
               textAlignVertical="top"
               value={feedback}
               onChangeText={setFeedback}
-              className="border-[1px] border-gray-500 h-28 w-72 rounded-lg"
+              placeholderTextColor="#6b7280"
+              className="border-[1px] text-slate-800 border-gray-500 h-28 w-72 rounded-lg"
             />
           </View>
         </ConfirmCancelModal>

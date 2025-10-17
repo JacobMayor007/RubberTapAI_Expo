@@ -11,6 +11,22 @@ type Profile = {
   username: string;
   imageURL: string;
   API_KEY: string;
+  notif: boolean;
+  pushToken: string;
+  weatherAlert: boolean;
+  messageAlert: boolean;
+  marketAlert: boolean;
+};
+
+type MyNotifications = {
+  $id: string;
+  $createdAt?: string;
+  type: string;
+  message: string;
+  isRead: boolean;
+  userId: string;
+  receiverId: string;
+  senderProfile: string;
 };
 
 type SubscriptionData = {
@@ -98,6 +114,7 @@ export {
   ChatRoom,
   Leaves_Record,
   MessageHistory,
+  MyNotifications,
   Plot,
   Product,
   Profile,

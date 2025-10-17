@@ -1,3 +1,4 @@
+import { Profile } from "@/types";
 import * as FileSystem from "expo-file-system";
 import { Alert } from "react-native";
 import { ID } from "react-native-appwrite";
@@ -139,4 +140,179 @@ const updateProfileAction = async (
   }
 };
 
-export { editEmail, editName, updateProfileAction };
+const updateNotif = async (user: Profile | null) => {
+  try {
+    console.log(user?.marketAlert);
+    console.log(user?.weatherAlert);
+    console.log(user?.messageAlert);
+
+    const result = await globalFunction.fetchWithTimeout(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/notif`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          userId: user?.$id,
+          API_KEY: user?.API_KEY,
+          notif: !user?.notif,
+        }),
+      },
+      2000
+    );
+
+    const data = await result.json();
+    console.log(data?.title);
+
+    return;
+  } catch (error) {
+    console.error(error);
+    return Alert.alert("Error occured, please try again!");
+  }
+};
+
+const updateWeather = async (user: Profile | null) => {
+  try {
+    const result = await globalFunction.fetchWithTimeout(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/weather-alert`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          userId: user?.$id,
+          API_KEY: user?.API_KEY,
+          weather: !user?.weatherAlert,
+        }),
+      },
+      2000
+    );
+
+    const data = await result.json();
+    console.log(data?.title);
+
+    return;
+  } catch (error) {
+    console.error(error);
+    return Alert.alert("Error occured, please try again!");
+  }
+};
+const updateMessage = async (user: Profile | null) => {
+  try {
+    const result = await globalFunction.fetchWithTimeout(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/message-alert`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          userId: user?.$id,
+          API_KEY: user?.API_KEY,
+          message: !user?.messageAlert,
+        }),
+      },
+      2000
+    );
+
+    const data = await result.json();
+    console.log(data?.title);
+
+    return;
+  } catch (error) {
+    console.error(error);
+    return Alert.alert("Error occured, please try again!");
+  }
+};
+
+const updateMarket = async (user: Profile | null) => {
+  try {
+    const result = await globalFunction.fetchWithTimeout(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/market-alert`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          userId: user?.$id,
+          API_KEY: user?.API_KEY,
+          market: !user?.marketAlert,
+        }),
+      },
+      2000
+    );
+
+    const data = await result.json();
+    console.log(data?.title);
+
+    return;
+  } catch (error) {
+    console.error(error);
+    return Alert.alert("Error occured, please try again!");
+  }
+};
+
+const getMyUnreadNotif = async (userId: string, API_KEY: string) => {
+  try {
+    const response = await globalFunction.fetchWithTimeout(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/notifications`,
+      {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, API_KEY }),
+      },
+      20000
+    );
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
+
+const updateReadAllNotif = async (userId: string, API_KEY: string) => {
+  try {
+    const response = await globalFunction.fetchWithTimeout(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/notifications`,
+      {
+        method: "PATCH",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId, API_KEY }),
+      },
+      20000
+    );
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+export {
+  editEmail,
+  editName,
+  getMyUnreadNotif,
+  updateMarket,
+  updateMessage,
+  updateNotif,
+  updateProfileAction,
+  updateReadAllNotif,
+  updateWeather,
+};

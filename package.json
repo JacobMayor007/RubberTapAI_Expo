@@ -11,7 +11,6 @@
     "lint": "expo lint"
   },
   "dependencies": {
-    "@expo/vector-icons": "^14.1.0",
     "@react-native-async-storage/async-storage": "2.1.2",
     "@react-native-community/netinfo": "11.4.1",
     "@react-navigation/bottom-tabs": "^7.3.10",
@@ -20,8 +19,7 @@
     "axios": "^1.10.0",
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
-    "dayjs-plugin-utc": "^0.1.2",
-    "expo": "53.0.22",
+    "expo": "~53.0.23",
     "expo-auth-session": "~6.2.1",
     "expo-blur": "~14.1.5",
     "expo-camera": "~16.1.11",
@@ -32,7 +30,7 @@
     "expo-file-system": "~18.1.11",
     "expo-font": "~13.3.1",
     "expo-haptics": "~14.1.4",
-    "expo-image": "~2.4.0",
+    "expo-image": "~2.4.1",
     "expo-image-manipulator": "~13.1.7",
     "expo-image-picker": "~16.1.4",
     "expo-linear-gradient": "~14.1.5",
@@ -40,7 +38,7 @@
     "expo-location": "~18.1.6",
     "expo-media-library": "~17.1.7",
     "expo-notifications": "~0.31.4",
-    "expo-router": "~5.1.6",
+    "expo-router": "~5.1.7",
     "expo-splash-screen": "~0.30.10",
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.5",
@@ -50,7 +48,7 @@
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
-    "react-native-appwrite": "^0.10.0",
+    "react-native-appwrite": "^0.17.1",
     "react-native-calendars": "^1.1313.0",
     "react-native-dotenv": "^3.4.11",
     "react-native-gesture-handler": "~2.24.0",
@@ -58,7 +56,6 @@
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
-    "react-native-vector-icons": "^10.2.0",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
     "react-native-worklets-core": "^1.6.0",
@@ -74,5 +71,15 @@
     "tailwindcss": "^3.4.17",
     "typescript": "~5.8.3"
   },
-  "private": true
+  "private": true,
+  "expo": {
+    "doctor": {
+      "reactNativeDirectoryCheck": {
+        "exclude": [
+          "react-native-appwrite",
+          "@react-native-community/netinfo"
+        ]
+      }
+    }
+  }
 }
