@@ -50,7 +50,13 @@ export default function AllMyNotifications() {
         return;
       }
 
-      setMyNotifications(data);
+      const sortedNotifications = [...data].sort((a, b) => {
+        return (
+          new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime()
+        );
+      });
+
+      setMyNotifications(sortedNotifications);
 
       const unreadCount = data.filter(
         (notif: MyNotifications) => !notif.isRead
@@ -105,7 +111,7 @@ export default function AllMyNotifications() {
         contentContainerStyle={{
           padding: 24,
           backgroundColor: theme === "light" ? "#FFECCC" : "#111827",
-          gap: 20,
+          gap: 10,
           flexGrow: 1,
         }}
       >
@@ -113,9 +119,13 @@ export default function AllMyNotifications() {
           <FontAwesome5
             name="arrow-left"
             size={20}
+            color={theme === "dark" ? `#E2C282` : `black`}
             onPress={() => router.back()}
           />
-          <AppText color="dark" className="font-poppins font-bold text-2xl">
+          <AppText
+            color={theme === "dark" ? `light` : `dark`}
+            className="font-poppins font-bold text-2xl"
+          >
             Notifications
           </AppText>
         </View>
@@ -129,7 +139,7 @@ export default function AllMyNotifications() {
           )}
           <TouchableOpacity onPress={markedAllAsRead}>
             <AppText className="font-poppins font-bold text-lg text-blue-500">
-              Mark all as Read
+              MARK ALL AS READ
             </AppText>
           </TouchableOpacity>
         </View>
@@ -145,16 +155,22 @@ export default function AllMyNotifications() {
               )}
               <Image
                 src={data?.senderProfile}
-                className="h-16 w-16 rounded-full"
+                className="h-10 w-10 rounded-full"
               />
-              <View className="gap-3 border-b-[0.5px] w-9/12 py-2">
-                <AppText color="dark" className="font-poppins font-bold">
+              <View className=" border-b-[0.5px] w-9/12 py-2">
+                <AppText
+                  color={theme === "dark" ? `light` : `dark`}
+                  className={`font-poppins ${data?.isRead ? `font-normal text-sm` : `font-bold`} text-base`}
+                >
                   {data?.message.length < 43
                     ? data?.message
                     : `${data?.message.slice(0, 42)}...`}
                 </AppText>
-                <AppText color="dark">
-                  {dayjs(data?.$createdAt).format("hh:mm A")}
+                <AppText
+                  color={theme === "dark" ? `light` : `dark`}
+                  className="text-sm"
+                >
+                  {dayjs(data?.$createdAt).format("MM-DD-YYYY hh:mm A")}
                 </AppText>
               </View>
             </TouchableOpacity>

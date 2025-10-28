@@ -3,6 +3,7 @@ import { AppText } from "@/src/components/AppText";
 import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
 import Loading from "@/src/components/LoadingComponent";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { useLocation } from "@/src/contexts/LocationContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { Plot, Profile, SubscriptionData, Tree_Record } from "@/types";
@@ -20,6 +21,7 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -96,6 +98,21 @@ export default function CameraLeaf() {
   const [dropdown, setDropdown] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionData | null>();
+  const { address } = useLocation();
+
+  if (!address) {
+    return Alert.alert(
+      "Location required",
+      "Please turn on location, thank you so much",
+      [
+        {
+          style: "default",
+          text: "Confirm",
+          onPress: () => router.back(),
+        },
+      ]
+    );
+  }
 
   useEffect(() => {
     MyPlot();
@@ -315,6 +332,7 @@ export default function CameraLeaf() {
 
       const data = await response.json();
       setResults(data);
+      saveToDatabase(data.predictions);
     } catch (error) {
       console.error("Upload error:", error);
       setResults({
@@ -323,6 +341,49 @@ export default function CameraLeaf() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const saveToDatabase = async (results: Prediction[]) => {
+    try {
+      const bestResult = results.reduce(
+        (max, item) => (item.probability > max.probability ? item : max),
+        { className: "", probability: 0 }
+      );
+
+      let probability = bestResult.probability * 100;
+
+      if (probability > 100) probability = 100;
+
+      probability = parseFloat(probability.toFixed(3));
+
+      const payload = {
+        userId: profile?.$id,
+        fullName: profile?.fullName,
+        className: bestResult.className,
+        probability,
+        city: address?.city || "",
+        region: address?.region || "",
+        subregion: address?.subregion || "",
+        country: address?.country || "",
+        address: address?.formattedAddress || "",
+      };
+
+      const response = await fetch(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/save-prediction`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      await response.json();
+    } catch (error) {
+      console.error("Save error:", error);
     }
   };
 
@@ -435,8 +496,22 @@ export default function CameraLeaf() {
           alignItems: "center",
         }}
       >
-        <Loading className="h-12 w-12" />
+        <Loading className="h-16 w-16" />
       </SafeAreaView>
+    );
+  }
+
+  if (!permission) return <View />;
+  if (!permission.granted) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ textAlign: "center" }}>
+          We need your permission to show the camera
+        </Text>
+        <TouchableOpacity onPress={requestPermission} style={styles.button}>
+          <Text style={{ color: "#fff" }}>Grant Permission</Text>
+        </TouchableOpacity>
+      </View>
     );
   }
 
@@ -495,11 +570,12 @@ export default function CameraLeaf() {
             />
           </View>
           {dropdown ? (
-            <TouchableOpacity className="px-12 py-3 rounded-full  bg-black/50 z-20">
-              <Link href="/(camera)/measure">
-                <AppText>Measure Tree Trunk</AppText>
-              </Link>
-            </TouchableOpacity>
+            <Link
+              href="/(camera)/measure"
+              className="px-12 py-3 rounded-full  bg-black/50 z-20"
+            >
+              <AppText>Measure Tree Trunk</AppText>
+            </Link>
           ) : null}
         </View>
 
@@ -582,7 +658,7 @@ export default function CameraLeaf() {
             <Feather
               name="x"
               size={30}
-              color={"white"}
+              color={theme === "dark" ? "#E2C282" : "black"}
               onPress={() => {
                 setResultModal(false);
                 setResults(null);
@@ -602,7 +678,7 @@ export default function CameraLeaf() {
               <Feather
                 name="x"
                 size={30}
-                color={"black"}
+                color={theme === "dark" ? `#E2C282` : `black`}
                 onPress={() => {
                   setResultModal(false);
                   setResults(null);
@@ -778,14 +854,14 @@ export default function CameraLeaf() {
                                 onPress={() => setPage(1)}
                                 name="radio-button-on"
                                 size={22}
-                                color="black"
+                                color={theme === "dark" ? `#E2C282` : `black`}
                               />
                             ) : (
                               <Ionicons
                                 onPress={() => setPage(1)}
                                 name="radio-button-off"
                                 size={22}
-                                color="black"
+                                color={theme === "dark" ? `#E2C282` : `black`}
                               />
                             )}
                             {page === 2 ? (
@@ -793,14 +869,14 @@ export default function CameraLeaf() {
                                 onPress={() => setPage(2)}
                                 name="radio-button-on"
                                 size={22}
-                                color="black"
+                                color={theme === "dark" ? `#E2C282` : `black`}
                               />
                             ) : (
                               <Ionicons
                                 onPress={() => setPage(2)}
                                 name="radio-button-off"
                                 size={22}
-                                color="black"
+                                color={theme === "dark" ? `#E2C282` : `black`}
                               />
                             )}
                           </View>
@@ -1105,3 +1181,19 @@ export default function CameraLeaf() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  button: {
+    backgroundColor: "#1e90ff",
+    paddingHorizontal: 20,
+
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+});

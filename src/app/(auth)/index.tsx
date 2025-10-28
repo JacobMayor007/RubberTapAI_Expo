@@ -2,19 +2,16 @@ import { AppText } from "@/src/components/AppText";
 import ForgotPassword from "@/src/components/ForgotPassword";
 import Loading from "@/src/components/LoadingComponent";
 import Logo from "@/src/components/Logo";
-import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { account } from "@/src/lib/appwrite";
-import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { makeRedirectUri } from "expo-auth-session";
-import { Redirect, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState } from "react";
 import {
   Alert,
-  Image,
   ImageBackground,
   KeyboardAvoidingView,
   Modal,
@@ -43,8 +40,8 @@ export default function Login() {
 
   useEffect(() => {
     const isLoggedIn = async () => {
-      if (user) {
-        return <Redirect href={"/(tabs)"} />;
+      if (user?.$id) {
+        return router.push({ pathname: "/(tabs)" });
       }
     };
 
@@ -137,7 +134,7 @@ export default function Login() {
           return;
         }
 
-        await account.createSession(userId, secret);
+        await account.createSession({ userId: userId, secret: secret });
 
         router.replace("/(tabs)");
 
@@ -183,12 +180,11 @@ export default function Login() {
               />
               <View className="flex-col items-center justify-center pt-14 ">
                 <Logo className="h-24 w-24" />
-                <View className="flex-col ">
-                  <Image
-                    source={require("@/assets/images/RubberTapText.png")}
-                    className="h-16 w-56"
-                  />
-                  <AppText className="text-right text-[#75A90A] font-medium text-xl font-poppins">
+                <View className="flex-row items-end">
+                  <AppText className="font-black text-[#75A90A] text-4xl">
+                    RUBBERTAP
+                  </AppText>
+                  <AppText className="text-right text-[#75A90A] font-medium text-xl mr-2 font-poppins">
                     AI
                   </AppText>
                 </View>
@@ -238,20 +234,25 @@ export default function Login() {
                     </Pressable>
                   </View>
 
-                  <Pressable onPress={() => setForgotModal(true)}>
+                  <Pressable
+                    onPress={() => setForgotModal(true)}
+                    className="mb-4 mt-1"
+                  >
                     <AppText className="font-poppins font-bold text-[#F3E0C1] text-right">
                       Forgot Password?
                     </AppText>
                   </Pressable>
                   <TouchableOpacity
                     onPress={handleLogin}
-                    className="bg-[#6B8E23]  items-center justify-center py-2 rounded-full"
+                    className="bg-[#6B8E23]  items-center justify-center h-14 py-2 rounded-xl"
                   >
-                    <AppText className="text-lg font-bold">Login</AppText>
+                    <AppText className="text-lg text-white font-bold">
+                      Login
+                    </AppText>
                   </TouchableOpacity>
                 </View>
               </View>
-              <ViewPressable
+              {/* <ViewPressable
                 onPress={googleAuth}
                 style={{
                   boxShadow:
@@ -263,8 +264,8 @@ export default function Login() {
                 <AppText className="font-poppins font-bold text-lg text-green-700">
                   Google
                 </AppText>
-              </ViewPressable>
-              <View className="flex-row justify-center items-center mt-5 gap-2">
+              </ViewPressable> */}
+              <View className="flex-row justify-center items-center mt-5 gap-2 pt-2">
                 <AppText className="text-[#F3E0C1]">
                   Don't have an account?
                 </AppText>

@@ -52,8 +52,15 @@ export default function Report() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View className={`flex-1 bg-[#FFECCC] p-6`}>
-        <Feather name="x" size={28} onPress={() => router.back()} />
+      <View
+        className={`flex-1 ${theme === "dark" ? `bg-[#010101]/40` : `bg-[#FFECCC]`} p-6`}
+      >
+        <Feather
+          name="x"
+          size={28}
+          color={theme === "dark" ? `#E2C282` : `black`}
+          onPress={() => router.back()}
+        />
         <AppText
           className="font-poppins font-bold text-xl mt-4"
           color={theme === "dark" ? `light` : `dark`}

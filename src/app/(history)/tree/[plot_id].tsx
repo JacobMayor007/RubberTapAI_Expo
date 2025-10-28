@@ -7,12 +7,10 @@ import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { Profile, Tree_Record } from "@/types";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import dayjs from "dayjs";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Image,
   Modal,
@@ -171,7 +169,7 @@ export default function ListTrees() {
       <SafeAreaView
         className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-1 items-center justify-center`}
       >
-        <Loading className="h-24 w-24"/>
+        <Loading className="h-16 w-16" />
       </SafeAreaView>
     );
   }
@@ -189,7 +187,7 @@ export default function ListTrees() {
               name="arrow-left"
               size={20}
               onPress={() => router.back()}
-              color={theme === "dark" ? `white` : `black`}
+              color={theme === "dark" ? `#E8C282` : `black`}
             />
             <AppText
               color={theme === "dark" ? `light` : `dark`}
@@ -203,15 +201,14 @@ export default function ListTrees() {
               setModal(true);
               setWhatModal("addTree");
             }}
-            className="bg-green-500 px-4 py-1 rounded-full gap-2 flex-row items-center"
+            className={`${theme === "dark" ? `bg-green-700` : `bg-[#75A90A]`} px-4 py-1.5 rounded-full gap-2 flex-row items-center`}
           >
             <AppText
-              color={`light`}
-              className="text-[14px] font-bold font-poppins"
+              className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`} text-[14px] font-bold font-poppins`}
             >
               Add Tree
             </AppText>
-            <Feather name="plus-circle" size={24} color={"white"} />
+            <Feather name="plus" size={24} color={"white"} />
           </TouchableOpacity>
         </View>
         <View className="items-center flex-row">
@@ -241,7 +238,7 @@ export default function ListTrees() {
                   boxShadow:
                     "1px 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
                 }}
-                className="mt-5 w-[48%] h-60 mr-2 bg-[#FFD99A] rounded-lg"
+                className={`${theme === "dark" ? `bg-slate-900` : `bg-[#FFD99A]`} mt-5 w-[48%] h-60 mr-2  rounded-lg`}
               >
                 {data?.image_url ? (
                   <Image
@@ -267,23 +264,28 @@ export default function ListTrees() {
                 <View className="flex-col  p-2 ">
                   <View className="flex-row items-center justify-between">
                     <AppText
-                      color="dark"
+                      color={theme === "dark" ? `light` : `dark`}
                       className="font-bold font-poppins text-lg"
                     >
                       Tree {`#${index + 1}`}
                     </AppText>
-                    <MaterialIcons
+
+                    <TouchableOpacity
                       onPress={() => {
                         setModal(true);
                         setTreeId(data?.$id);
                         setWhatModal("deleteTree");
                       }}
-                      name="delete-outline"
-                      color={"red"}
-                      size={24}
-                    />
+                      className="bg-[#75A90A] rounded-xl px-4 py-2 "
+                    >
+                      <AppText
+                        className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
+                      >
+                        Delete
+                      </AppText>
+                    </TouchableOpacity>
                   </View>
-                  <AppText color="dark">
+                  <AppText color={theme === "dark" ? `light` : `dark`}>
                     {data?.$createdAt.format("MM/DD/YYYY")}
                   </AppText>
                 </View>

@@ -6,7 +6,6 @@ import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { Leaves_Record, Profile } from "@/types";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -21,7 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Leaves() {
   const params = useLocalSearchParams();
-  const [myLeaves, setMyLeaves] = useState<Leaves_Record[]>();
+  const [myLeaves, setMyLeaves] = useState<Leaves_Record[]>([]);
   const { theme } = useTheme();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -134,7 +133,9 @@ export default function Leaves() {
 
   return (
     <SafeAreaView className="flex-1">
-      <ScrollView className="flex-1 bg-[#FFECCC]">
+      <ScrollView
+        className={`flex-1 ${theme === "dark" ? `bg-gray-800` : `bg-[#FFECCC]`}`}
+      >
         <View className="flex-1  p-6">
           <View className="flex-row items-center gap-5">
             <FontAwesome5
@@ -150,46 +151,50 @@ export default function Leaves() {
             </AppText>
           </View>
 
-          {myLeaves?.length === 0 && (
+          {Array.isArray(myLeaves) && myLeaves.length > 0 ? (
+            <View className="flex-row flex-1 mt-8">
+              {myLeaves?.map((data, index) => {
+                return (
+                  <TouchableOpacity
+                    key={index}
+                    className="bg-[#FFD99A] h-52 rounded-lg w-[47%]"
+                    onPress={() => {
+                      setLeaf(data);
+                      setModal(true);
+                    }}
+                  >
+                    <Image src={data?.image_leaf} className="h-[75%] w-full" />
+                    <View className="p-2 flex-row justify-between">
+                      <AppText
+                        color="dark"
+                        className="font-poppins font-bold text-lg mt-1.5 mx-2"
+                      >
+                        Leaf #{index + 1}
+                      </AppText>
+
+                      <TouchableOpacity
+                        onPress={deleteLeaf}
+                        className="bg-[#75A90A] rounded-xl px-4 py-2 "
+                      >
+                        <AppText
+                          className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
+                        >
+                          Delete
+                        </AppText>
+                      </TouchableOpacity>
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          ) : (
             <AppText
-              className="font-poppins font-bold m-auto text-xl"
-              color="dark"
+              className="font-poppins mt-20 mx-auto font-bold text-xl"
+              color={theme === "dark" ? "light" : "dark"}
             >
               There are no leaves uploaded yet.
             </AppText>
           )}
-          <View className="flex-row flex-1 mt-8">
-            {myLeaves?.map((data, index) => {
-              return (
-                <TouchableOpacity
-                  key={index}
-                  className="bg-[#FFD99A] h-52 rounded-lg w-[47%]"
-                  onPress={() => {
-                    setLeaf(data);
-                    setModal(true);
-                  }}
-                >
-                  <Image src={data?.image_leaf} className="h-[75%] w-full" />
-                  <View className="p-2 flex-row justify-between">
-                    <AppText
-                      color="dark"
-                      className="font-poppins font-bold text-lg mt-1.5 mx-2"
-                    >
-                      Leaf #{index + 1}
-                    </AppText>
-
-                    <TouchableOpacity onPress={deleteLeaf}>
-                      <MaterialIcons
-                        name="delete-outline"
-                        color={"red"}
-                        size={24}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
         </View>
       </ScrollView>
       <Modal onRequestClose={() => setModal(true)} visible={modal} transparent>

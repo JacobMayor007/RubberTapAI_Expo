@@ -94,14 +94,14 @@ export default function HeaderNav({ title, arrow }: HeaderNavProps) {
           <AntDesign
             name="message1"
             size={23}
-            color={theme === "dark" ? "white" : "black"}
+            color={theme === "dark" ? "#E8C282" : "black"}
           />
         </Link>
         <Link href={{ pathname: "/(tabs)/myNotifications" }}>
           <Ionicons
             name="notifications-outline"
             size={24}
-            color={theme === "dark" ? "white" : "black"}
+            color={theme === "dark" ? "#E8C282" : "black"}
           />
         </Link>
       </View>

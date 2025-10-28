@@ -339,7 +339,7 @@ export default function EditProduct({
           backgroundColor: "#FFECCC",
         }}
       >
-        <Loading className="h-14 w-14" />
+        <Loading className="h-16 w-16" />
       </SafeAreaView>
     );
   }

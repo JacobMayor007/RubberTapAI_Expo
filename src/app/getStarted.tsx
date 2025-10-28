@@ -20,12 +20,14 @@ export default function NewUser() {
               source={require("@/assets/images/Logo.png")}
             />
           </View>
-          <View className="mt-20">
-            <AppText className="font-poppins font-bold text-3xl pl-5 pr-20">
-              The best app for making your tapping efficient.
+          <View className="mt-20 flex-col gap-8">
+            <AppText className="font-poppins font-bold text-4xl pl-5 pr-20">
+              The future of tapping starts here.
             </AppText>
-            <AppText className="font-poppins text-xl pl-5 pr-20 font-extrabold tracking-widest">
-              --------------------------
+            <AppText className="font-poppins text-lg font-medium pl-5 pr-20 tracking-widest">
+              Rubber is a valuable agricultural commodity that can be derived
+              naturally from the Hevea brasiliensis tree or synthetically
+              through petroleum-based processes.
             </AppText>
           </View>
         </View>

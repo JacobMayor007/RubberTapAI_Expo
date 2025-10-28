@@ -251,7 +251,7 @@ export default function Messages() {
 
   return (
     <SafeAreaView
-      className={`${theme === "dark" ? `bg-[rgb(63,31,17,.05)]` : `bg-[#FFECCC]`} flex-1 `}
+      className={`${theme === "dark" ? `bg-[rgb(63,31,17,.05)]` : `bg-[#FFDFA9]`} flex-1 `}
     >
       <KeyboardAvoidingView
         style={{
@@ -261,11 +261,14 @@ export default function Messages() {
         keyboardVerticalOffset={0}
       >
         <View className="flex-1">
-          <View className="bg-[#FFDCA1] gap-4 h-24 p-6 flex-row items-center justify-between border-b-[1px] border-black">
+          <View
+            className={`${theme === "dark" ? "bg-[#010101] border-[#38C282]" : "bg-[#FFDCA1] border-gray-500"} gap-4 h-24 p-6 flex-row items-center justify-between border-b-[0.5px] `}
+          >
             <View className="flex-row items-center gap-4">
               <FontAwesome5
                 name="arrow-left"
                 size={20}
+                color={theme === "dark" ? "#E8C282" : "black"}
                 onPress={() => router.replace("/(message)")}
               />
               <Image
@@ -279,13 +282,13 @@ export default function Messages() {
               />
               <View className="flex-col">
                 <AppText
-                  color={"dark"}
+                  color={theme === "dark" ? "light" : "dark"}
                   className="font-poppins font-bold text-lg "
                 >
                   {userMessage.user?.email}
                 </AppText>
                 <AppText
-                  color={"dark"}
+                  color={theme === "dark" ? "light" : "dark"}
                   className="font-poppins font-extralight text-sm "
                 >
                   {userMessage.user?.username}
@@ -298,12 +301,12 @@ export default function Messages() {
                 params: { user_id: userMessage?.user?.$id || "" },
               }}
             >
-              <MaterialIcons name="report" size={28} color="red" />
+              <MaterialIcons name="report" size={28} color="maroon" />
             </Link>
           </View>
           {loading ? (
             <View className="flex-1 items-center justify-center">
-              <Loading className="h-28 w-28" />
+              <Loading className="h-16 w-16" />
             </View>
           ) : (
             <ScrollView
@@ -343,8 +346,8 @@ export default function Messages() {
                         }
                         className={`min-w-48 max-w-72 p-3 rounded-md mb-2 w-fit ${
                           msg.sender_id === user?.$id
-                            ? "bg-blue-500 text-white ml-auto text-right font-hind font-medium text-base"
-                            : "bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base"
+                            ? `${theme === "dark" ? `bg-slate-900` : `bg-blue-500`} text-white ml-auto text-right font-hind font-medium text-base`
+                            : `bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base`
                         }`}
                         style={
                           msg.$id === user?.$id
@@ -373,7 +376,9 @@ export default function Messages() {
                           {msg?.content}
                         </AppText>
                         {index === showDate && (
-                          <AppText className="text-right text-xs mt-2">
+                          <AppText
+                            className={`text-right text-xs mt-2 ${theme === "dark" ? `light` : `text-white`}`}
+                          >
                             {msg.$createdAt
                               .utc()
                               .local()
@@ -407,7 +412,7 @@ export default function Messages() {
             <View
               className={`${
                 lines > 2 ? "h-[72px]" : "h-14"
-              } ${theme === "dark" ? `bg-[#FFECCC]/70` : `bg-[rgb(63,31,17,.25)]`} gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
+              } ${theme === "dark" ? `bg-[#FFECCC]/50` : `bg-[rgb(63,31,17,.25)]`} gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
             >
               <View className=" flex-row absolute bottom-14 left-12 gap-4">
                 {images.length > 0 && (

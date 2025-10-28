@@ -163,12 +163,17 @@ export default function ReportModal({
   };
 
   return (
-    <View className="flex-1 bg-[#FFECCC] justify-between">
+    <View
+      className={`flex-1 ${theme === "dark" ? `bg-[#010101]` : `bg-[#FFECCC]`} justify-between`}
+    >
       <View className="">
-        <View className="h-[40%] bg-[#EFDEC1] p-6 relative ">
+        <View
+          className={`h-[40%] ${theme === "dark" ? `bg-[#010101]` : `bg-[#EFDEC1]`}  p-6 relative `}
+        >
           <FontAwesome5
             name="arrow-left"
             size={20}
+            color={theme === "dark" ? `#E2C282` : `#010101`}
             onPress={() => setModal(false)}
             style={{
               position: "absolute top-0 left-0",
@@ -220,12 +225,12 @@ export default function ReportModal({
           <View className="flex-row justify-between mt-4">
             <TouchableOpacity
               onPress={pickAnImage}
-              className="border-[6px] border-dashed h-52 w-1/2 flex-col items-center justify-center gap-4"
+              className={`border-[6px] ${theme === "dark" && "border-white"} border-dashed h-52 w-1/2 flex-col items-center justify-center gap-4`}
             >
               <FontAwesome5 name="upload" size={40} color="#8F8F8F" />
               <AppText
                 color="light"
-                className="bg-[#F09D58] font-poppins text-xl px-4 py-2 rounded-full"
+                className={`${theme === "dark" ? `bg-slate-600/25` : `bg-[#F09D58]`} font-poppins text-xl px-4 py-2 rounded-full`}
               >
                 Browse Files
               </AppText>

@@ -1,7 +1,7 @@
 import AppearanceSettings from "@/src/components/AppearanceSettings";
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import EditProfile from "@/src/components/EditProfile";
-import HeaderBackground from "@/src/components/HeaderBackground";
 import HeaderNav from "@/src/components/HeaderNav";
 import HelpAndSupport from "@/src/components/HelpAndSupport";
 import Logout from "@/src/components/Logout";
@@ -61,17 +61,13 @@ export default function Menu() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View
-        className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-1 flex-col justify-between`}
+      <BackgroundGradient
+        className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFDFA9]`} flex-1 flex-col justify-between`}
       >
-        <HeaderBackground />
-        <View className={` flex-1 px-6 py-10 flex-col z-20`}>
+        <View className={` flex-1 px-6 flex-col z-20`}>
           <HeaderNav title="Menu" arrow={true} />
-
-          <View
-            className={`h-72 rounded-2xl ${theme === "dark" ? `bg-black` : `bg-white`} drop-shadow-lg mt-8`}
-          >
-            <LinearGradient
+          <View className={`h-72 rounded-2xl drop-shadow-lg `}>
+            {/* <LinearGradient
               colors={rain ? ["#7BDEE0", "#F1FDDA"] : ["#BFE07B", "#79B400"]}
               style={{
                 width: "100%",
@@ -124,7 +120,62 @@ export default function Menu() {
               <AppText color={theme === "dark" ? "light" : "dark"}>
                 {emailHide}@{user?.email.split("@")[1]}
               </AppText>
-            </View>
+            </View> */}
+            <LinearGradient
+              colors={rain ? ["#F1FDDA", "#7BDEE0"] : ["#FFFFFF", "#75A90A"]}
+              style={{ borderRadius: 10, padding: 16 }}
+              className="h-64 "
+            >
+              <View className="flex-row justify-between items-center px-4 mt-6">
+                <View className="flex-row items-center  gap-2 -mt-5 overflow-hidden w-[75%] text-nowrap">
+                  <Image
+                    className="h-14 w-14 rounded-full"
+                    src={`${profile?.imageURL}`}
+                  />
+                  <AppText
+                    color={theme === "dark" ? "light" : "dark"}
+                    className="font-poppins font-bold text-lg pt-4 text-ellipsis text-nowrap whitespace-nowrap"
+                  >
+                    {profile?.fullName}
+                  </AppText>
+                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    setVisibleModal(true);
+                    setModalShown("editProfile");
+                  }}
+                  className={`${theme !== "dark" ? `bg-[#75A90A]` : `bg-gray-600`} h-7 w-16 justify-center items-center rounded-full`}
+                >
+                  <AppText
+                    className={`${theme === "dark" ? `#E2C282` : `text-white`}`}
+                  >
+                    Edit
+                  </AppText>
+                </TouchableOpacity>
+              </View>
+              <View
+                className={`"flex-1 ${theme === "dark" ? `bg-gray-900` : ``} mx-4 mt-8 gap-1.5 rounded-xl drop-shadow-2xl flex-col py-2 px-4 gap-1"`}
+              >
+                <AppText
+                  color={theme === "dark" ? "light" : "dark"}
+                  className="font-poppins font-extrabold text-base"
+                >
+                  Username
+                </AppText>
+                <AppText color={theme === "dark" ? "light" : "dark"}>
+                  {profile?.fullName}
+                </AppText>
+                <AppText
+                  color={theme === "dark" ? "light" : "dark"}
+                  className="font-poppins font-extrabold text-base"
+                >
+                  Email
+                </AppText>
+                <AppText color={theme === "dark" ? "light" : "dark"}>
+                  {emailHide}@{user?.email.split("@")[1]}
+                </AppText>
+              </View>
+            </LinearGradient>
           </View>
           <View
             className={`flex-row justify-between items-center ${theme === "dark" ? `bg-[rgb(83,62,53,0.5)]` : `bg-[rgb(83,62,53,0.1)]`} mt-4 px-4 rounded-lg outline-dashed`}
@@ -200,7 +251,7 @@ export default function Menu() {
           </View>
         </View>
         <NavigationBar active="menu" />
-      </View>
+      </BackgroundGradient>
       <Modal
         visible={visibleModal}
         animationType="slide"

@@ -2,6 +2,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Image, ScrollView, View } from "react-native";
 import { useAuth } from "../contexts/AuthContext";
 import { useLocation } from "../contexts/LocationContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { useWeather } from "../contexts/WeatherContext";
 import { AppText } from "./AppText";
 import CurrentWeather from "./CurrentWeather";
@@ -13,11 +14,18 @@ export default function DashboardBackground() {
   const { profile } = useAuth();
   const { address } = useLocation();
   const { rain } = useWeather();
+  const { theme } = useTheme();
 
   return (
     <LinearGradient
       className="flex-1 relative z-0 p-6 "
-      colors={rain ? ["#7BDEE0", "#F1FDDA"] : ["#BFE07B", "#79B400"]}
+      colors={
+        theme === "dark"
+          ? ["#202020", "#1B1B1B"]
+          : rain
+            ? ["#7BDEE0", "#F1FDDA"]
+            : ["#BFE07B", "#79B400"]
+      }
       start={{ x: 0, y: 0 }}
       end={{ x: 0.33, y: 1 }}
     >
@@ -29,13 +37,22 @@ export default function DashboardBackground() {
         }}
       >
         <HeaderNav title="Dashboard" />
-        <AppText className="font-poppins text-2xl  text-[#3F1F11]">
+        <AppText
+          color={theme === "dark" ? `light` : `dark`}
+          className="font-poppins text-2xl"
+        >
           Hello,{" "}
-          <AppText className="font-bold text-[#3F1F11]">
+          <AppText
+            color={theme === "dark" ? `light` : `dark`}
+            className="font-bold "
+          >
             {profile?.fullName.split(" ")[0]}!
           </AppText>
         </AppText>
-        <AppText className="font-bold text-[#3F1F11] text-xl">
+        <AppText
+          color={theme === "dark" ? `light` : `dark`}
+          className="font-bold text-xl"
+        >
           {address?.subregion}, {address?.city}
         </AppText>
         <CurrentWeather />

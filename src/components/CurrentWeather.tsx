@@ -47,7 +47,7 @@ export default function CurrentWeather() {
   }, [address?.city]);
 
   if (loading) {
-    return <Loading className="h-24 w-24" />;
+    return <Loading className="h-16 w-16" />;
   }
 
   if (error) {
@@ -56,10 +56,16 @@ export default function CurrentWeather() {
 
   return (
     <View className="flex-col z-20 mx-auto">
-      <AppText className="font-bold text-6xl text-[#3F1F11]">
+      <AppText
+        color={theme === "dark" ? `light` : `dark`}
+        className="font-bold text-6xl text-center"
+      >
         {current?.current.temp_c}&#176;
       </AppText>
-      <AppText className="text-[#3F1F11] text-lg font-bold">
+      <AppText
+        color={theme === "dark" ? `light` : `dark`}
+        className=" text-lg font-bold text-center"
+      >
         {current?.current.condition.text}
       </AppText>
     </View>

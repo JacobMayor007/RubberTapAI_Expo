@@ -147,8 +147,6 @@ export default function Register() {
         email: userEmail,
         imageURL: userProfile,
         role: "farmer",
-        notifSettings: false,
-        themeSettings: false,
         subscription: false,
       };
 

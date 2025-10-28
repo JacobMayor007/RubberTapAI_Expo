@@ -1,7 +1,7 @@
 import { deletePlot, editPlot } from "@/src/action/plotAction";
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
-import HeaderBackground from "@/src/components/HeaderBackground";
 import Loading from "@/src/components/LoadingComponent";
 import NavigationBar from "@/src/components/Navigation";
 import RegisterPlot from "@/src/components/RegisterTreePlot";
@@ -11,7 +11,6 @@ import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { Plot, Profile } from "@/types";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -106,7 +105,7 @@ export default function History() {
       <SafeAreaView
         className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-1 flex-row items-center justify-center`}
       >
-        <Loading className="h-12 w-12" />
+        <Loading className="h-16 w-16" />
       </SafeAreaView>
     );
   }
@@ -153,16 +152,16 @@ export default function History() {
 
   return (
     <SafeAreaView className="flex-1 flex-col justify-between">
-      <View
-        className={` flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`}`}
+      <BackgroundGradient
+        className={` flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFDFA9]`}`}
       >
-        <HeaderBackground />
         <View className={`flex-1  p-6 z-20`}>
           <View className="items-center flex-row mb-4 justify-between">
             <View className="flex-row items-center gap-5">
               <FontAwesome5
                 name="arrow-left"
                 size={28}
+                color={theme === "dark" ? `#E8C282` : `black`}
                 onPress={() => router.back()}
               />
               <AppText
@@ -174,12 +173,19 @@ export default function History() {
             </View>
             <TouchableOpacity
               onPress={() => setRegisterModal(true)}
-              className="bg-green-500 px-4 py-1 rounded-full gap-2 flex-row items-center"
+              className={`${theme === "dark" ? `bg-gray-700` : `bg-[#75A90A]`} px-4 py-1 rounded-full gap-2 flex-row items-center`}
             >
-              <AppText color={`light`} className="text-[14px] font-poppins">
+              <AppText
+                color={theme === "dark" ? `light` : `dark`}
+                className={`text-[14px] font-poppins font-bold ${theme === "light" && "text-white"}`}
+              >
                 Add Plot
               </AppText>
-              <Feather name="plus-circle" size={24} color={"white"} />
+              <Feather
+                name="plus"
+                size={24}
+                color={theme === "dark" ? "#E8C282" : "white"}
+              />
             </TouchableOpacity>
           </View>
           {myPlot?.length < 1 ? (
@@ -192,7 +198,7 @@ export default function History() {
           ) : (
             <Text
               style={{ fontWeight: 700 }}
-              className={`${theme === "dark" ? `text-white` : `text-black`} mb-6  tracking-wide`}
+              className={`${theme === "dark" ? `text-[#E8C282]` : `text-black`} mb-6  tracking-wide`}
             >
               Select Tree Plots
             </Text>
@@ -209,7 +215,7 @@ export default function History() {
                 key={index}
                 style={{
                   boxShadow:
-                    "2px 4px 1px 1px rgba(255, 255, 255, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+                    "rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px",
                 }}
                 className="w-[47%] h-64 rounded-lg relative"
                 onPress={() => {
@@ -255,27 +261,32 @@ export default function History() {
                       setEditDelete("edit");
                       setEdiDelID(data?.$id);
                     }}
+                    className="bg-[#75A90A] rounded-xl px-6 py-2 "
                   >
-                    <MaterialIcons
-                      name="edit"
-                      color={theme === "dark" ? "blue" : "black"}
-                      size={24}
-                    />
+                    <AppText
+                      className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
+                    >
+                      Edit
+                    </AppText>
                   </TouchableOpacity>
                 </View>
-                <View className="absolute right-4 bottom-2 flex-row gap-2">
+                <View
+                  style={{ alignSelf: "flex-end", marginRight: 5.5 }}
+                  className="absolute bottom-2 flex-row gap-2"
+                >
                   <TouchableOpacity
                     onPress={() => {
                       setModal(true);
                       setEdiDelID(data?.$id);
                       setEditDelete("delete");
                     }}
+                    className="bg-[#75A90A] rounded-xl px-4 py-2 "
                   >
-                    <MaterialIcons
-                      name="delete-outline"
-                      color={"red"}
-                      size={24}
-                    />
+                    <AppText
+                      className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
+                    >
+                      Delete
+                    </AppText>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
@@ -284,7 +295,7 @@ export default function History() {
         </View>
 
         <NavigationBar active="history" />
-      </View>
+      </BackgroundGradient>
 
       {/* Navigation */}
 

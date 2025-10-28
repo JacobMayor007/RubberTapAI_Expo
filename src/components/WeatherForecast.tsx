@@ -104,7 +104,7 @@ const WeatherForecast = () => {
   }, [address?.city]);
 
   if (loading) {
-    return <Loading className="h-20 w-20 mx-auto " />;
+    return <Loading className="h-16 w-16 mx-auto " />;
   }
 
   if (error || forecastDays.length < 1) {
@@ -113,7 +113,7 @@ const WeatherForecast = () => {
 
   return (
     <View
-      className={`z-20 ${rain ? `bg-white/20` : `bg-white/20`} px-5 py-2 gap-2 rounded-lg`}
+      className={`z-20 ${theme === "dark" ? `bg-black/80` : `bg-white/50`} px-5 py-2 gap-2 rounded-lg`}
     >
       <View className="flex-row items-center  gap-4">
         <View className="bg-white h-10 w-10 items-center justify-center rounded-full">
@@ -135,17 +135,20 @@ const WeatherForecast = () => {
         style={{
           borderRadius: 16,
         }}
-        className={` py-4 ${theme === "dark" ? `bg-gray-900 border-[1px] border-white` : ``} justify-center gap-1 flex-col`}
+        className={` py-4  justify-center gap-1 flex-col`}
       >
         {forecastDays?.map((data, index) => {
           return (
             <View
               key={index}
-              className={`h-16  ${theme === "dark" ? "border-white" : "border-black"}  bg-white rounded-3xl flex-row items-center justify-around gap-1`}
+              className={`h-16 ${
+                theme === "dark" ? "border-white" : "border-black"
+              } ${theme === "dark" ? "bg-black/70" : "bg-white"} 
+  rounded-3xl flex-row items-center justify-evenly px-4`}
             >
               <AppText
                 color={theme === "dark" ? "light" : "dark"}
-                className=" font-extrabold "
+                className="font-extrabold text-center flex-1"
               >
                 {index === 0 && "Today"}
                 {index === 1 && "Tomorrow"}
@@ -155,7 +158,8 @@ const WeatherForecast = () => {
               </AppText>
 
               <Image
-                className="h-12 w-12"
+                className="h-12 w-12 flex-1"
+                resizeMode="contain"
                 source={{
                   uri: `https://${data.hour[dayjs().hour()].condition.icon}`,
                 }}
@@ -163,13 +167,14 @@ const WeatherForecast = () => {
 
               <AppText
                 color={theme === "dark" ? "light" : "dark"}
-                className=" font-poppins  font-extrabold text-center"
+                className="font-poppins font-extrabold text-center flex-1"
               >
                 {dayjs().format("hh:00 A")}
               </AppText>
+
               <AppText
                 color={theme === "dark" ? "light" : "dark"}
-                className="text-[12px]"
+                className="text-[12px] text-center flex-1"
               >
                 {data?.hour[dayjs().hour()]?.temp_c}&deg;c
               </AppText>

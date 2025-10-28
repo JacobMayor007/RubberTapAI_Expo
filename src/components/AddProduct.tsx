@@ -27,6 +27,7 @@ import { ID } from "react-native-appwrite";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
 import { useLocation } from "../contexts/LocationContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { storage } from "../lib/appwrite";
 import { AppText } from "./AppText";
 import { Button } from "./Button";
@@ -50,6 +51,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
   const cameraRef = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState(false);
+  const { theme } = useTheme();
 
   const address = useLocation();
 
@@ -284,6 +286,8 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
     // }
   };
 
+  console.log(theme);
+
   return (
     <SafeAreaView className="flex-1 bg-[#FFECCC] border">
       <KeyboardAvoidingView
@@ -294,18 +298,20 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
           paddingHorizontal: 32,
           paddingBottom: 8,
           flexGrow: 1,
+          backgroundColor: theme === "dark" ? "#101010" : "",
         }}
       >
-        <ScrollView className="flex-1 pb-7">
+        <ScrollView className={`flex-1 pb-7 `}>
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center gap-4">
               <FontAwesome5
                 name="arrow-left"
                 size={20}
+                color={theme === "dark" ? `#E8C282` : `black`}
                 onPress={() => setAddProductModal(false)}
               />
               <AppText
-                color={"dark"}
+                color={theme === "dark" ? "light" : "dark"}
                 className="font-poppins font-extrabold text-2xl"
               >
                 Marketplace
@@ -313,13 +319,13 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
             </View>
           </View>
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? "light" : "dark"}
             className="font-poppins font-bold text-xl mt-2"
           >
             Rubber/Latex*
           </AppText>
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? "light" : "dark"}
             className="font-poppins font-light text-sm mt-1"
           >
             You can sell your harvest latex and waste rubber here.
@@ -328,14 +334,14 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
           {uri ? (
             <View
               style={{ height: 150 }}
-              className="border mt-2 rounded-xl items-center justify-center"
+              className={`${theme === "dark" && "border-[#E8C282]"} border mt-2 rounded-xl items-center justify-center`}
             >
               <Image className="h-36 w-36" source={{ uri: uri }} />
             </View>
           ) : (
             <View
               style={{ height: 150 }}
-              className="border mt-2 rounded-xl items-center justify-center"
+              className={`${theme === "dark" && "border-[#E8C282]"} border mt-2 rounded-xl items-center justify-center`}
             >
               <View className="flex-row gap-4">
                 <ViewPressable
@@ -343,47 +349,62 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
                     setCameraModal(true);
                     requestCameraPermission();
                   }}
-                  className=" h-20 w-20 flex-row rounded-lg items-center justify-center bg-slate-500"
+                  className={`h-20 w-20 flex-row rounded-lg items-center justify-center ${theme === "dark" ? `bg-slate-100` : ``}`}
                 >
-                  <SimpleLineIcons name="camera" size={40} />
+                  <SimpleLineIcons
+                    name="camera"
+                    size={40}
+                    color={theme === "dark" ? `#E8C282` : `black`}
+                  />
                 </ViewPressable>
                 <ViewPressable
                   onPress={pickAnImage}
-                  className=" h-20 w-20 flex-row rounded-lg items-center justify-center bg-slate-500"
+                  className={`h-20 w-20 flex-row rounded-lg items-center justify-center ${theme === "dark" ? `bg-slate-100` : ``}`}
                 >
-                  <Entypo name="folder-images" size={40} />
+                  <Entypo
+                    name="folder-images"
+                    size={40}
+                    color={theme === "dark" ? `#E8C282` : `black`}
+                  />
                 </ViewPressable>
               </View>
-              <AppText color={"dark"} className="font-poppins text-sm mt-4">
+              <AppText
+                color={theme === "dark" ? "light" : "dark"}
+                className="font-poppins text-sm mt-4"
+              >
                 Upload the photo of your item/rubber waste/latex
               </AppText>
             </View>
           )}
 
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? "light" : "dark"}
             className=" mt-2 font-poppins font-bold text-lg"
           >
             Category*
           </AppText>
-          <View className="h-12 border relative rounded-lg items-center px-4 flex-row justify-between">
+          <View
+            className={`h-12 border relative rounded-lg items-center px-4 flex-row justify-between ${theme === "dark" && "border-[#E8C282]"}`}
+          >
             <AppText
-              color={"dark"}
-              className={`font-poppins font-light w-11/12 ${!category ? `text-[#727272]` : `text-black`}`}
+              className={`font-poppins font-light w-11/12 ${!category ? `text-[#727272]` : theme === "dark" ? "light" : "dark"}`}
             >
               {!category ? `Choose type of category` : category}
             </AppText>
             <MaterialIcons
               onPress={() => setCategoryVisible((prev) => !prev)}
               size={42}
+              color={theme === "dark" ? "#E8C282" : "black"}
               name={categoryVisible ? `arrow-drop-up` : `arrow-drop-down`}
             />
             {categoryVisible && (
-              <View className="absolute  bg-white w-full -left-2 z-20 top-11 gap-2 justify-center">
+              <View
+                className={`absolute ${theme === "dark" && "bg-slate-600"} rounded-lg p-2 bg-white w-full -left-2 z-20 top-11 gap-2 justify-center`}
+              >
                 {categories.map((data, index) => {
                   return (
                     <AppText
-                      color="dark"
+                      color={theme === "dark" ? "light" : "dark"}
                       key={index}
                       onPress={() => {
                         setCategoryVisible(false);
@@ -399,15 +420,18 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
             )}
           </View>
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? "light" : "dark"}
             className=" mt-2 font-poppins font-bold text-lg"
           >
             Price*
           </AppText>
-          <View className="h-12 border rounded-lg items-center px-4 flex-row justify-between">
+          <View
+            className={`h-12 border rounded-lg items-center px-4 flex-row justify-between ${theme === "dark" && "border-[#E8C282]"}`}
+          >
             <TextInput
               placeholder="Enter Price per kilo"
-              className="placeholder:text-[#727272] font-light  w-11/12"
+              placeholderTextColor={"#727272"}
+              className={`font-light  w-11/12 ${theme === "dark" && "text-[#E8C282]"}`}
               value={price}
               onChangeText={(text) => {
                 const sanitizedText = text.replace(/[^0-9.]/g, "");
@@ -418,38 +442,45 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
             <FontAwesome6 name="peso-sign" size={16} color={"green"} />
           </View>
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? "light" : "dark"}
             className="mt-2 font-poppins font-bold text-lg "
           >
             Description*
           </AppText>
-          <View className="border-[1px] h-32 rounded-lg p-2">
+          <View
+            className={`${theme === "dark" && "border-[#E8C282]"} border-[1px] h-32 rounded-lg p-2`}
+          >
             <TextInput
               placeholder="Enter description of the product"
               value={description}
               placeholderTextColor={"#797979"}
               onChangeText={(e) => setDescription(e)}
               multiline
-              className=" drop-shadow-2xl text-slate-900 font-light"
+              className={`drop-shadow-2xl font-light ${theme === "dark" ? "text-[#E8C282]" : "text-slate-900 "}`}
             />
           </View>
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? "light" : "dark"}
             className="mt-3 font-poppins font-bold text-lg"
           >
             Sellers Details
           </AppText>
-          <View className="h-24 border flex-row rounded-lg mb-7 items-center px-7 gap-4">
+          <View
+            className={`h-24 border flex-row rounded-lg mb-7 items-center px-7 gap-4 ${theme === "dark" && "border-[#E8C282]"}`}
+          >
             <Image
               className="h-12 w-12 rounded-full"
               source={{ uri: profile?.imageURL }}
             />
             <View className="flex-col gap-1 text-wrap">
-              <AppText color={"dark"} className="font-poppins font-bold">
+              <AppText
+                color={theme === "dark" ? "light" : "dark"}
+                className="font-poppins font-bold"
+              >
                 {profile?.username}
               </AppText>
               <AppText
-                color={"dark"}
+                color={theme === "dark" ? "light" : "dark"}
                 className="w-7/12 font-poppins font-extralight text-sm"
               >
                 {address?.address?.formattedAddress}
@@ -523,19 +554,22 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
                   className="h-6 w-6"
                 />
               </View>
-              <AppText color={"dark"} className="font-poppins">
+              <AppText
+                color={theme === "dark" ? "light" : "dark"}
+                className="font-poppins"
+              >
                 Do you wish to confirm?
               </AppText>
               <View className="flex-row items-center gap-10">
                 <AppText
-                  color={"dark"}
+                  color={theme === "dark" ? "light" : "dark"}
                   onPress={() => setConfirmModal(false)}
                   className="py-2 px-6 bg-slate-200 rounded-lg font-poppins font-semibold"
                 >
                   Cancel
                 </AppText>
                 <AppText
-                  color={"light"}
+                  color={theme === "dark" ? "light" : "dark"}
                   className="py-2 px-6 bg-[#75A90A] rounded-lg font-poppins font-semibold"
                   onPress={() => {
                     addProduct();

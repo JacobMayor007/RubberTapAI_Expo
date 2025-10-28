@@ -109,8 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (email: string, password: string, name: string) => {
-    await account.create({ userId: ID.unique(), email, password, name }); // ID.unique(), email, password, name
-    await login(email, password);
+    await account.create({ userId: ID.unique(), email, password, name });
   };
 
   return (

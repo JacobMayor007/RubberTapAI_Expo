@@ -1,7 +1,6 @@
 import DashboardBackground from "@/src/components/DashboardBackground";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useLocation } from "@/src/contexts/LocationContext";
-import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { Profile } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -26,7 +25,6 @@ Notifications.setNotificationHandler({
 export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
-  const { theme } = useTheme();
 
   const [profile, setProfile] = useState<Profile | null>(null);
 

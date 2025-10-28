@@ -1,10 +1,13 @@
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import Loading from "@/src/components/LoadingComponent";
 import Logo from "@/src/components/Logo";
 import NavigationBar from "@/src/components/Navigation";
 import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
+import { useTheme } from "@/src/contexts/ThemeContext";
+import { account } from "@/src/lib/appwrite";
 import { ChatRoom, Profile } from "@/types";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Fontisto from "@expo/vector-icons/Fontisto";
@@ -12,6 +15,7 @@ import dayjs from "dayjs";
 import { Link, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
+  Alert,
   Image,
   Modal,
   ScrollView,
@@ -28,7 +32,10 @@ export default function ChatBox() {
   const [chatHistory, setChatHistory] = useState<ChatRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [userVerification, setUserVerification] = useState(false);
+
   const messageUser = useMessage();
+  const { theme } = useTheme();
   const { user } = useAuth();
 
   useEffect(() => {
@@ -163,19 +170,57 @@ export default function ChatBox() {
     }
   };
 
+  const isUserVerified = () => {
+    if (!user?.emailVerification) {
+      if (userVerification) {
+        Alert.alert("Already been sent to your email, please check!");
+        return;
+      }
+      Alert.alert("Account Verification", "Please verified your account!", [
+        {
+          text: "Not Now",
+          onPress: () => router.back(),
+          style: "cancel",
+        },
+        {
+          text: "Ok",
+          onPress: async () => {
+            try {
+              setUserVerification(true);
+
+              const result = await account.createVerification(
+                "https://rubbertapai.netlify.app/"
+              );
+              console.log("Verification email sent:", result);
+
+              Alert.alert("Verification email sent", "Please check your email");
+            } catch (error) {
+              console.error("Failed to send verification:", error);
+            }
+          },
+        },
+      ]);
+
+      return;
+    }
+  };
+
   return (
     <SafeAreaView className="flex-1">
-      <View className="flex-1 flex-col bg-[#E8DFD0]">
+      <BackgroundGradient
+        className={`flex-1 flex-col ${theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`}`}
+      >
         <View className="flex-1 flex-col gap-2 p-6 ">
           <View className="flex-row items-center gap-2 justify-between">
             <View className="flex-row gap-4 items-center">
               <FontAwesome5
                 name="arrow-left"
                 size={20}
-                onPress={() => router.push("/(tabs)/market")}
+                color={theme === "dark" ? "#E8C282" : "black"}
+                onPress={() => router.back()}
               />
               <AppText
-                color={"dark"}
+                color={theme === "dark" ? "light" : "dark"}
                 className="font-poppins font-bold text-2xl tracking-wider"
               >
                 Chat
@@ -184,11 +229,14 @@ export default function ChatBox() {
             <Logo className="h-11 w-11" />
           </View>
           <View className="mt-2  bg-[rgb(43,43,43,0.2)] h-11 rounded-2xl flex-row items-center gap-3 px-4">
-            <Fontisto name="search" size={20} color={`white`} />
+            <Fontisto
+              name="search"
+              size={20}
+              color={theme === "dark" ? `#E8C282` : `white`}
+            />
             <AppText
-              color={"light"}
               onPress={() => setVisibleModal(true)}
-              className="w-11/12 h-full pt-2.5"
+              className={`w-11/12 h-full pt-2.5 ${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
             >
               Search
             </AppText>
@@ -212,7 +260,7 @@ export default function ChatBox() {
                         chat.senderId === profile?.$id &&
                         chat.receiverId === profile?.$id
                           ? profile?.imageURL
-                          : other.profileURL
+                          : other?.profileURL
                       }
                       style={{
                         width: 45,
@@ -227,14 +275,17 @@ export default function ChatBox() {
                       }}
                     >
                       <AppText
-                        color="dark"
+                        color={theme === "dark" ? "light" : "dark"}
                         className="font-poppins font-bold text-lg ml-2"
                       >
                         {other.username || "You"}
                       </AppText>
 
                       <View className="flex-row items-center gap-2 pl-2 ">
-                        <AppText className="text-sm font-light" color="dark">
+                        <AppText
+                          className="text-sm font-light"
+                          color={theme === "dark" ? "light" : "dark"}
+                        >
                           {chat.senderId === profile?.$id
                             ? "You:"
                             : `${other.username.split(" ")[0]}:`}{" "}
@@ -242,10 +293,16 @@ export default function ChatBox() {
                             ? `${chat?.lastMessage.slice(0, 24)}...`
                             : chat?.lastMessage}
                         </AppText>
-                        <AppText color="dark" className="font-bold">
+                        <AppText
+                          color={theme === "dark" ? "light" : "dark"}
+                          className="font-bold"
+                        >
                           &#8226;
                         </AppText>
-                        <AppText color="dark" className="text-sm font-light">
+                        <AppText
+                          color={theme === "dark" ? "light" : "dark"}
+                          className="text-sm font-light"
+                        >
                           {dayjs(chat.$createdAt).local().format("hh:mm A")}
                         </AppText>
                       </View>
@@ -257,7 +314,7 @@ export default function ChatBox() {
           )}
         </View>
         <NavigationBar active="market" />
-      </View>
+      </BackgroundGradient>
 
       <Modal
         visible={visibleModal}
@@ -266,7 +323,7 @@ export default function ChatBox() {
           setVisibleModal(false);
         }}
       >
-        <View className=" flex-1 flex-col  p-6 bg-[#E8DFD0]">
+        <BackgroundGradient className=" flex-1 flex-col  p-6 ">
           <View className="flex-row gap-4 items-center">
             <FontAwesome5
               name="arrow-left"
@@ -314,7 +371,9 @@ export default function ChatBox() {
                   return (
                     <ViewPressable
                       onPress={() => {
-                        messageUser.setUser(data);
+                        !user?.emailVerification
+                          ? isUserVerified()
+                          : messageUser.setUser(data);
                         router.push("/(message)/messages");
                       }}
                       key={index}
@@ -349,7 +408,7 @@ export default function ChatBox() {
               </View>
             )}
           </ScrollView>
-        </View>
+        </BackgroundGradient>
       </Modal>
     </SafeAreaView>
   );

@@ -83,7 +83,7 @@ const NotificationSettings = ({ setVisibleModal }: NotificationProps) => {
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-[#FFECCC] items-center justify-center">
-        <Loading className="h-12 w-12" />
+        <Loading className="h-16 w-16" />
       </SafeAreaView>
     );
   }

@@ -1,21 +1,33 @@
+import { AppText } from "@/src/components/AppText";
+import { useAuth } from "@/src/contexts/AuthContext";
+import { useTheme } from "@/src/contexts/ThemeContext";
 import Feather from "@expo/vector-icons/Feather";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Link } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
+  Image,
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function App() {
+  const [showInstructions, setShowInstructions] = useState("first");
+  const [instructionPage, setInstructionPage] = useState("one");
   const [permission, requestPermission] = useCameraPermissions();
   const [half, setHalf] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const windowWidth = Dimensions.get("window").width;
+  const [takes, setTakes] = useState(0);
+  const { profile } = useAuth();
+  const { theme } = useTheme();
 
   const animatedHeight = useRef(new Animated.Value(0)).current;
 
@@ -101,8 +113,7 @@ export default function App() {
     }
   }, [half]);
 
-  if (!permission) return <View />;
-  if (!permission.granted) {
+  if (!permission?.granted) {
     return (
       <View style={styles.container}>
         <Text style={{ textAlign: "center" }}>
@@ -115,31 +126,189 @@ export default function App() {
     );
   }
 
-  console.log(windowWidth);
+  if (showInstructions === "first") {
+    return (
+      <SafeAreaView className="flex-1">
+        {instructionPage === "one" && (
+          <Pressable
+            onPress={() => setInstructionPage("two")}
+            className="bg-[#F3E0C1] flex-1 p-6 gap-4"
+          >
+            <Feather
+              onPress={() => setShowInstructions("")}
+              name="x"
+              size={32}
+            />
+            <AppText
+              className={`${
+                theme === "dark" ? `text-[#E8C282]` : `text-black`
+              } mb-6 font-bold text-center text-xl`}
+            >
+              🌱 Welcome to the Rubber Tree Measure!
+            </AppText>
+
+            <AppText
+              className={`${
+                theme === "dark" ? `text-[#E8C282]` : `text-black`
+              } font-bold px-16 text-justify`}
+            >
+              {"      "}Measure the height of{" "}
+              <Text className="italic">Hevea brasiliensis</Text>. This tool
+              helps users to estimate the trunk’s length for tapping and
+              productivity assessment.
+            </AppText>
+
+            <AppText
+              className={`${
+                theme === "dark" ? `text-[#E8C282]` : `text-black`
+              } font-bold `}
+            >
+              📸 Instructions:
+            </AppText>
+
+            <AppText
+              className={`${
+                theme === "dark" ? `text-[#E8C282]` : `text-black`
+              } font-bold text-lg`}
+            >
+              1️⃣ Position your camera so the rubber tree trunk is centered in
+              the frame.
+            </AppText>
+
+            <AppText
+              className={`${
+                theme === "dark" ? `text-[#E8C282]` : `text-black`
+              } font-bold text-lg`}
+            >
+              2️⃣ Make sure the tree fits inside the left and right overlays.
+            </AppText>
+
+            <Image
+              style={{
+                alignSelf: "center",
+              }}
+              source={require("@/assets/images/Instruction_One.png")}
+              className="h-[50%] w-56"
+            />
+            <AppText className="font-poppins italic text-right text-yellow-500 underline">
+              Just press to next
+            </AppText>
+          </Pressable>
+        )}
+        {instructionPage === "two" && (
+          <Pressable
+            className="bg-[#F3E0C1] flex-1 p-6 gap-4 py-20"
+            onPress={() => {
+              setInstructionPage("");
+              setShowInstructions("");
+            }}
+          >
+            <AppText
+              className={`${
+                theme === "dark" ? `text-[#E8C282]` : `text-black`
+              } font-bold `}
+            >
+              3️⃣ Tap the round button below to start measuring.
+            </AppText>
+
+            <AppText
+              className={`${
+                theme === "dark" ? `text-[#E8C282]` : `text-black`
+              } font-bold `}
+            >
+              4️⃣ Stay steady while the system calculates the trunk’s dimensions.
+            </AppText>
+
+            <AppText
+              className={`${
+                theme === "dark" ? `text-[#E8C282]` : `text-black`
+              } font-bold text-justify`}
+            >
+              5️⃣ You can tap the measure button{" "}
+              <Text style={{ color: "#E63946" }}>twice</Text> to extend the
+              measurement — or simply align your phone so that the{" "}
+              <Text style={{ color: "#E63946" }}>0.5 m mark</Text> matches the
+              top of the trunk to estimate up to{" "}
+              <Text style={{ color: "#E63946" }}>1 m</Text>.
+            </AppText>
+
+            <Image
+              style={{
+                alignSelf: "center",
+              }}
+              source={require("@/assets/images/Instruction_Two.png")}
+              className="h-64 w-28"
+            />
+
+            <AppText
+              className={`${
+                theme === "dark" ? `text-[#E8C282]` : `text-black`
+              } font-bold text-center mt-4`}
+            >
+              ✋ Tip: Hold your phone vertically and ensure the full trunk is
+              visible for the most accurate measurement.
+            </AppText>
+          </Pressable>
+        )}
+      </SafeAreaView>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <CameraView ref={cameraRef} style={styles.camera}>
-        {/* Left Overlay */}
         <View style={styles.leftOverlay}>
           <Link href="/(camera)" className="mt-10 mx-10">
-            <Feather name="arrow-left" size={32} />
+            <Feather name="arrow-left" size={32} color={"white"} />
           </Link>
         </View>
-        {/* Right Overlay */}
         <View style={styles.rightOverlay}>
-          <View style={styles.bottomBar}>
-            <TouchableOpacity
-              style={styles.button}
-              onPress={() => setHalf((prev) => !prev)}
+          {profile?.subscription ? (
+            <View
+              style={{
+                alignSelf: "center",
+              }}
+              className="absolute bottom-10 bg-gray-600 py-3 rounded-lg flex-row items-center gap-1 px-3 "
             >
-              <Text style={{ color: "#fff", textAlign: "center" }}>
-                {half ? "Reset" : "Capture to measure the Half"}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              <FontAwesome5 name="crown" size={28} color={"yellow"} />
+              <AppText className="font-bold ml-2 text-lg">Unlimited</AppText>
+            </View>
+          ) : (
+            <Pressable className="absolute bottom-0 gap-1">
+              <View className="flex-row items-center gap-2">
+                <FontAwesome5 name="crown" size={28} color={"yellow"} />
+                <TouchableOpacity
+                  style={{ transform: "skewX(-10deg)" }}
+                  className="font-poppins p-2  font-bold bg-gray-600"
+                >
+                  <Text
+                    style={{
+                      color: "white",
+                      fontFamily: "Poppins",
+                      fontWeight: 900,
+                    }}
+                  >
+                    {!takes ? 0 : takes}/25 Scan
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <Link href={{ pathname: "/(camera)/payment" }}>
+                <AppText
+                  color={"light"}
+                  className="font-poppins text-center tracking-widest font-bold  underline"
+                >
+                  Get Unlimited
+                </AppText>
+              </Link>
+            </Pressable>
+          )}
         </View>
-
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setHalf((prev) => !prev)}
+        >
+          <View className="flex-1 rounded-full border-[1.5px] border-black" />
+        </TouchableOpacity>
         <Animated.View
           style={{
             alignSelf: "center",
@@ -147,6 +316,7 @@ export default function App() {
             width: 12,
             position: "absolute",
             bottom: 0,
+            zIndex: -10,
             height: animatedHeight.interpolate({
               inputRange: [0, 1],
               outputRange: ["0%", "100%"],
@@ -167,6 +337,7 @@ export default function App() {
         />
 
         {/* Measurement labels with smooth transitions */}
+        {/* Measurement labels with smooth transitions */}
         <Animated.View
           style={{
             position: "absolute",
@@ -182,7 +353,7 @@ export default function App() {
               fontSize: 20,
             }}
           >
-            1.5 m
+            0.5 m
           </Text>
         </Animated.View>
 
@@ -201,7 +372,7 @@ export default function App() {
               fontSize: 20,
             }}
           >
-            1.0 m
+            0.33 m
           </Text>
         </Animated.View>
 
@@ -220,7 +391,7 @@ export default function App() {
               fontSize: 20,
             }}
           >
-            0.5 m
+            0.16 m
           </Text>
         </Animated.View>
 
@@ -239,7 +410,7 @@ export default function App() {
               fontSize: 20,
             }}
           >
-            0m
+            0 m
           </Text>
         </Animated.View>
       </CameraView>
@@ -248,15 +419,18 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#000" },
-  camera: { flex: 1 },
+  container: {
+    flexGrow: 1,
+    backgroundColor: "#000",
+  },
+  camera: { flexGrow: 1 },
   leftOverlay: {
     position: "absolute",
     left: 0,
     top: 0,
     bottom: 0,
     width: "37%",
-    backgroundColor: "rgb(255,255,255)",
+    backgroundColor: "rgba(0,0,0,0.80)",
   },
   rightOverlay: {
     position: "absolute",
@@ -264,18 +438,18 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: "37%",
-    backgroundColor: "rgb(255,255,255)",
+    backgroundColor: "rgba(0,0,0,0.80)",
   },
-  bottomBar: {
+
+  button: {
+    backgroundColor: "#FFFFFF",
+    padding: 4,
+    height: 72,
+    width: 72,
+    borderRadius: "50%",
+    zIndex: 30,
     position: "absolute",
     bottom: 30,
     alignSelf: "center",
-  },
-  button: {
-    backgroundColor: "#1e90ff",
-    paddingHorizontal: 20,
-
-    paddingVertical: 10,
-    borderRadius: 8,
   },
 });

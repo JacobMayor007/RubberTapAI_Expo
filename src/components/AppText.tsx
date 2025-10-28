@@ -22,7 +22,7 @@ export function AppText({
     <Text
       onPress={onPress}
       className={cn(
-        "text-white",
+        "text-[#E8C282]",
         color === "dark" && "text-[#442111]",
         className
       )}

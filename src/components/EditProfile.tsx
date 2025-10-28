@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import { editEmail, editName, updateProfileAction } from "../action/userAction";
 import { useAuth } from "../contexts/AuthContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { account } from "../lib/appwrite";
 import { AppText } from "./AppText";
 import ConfirmCancelModal from "./ConfirmOrCancelModal";
@@ -35,6 +36,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [uri, setUri] = useState("");
+  const { theme } = useTheme();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -265,7 +267,9 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
         </View>
 
         <TouchableOpacity className="items-end mt-4">
-          <AppText color="light" className="bg-[#75A90A] p-3 rounded-full">
+          <AppText
+            className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`} bg-[#75A90A] p-3 rounded-full`}
+          >
             Change Password
           </AppText>
         </TouchableOpacity>
@@ -340,7 +344,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
             onOk={handleEditEmail}
           >
             {loading ? (
-              <Loading className="h-14 w-14 m-auto pb-4" />
+              <Loading className="h-16 w-16 m-auto pb-4" />
             ) : (
               <AppText
                 color="dark"
@@ -365,7 +369,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
             onOk={pickAnImage}
           >
             {loading ? (
-              <Loading className="h-14 w-14 m-auto pb-4" />
+              <Loading className="h-16 w-16 m-auto pb-4" />
             ) : (
               <AppText
                 color="dark"
@@ -394,7 +398,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
             onOk={updateProfile}
           >
             {loading ? (
-              <Loading className="h-14 w-14 m-auto pb-4" />
+              <Loading className="h-16 w-16 m-auto pb-4" />
             ) : (
               <View className="flex-col items-center justify-center mt-2 gap-5">
                 <Image src={uri} width={102} height={102} borderRadius={50} />

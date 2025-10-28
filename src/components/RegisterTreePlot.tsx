@@ -104,7 +104,7 @@ export default function RegisterPlot({
             <Feather
               name="x-circle"
               size={24}
-              color={theme === "dark" ? `"white"` : `red`}
+              color={theme === "dark" ? `"white"` : `maroon`}
               onPress={() => {
                 setRegisterModal(false);
               }}
@@ -134,9 +134,9 @@ export default function RegisterPlot({
               boxShadow:
                 "1px 1px 1px 1px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
             }}
-            className="h-8 w-24 bg-white items-center justify-center rounded-md"
+            className="h-8 w-24 bg-slate-500 items-center justify-center rounded-md"
           >
-            <Text>Cancel</Text>
+            <Text className="text-white">Cancel</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={toSavePlot}
@@ -144,7 +144,7 @@ export default function RegisterPlot({
               boxShadow:
                 "1px 1px 1px 1px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
             }}
-            className="h-8 w-24 bg-blue-500 items-center justify-center rounded-md"
+            className="h-8 w-24 bg-green-500 items-center justify-center rounded-md"
           >
             <Text className="text-white">Save</Text>
           </TouchableOpacity>
