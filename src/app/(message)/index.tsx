@@ -256,12 +256,13 @@ export default function ChatBox() {
                     className="flex-row py-2 mt-2 items-center"
                   >
                     <Image
-                      src={
-                        chat.senderId === profile?.$id &&
-                        chat.receiverId === profile?.$id
-                          ? profile?.imageURL
-                          : other?.profileURL
-                      }
+                      source={{
+                        uri:
+                          chat.senderId === profile?.$id &&
+                          chat.receiverId === profile?.$id
+                            ? profile?.imageURL
+                            : other?.profileURL,
+                      }}
                       style={{
                         width: 45,
                         height: 45,
@@ -382,11 +383,7 @@ export default function ChatBox() {
                       <Image
                         style={{ height: 48, width: 48 }}
                         className="h-12 w-12 rounded-full"
-                        source={
-                          data.imageURL
-                            ? { uri: data.imageURL }
-                            : require("@/assets/images/anonymous_profile.png")
-                        }
+                        source={{ uri: data.imageURL }}
                       />
                       <View className="ml-2 justify-center flex-col">
                         <AppText

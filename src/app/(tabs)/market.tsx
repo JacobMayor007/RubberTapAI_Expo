@@ -180,7 +180,7 @@ export default function Market() {
                 <AppText
                   className={`${theme === "dark" ? "text-[#E2C282]" : "text-white"} font-poppins font-semibold`}
                 >
-                  Add Your Product
+                  Add Product
                 </AppText>
                 <Feather
                   size={20}

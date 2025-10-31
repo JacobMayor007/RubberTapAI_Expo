@@ -151,8 +151,8 @@ export default function Leaves() {
             </AppText>
           </View>
 
-          {Array.isArray(myLeaves) && myLeaves.length > 0 ? (
-            <View className="flex-row flex-1 mt-8">
+          {myLeaves.length > 0 ? (
+            <View className="flex-row flex-1 mt-8 gap-4 flex-wrap">
               {myLeaves?.map((data, index) => {
                 return (
                   <TouchableOpacity
@@ -163,7 +163,10 @@ export default function Leaves() {
                       setModal(true);
                     }}
                   >
-                    <Image src={data?.image_leaf} className="h-[75%] w-full" />
+                    <Image
+                      source={{ uri: data?.image_leaf }}
+                      className="h-[75%] w-full"
+                    />
                     <View className="p-2 flex-row justify-between">
                       <AppText
                         color="dark"
@@ -208,11 +211,15 @@ export default function Leaves() {
             />
           </View>
           <Image
-            src={leaf?.image_leaf}
+            source={{ uri: leaf?.image_leaf }}
             className="h-[70%] w-[80%] rounded-md"
           />
           <AppText className="text-xl font-poppins">
             Status: {leaf?.status}
+          </AppText>
+          <AppText>
+            Probability:{" "}
+            {parseFloat(String(leaf?.confidence ?? 0 * 100)).toFixed(3)}
           </AppText>
         </View>
       </Modal>
