@@ -46,7 +46,7 @@ export default function DashboardBackground() {
             color={theme === "dark" ? `light` : `dark`}
             className="font-bold "
           >
-            {profile?.fullName.split(" ")[0]}!
+            {profile?.fullName?.split(" ")[0]}!
           </AppText>
         </AppText>
         <AppText

@@ -396,7 +396,7 @@ export default function CameraLeaf() {
 
   const saveLeaf = async () => {
     try {
-      setLoading(true);
+      setPageLoading(true);
       const status = results?.predictions.reduce(
         (max: Prediction, item: Prediction) =>
           item.probability > max.probability ? item : max,
@@ -431,11 +431,13 @@ export default function CameraLeaf() {
         console.log(data);
 
         Alert.alert(data.title, data.message);
+        setPageLoading(false);
       }
     } catch (error) {
       console.error(error);
     } finally {
       router.reload();
+      setPageLoading(false);
     }
   };
 
