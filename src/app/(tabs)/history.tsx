@@ -102,11 +102,11 @@ export default function History() {
 
   if (loading) {
     return (
-      <SafeAreaView
-        className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-1 flex-row items-center justify-center`}
+      <BackgroundGradient
+        className={` flex-1 flex-row items-center justify-center`}
       >
-        <Loading className="h-16 w-16" />
-      </SafeAreaView>
+        <Loading className="h-16 w-16 mx-auto" />
+      </BackgroundGradient>
     );
   }
 
@@ -176,8 +176,7 @@ export default function History() {
               className={`${theme === "dark" ? `bg-gray-700` : `bg-[#75A90A]`} px-4 py-1 rounded-full gap-2 flex-row items-center`}
             >
               <AppText
-                color={theme === "dark" ? `light` : `dark`}
-                className={`text-[14px] font-poppins font-bold ${theme === "light" && "text-white"}`}
+                className={`text-[14px] font-poppins font-bold text-white`}
               >
                 Add Plot
               </AppText>
@@ -248,12 +247,14 @@ export default function History() {
                     </AppText>
                   </View>
                 )}
-                <View className="flex-row justify-between items-center pr-4">
+                <View className="flex-row justify-between mt-3 items-center px-1">
                   <AppText
-                    className="m-4 text-lg pb-0.5 font-bold font-poppins"
+                    className=" text-lg pb-0.5 font-bold font-poppins"
                     color={theme === "dark" ? `light` : `dark`}
                   >
-                    {data?.name}
+                    {data?.name.length > 8
+                      ? data.name.slice(0, 8).concat("...")
+                      : data?.name}
                   </AppText>
                   <TouchableOpacity
                     onPress={() => {
@@ -261,7 +262,7 @@ export default function History() {
                       setEditDelete("edit");
                       setEdiDelID(data?.$id);
                     }}
-                    className="bg-[#75A90A] rounded-xl px-6 py-2 "
+                    className="bg-[#75A90A]   rounded-xl px-6 py-2 "
                   >
                     <AppText
                       className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}

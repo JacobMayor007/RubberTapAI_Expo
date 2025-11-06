@@ -99,6 +99,7 @@ export default function CameraLeaf() {
   const [pageLoading, setPageLoading] = useState(false);
   const [subscription, setSubscription] = useState<SubscriptionData | null>();
   const { address } = useLocation();
+  const [disable, setDisable] = useState(false);
 
   if (!address) {
     return Alert.alert(
@@ -266,7 +267,12 @@ export default function CameraLeaf() {
       return;
     }
 
+    if (disable) {
+      return;
+    }
+
     try {
+      setDisable(true);
       const photo = await cameraRef.current.takePictureAsync();
       if (photo?.uri) {
         setUri(photo.uri);
@@ -341,6 +347,7 @@ export default function CameraLeaf() {
       });
     } finally {
       setLoading(false);
+      setDisable(false);
     }
   };
 
@@ -389,18 +396,23 @@ export default function CameraLeaf() {
 
   const saveLeaf = async () => {
     try {
-      setLoading(true);
+      setPageLoading(true);
       const status = results?.predictions.reduce(
         (max: Prediction, item: Prediction) =>
           item.probability > max.probability ? item : max,
         { probability: 0, className: "" }
       ).className;
 
-      const confidence = results?.predictions?.[0]
-        ? parseFloat((results.predictions[0].probability * 100).toFixed(2))
-        : 100;
+      const bestResult = results?.predictions.reduce(
+        (max, item) => (item.probability > max.probability ? item : max),
+        { className: "", probability: 0 }
+      );
 
-      console.log(confidence);
+      let probability = (bestResult?.probability ?? 0) * 100;
+
+      if (probability > 100) probability = 100;
+
+      probability = parseFloat(probability.toFixed(3));
 
       const data = await saveLeafToTreeToPlot(
         user?.$id || "",
@@ -409,7 +421,7 @@ export default function CameraLeaf() {
         uri || "",
         status || "",
         profile?.API_KEY || "",
-        confidence
+        probability
       );
 
       if (data) {
@@ -419,11 +431,13 @@ export default function CameraLeaf() {
         console.log(data);
 
         Alert.alert(data.title, data.message);
+        setPageLoading(false);
       }
     } catch (error) {
       console.error(error);
     } finally {
       router.reload();
+      setPageLoading(false);
     }
   };
 

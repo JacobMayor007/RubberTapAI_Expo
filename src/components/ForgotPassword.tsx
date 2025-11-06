@@ -11,7 +11,7 @@ type ChangePasswordProps = {
   setForgotModal: (visible: boolean) => void;
 };
 
-export default function ChangePassword({
+export default function ForgotPassword({
   setForgotModal,
 }: ChangePasswordProps) {
   const [email, setEmail] = useState("");

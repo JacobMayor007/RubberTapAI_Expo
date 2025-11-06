@@ -11,6 +11,7 @@ import {
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { AppText } from "./AppText";
+import BackgroundGradient from "./BackgroundGradient";
 import Loading from "./LoadingComponent";
 
 type NotificationProps = {
@@ -91,21 +92,23 @@ const NotificationSettings = ({ setVisibleModal }: NotificationProps) => {
   console.log("Notif: ", profile?.notif);
 
   return (
-    <SafeAreaView
+    <BackgroundGradient
       className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} p-6 gap-2`}
     >
-      <FontAwesome5
-        name="arrow-left"
-        size={20}
-        onPress={() => setVisibleModal(false)}
-        color={theme === "dark" ? `white` : `black`}
-      />
-      <AppText
-        color={theme === "dark" ? `light` : `dark`}
-        className="font-poppins font-bold text-xl mt-5"
-      >
-        Notification Settings
-      </AppText>
+      <View className="flex-row items-center gap-4 mt-4 mb-8">
+        <FontAwesome5
+          name="arrow-left"
+          size={20}
+          onPress={() => setVisibleModal(false)}
+          color={theme === "dark" ? `white` : `black`}
+        />
+        <AppText
+          color={theme === "dark" ? `light` : `dark`}
+          className="font-poppins font-bold text-xl "
+        >
+          Notification Settings
+        </AppText>
+      </View>
       <View className="flex-row justify-between items-center border-b-[0.5px] border-[#046A10] pb-2">
         <AppText
           color={theme === "dark" ? `light` : `dark`}
@@ -175,7 +178,7 @@ const NotificationSettings = ({ setVisibleModal }: NotificationProps) => {
           />
         </View>
       </View>
-    </SafeAreaView>
+    </BackgroundGradient>
   );
 };
 

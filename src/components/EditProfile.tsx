@@ -2,7 +2,6 @@ import { Profile } from "@/types";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -18,6 +17,8 @@ import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { account } from "../lib/appwrite";
 import { AppText } from "./AppText";
+import BackgroundGradient from "./BackgroundGradient";
+import ChangePassword from "./ChangePassword";
 import ConfirmCancelModal from "./ConfirmOrCancelModal";
 import Loading from "./LoadingComponent";
 
@@ -158,7 +159,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
   };
 
   return (
-    <View className="bg-[#FFECCC] flex-1 ">
+    <BackgroundGradient className="flex-1 ">
       <View className="flex-row items-center gap-7 m-6">
         <Feather
           name="arrow-left"
@@ -169,13 +170,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
           Edit Profile
         </AppText>
       </View>
-      <LinearGradient
-        colors={["#75A90A", "#046A10"]}
-        style={{
-          width: "100%",
-          height: 96,
-        }}
-      />
+
       <View className="m-6">
         <View className="flex-row items-end ">
           <Image
@@ -266,7 +261,13 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity className="items-end mt-4">
+        <TouchableOpacity
+          onPress={() => {
+            setConfirmModal(true);
+            setEditProfile("changePassword");
+          }}
+          className="items-end mt-4"
+        >
           <AppText
             className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`} bg-[#75A90A] p-3 rounded-full`}
           >
@@ -412,8 +413,12 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
             )}
           </ConfirmCancelModal>
         )}
+
+        {editProfile === "changePassword" && (
+          <ChangePassword setConfirmModal={setConfirmModal} />
+        )}
       </Modal>
-    </View>
+    </BackgroundGradient>
   );
 }
 

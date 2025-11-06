@@ -115,9 +115,9 @@ export default function Market() {
             try {
               setUserVerification(true);
 
-              const result = await account.createVerification(
-                "https://rubbertapai.netlify.app/"
-              );
+              const result = await account.createVerification({
+                url: "https://rubbertapai.netlify.app/",
+              });
               console.log("Verification email sent:", result);
 
               Alert.alert("Verification email sent", "Please check your email");
@@ -180,7 +180,7 @@ export default function Market() {
                 <AppText
                   className={`${theme === "dark" ? "text-[#E2C282]" : "text-white"} font-poppins font-semibold`}
                 >
-                  Add Your Product
+                  Add Product
                 </AppText>
                 <Feather
                   size={20}
@@ -197,7 +197,7 @@ export default function Market() {
             ) : (
               <View style={{ flexGrow: 1, paddingBottom: 12 }}>
                 <View className="gap-2 py-2  w-full">
-                  {myProduct?.slice(0, 2).map((data, index) => (
+                  {myProduct?.map((data, index) => (
                     <Pressable
                       style={{
                         boxShadow:
@@ -207,7 +207,7 @@ export default function Market() {
                       key={index}
                     >
                       <Image
-                        className={`${theme === "dark" && "bg-slate-800"} h-36 w-36`}
+                        className={`${theme === "dark" && "bg-slate-800"} h-36 w-44`}
                         src={data?.productURL}
                       />
                       <View className="ml-2 mt-3 flex-1 flex-col">

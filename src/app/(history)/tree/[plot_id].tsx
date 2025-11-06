@@ -246,7 +246,7 @@ export default function ListTrees() {
                       borderTopLeftRadius: 8,
                       borderTopRightRadius: 8,
                     }}
-                    src={data?.image_url}
+                    source={{ uri: data?.image_url }}
                     className="h-[55%]"
                   />
                 ) : (

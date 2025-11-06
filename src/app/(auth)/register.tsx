@@ -2,6 +2,8 @@ import { AppText } from "@/src/components/AppText";
 import { Button } from "@/src/components/Button";
 import Loading from "@/src/components/LoadingComponent";
 import Logo from "@/src/components/Logo";
+import TermsAndCon from "@/src/components/TermsAndCon";
+
 import { useAuth } from "@/src/contexts/AuthContext";
 import { account, database } from "@/src/lib/appwrite";
 import Feather from "@expo/vector-icons/Feather";
@@ -14,6 +16,7 @@ import {
   Alert,
   ImageBackground,
   KeyboardAvoidingView,
+  Modal,
   Pressable,
   ScrollView,
   TextInput,
@@ -29,7 +32,7 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
+  const [modal, setModal] = useState(false);
   const [userInfo, setUserInfo] = useState({
     fullName: "",
     fName: "",
@@ -415,7 +418,10 @@ export default function Register() {
                   onValueChange={() => setAgree((prev) => !prev)}
                   className={agree ? "#4630EB" : undefined}
                 />
-                <AppText className="text-[#a3c461] font-semibold font-poppins">
+                <AppText
+                  onPress={() => setModal(true)}
+                  className="text-[#a3c461] font-semibold font-poppins"
+                >
                   Agree to terms & conditions
                 </AppText>
               </View>
@@ -441,6 +447,9 @@ export default function Register() {
           </ScrollView>
         </KeyboardAvoidingView>
       </ImageBackground>
+      <Modal visible={modal} onRequestClose={() => setModal(false)}>
+        <TermsAndCon setModal={setModal} />
+      </Modal>
     </SafeAreaView>
   );
 }

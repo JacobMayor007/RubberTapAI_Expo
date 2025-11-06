@@ -1,5 +1,6 @@
 import { updateReadAllNotif } from "@/src/action/userAction";
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
@@ -107,76 +108,80 @@ export default function AllMyNotifications() {
 
   return (
     <SafeAreaView className="flex-1">
-      <ScrollView
-        contentContainerStyle={{
-          padding: 24,
-          backgroundColor: theme === "light" ? "#FFECCC" : "#111827",
-          gap: 10,
-          flexGrow: 1,
-        }}
+      <BackgroundGradient
+        className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFDFA9]`} flex-col justify-between`}
       >
-        <View className="flex-row items-center gap-5">
-          <FontAwesome5
-            name="arrow-left"
-            size={20}
-            color={theme === "dark" ? `#E2C282` : `black`}
-            onPress={() => router.back()}
-          />
-          <AppText
-            color={theme === "dark" ? `light` : `dark`}
-            className="font-poppins font-bold text-2xl"
-          >
-            Notifications
-          </AppText>
-        </View>
-        <View
-          className={`flex-row ${unread > 0 ? `justify-between` : `justify-end`}`}
+        <ScrollView
+          contentContainerStyle={{
+            padding: 24,
+
+            gap: 10,
+            flexGrow: 1,
+          }}
         >
-          {unread > 0 && (
-            <AppText className="font-poppins text-red-500 font-bold text-lg">
-              Unread ({unread})
-            </AppText>
-          )}
-          <TouchableOpacity onPress={markedAllAsRead}>
-            <AppText className="font-poppins font-bold text-lg text-blue-500">
-              MARK ALL AS READ
-            </AppText>
-          </TouchableOpacity>
-        </View>
-        {myNotifications.map((data, index) => {
-          return (
-            <TouchableOpacity
-              key={index}
-              onPress={() => handleMessageUser(data?.userId)}
-              className="flex-row items-center gap-4"
+          <View className="flex-row items-center gap-5">
+            <FontAwesome5
+              name="arrow-left"
+              size={20}
+              color={theme === "dark" ? `#E2C282` : `black`}
+              onPress={() => router.back()}
+            />
+            <AppText
+              color={theme === "dark" ? `light` : `dark`}
+              className="font-poppins font-bold text-2xl"
             >
-              {!data?.isRead && (
-                <Text className="h-1 w-1 rounded-full bg-blue-500" />
-              )}
-              <Image
-                src={data?.senderProfile}
-                className="h-10 w-10 rounded-full"
-              />
-              <View className=" border-b-[0.5px] w-9/12 py-2">
-                <AppText
-                  color={theme === "dark" ? `light` : `dark`}
-                  className={`font-poppins ${data?.isRead ? `font-normal text-sm` : `font-bold`} text-base`}
-                >
-                  {data?.message.length < 43
-                    ? data?.message
-                    : `${data?.message.slice(0, 42)}...`}
-                </AppText>
-                <AppText
-                  color={theme === "dark" ? `light` : `dark`}
-                  className="text-sm"
-                >
-                  {dayjs(data?.$createdAt).format("MM-DD-YYYY hh:mm A")}
-                </AppText>
-              </View>
+              Notifications
+            </AppText>
+          </View>
+          <View
+            className={`flex-row ${unread > 0 ? `justify-between` : `justify-end`}`}
+          >
+            {unread > 0 && (
+              <AppText className="font-poppins text-red-500 font-bold text-lg">
+                Unread ({unread})
+              </AppText>
+            )}
+            <TouchableOpacity onPress={markedAllAsRead}>
+              <AppText className="font-poppins font-bold text-lg text-blue-500">
+                MARK ALL AS READ
+              </AppText>
             </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+          </View>
+          {myNotifications.map((data, index) => {
+            return (
+              <TouchableOpacity
+                key={index}
+                onPress={() => handleMessageUser(data?.userId)}
+                className="flex-row items-center gap-4"
+              >
+                {!data?.isRead && (
+                  <Text className="h-1 w-1 rounded-full bg-blue-500" />
+                )}
+                <Image
+                  src={data?.senderProfile}
+                  className="h-10 w-10 rounded-full"
+                />
+                <View className=" border-b-[0.5px] w-9/12 py-2">
+                  <AppText
+                    color={theme === "dark" ? `light` : `dark`}
+                    className={`font-poppins ${data?.isRead ? `font-normal text-sm` : `font-bold`} text-base`}
+                  >
+                    {data?.message.length < 43
+                      ? data?.message
+                      : `${data?.message.slice(0, 42)}...`}
+                  </AppText>
+                  <AppText
+                    color={theme === "dark" ? `light` : `dark`}
+                    className="text-sm"
+                  >
+                    {dayjs(data?.$createdAt).format("MM-DD-YYYY hh:mm A")}
+                  </AppText>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </BackgroundGradient>
     </SafeAreaView>
   );
 }
