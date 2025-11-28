@@ -19,28 +19,39 @@ const AppearanceSettings = ({ setVisibleModal }: AppearanceProps) => {
   useEffect(() => {
     (async () => {
       try {
-        const storedThemeType = await AsyncStorage.getItem("appearance");
-        const storedTheme = await AsyncStorage.getItem("theme");
+        // 🔹 Get the label (Light theme, Dark theme, System)
+        const storedLabel = await AsyncStorage.getItem("theme");
+        // 🔹 Get the actual theme value (light, dark)
+        const storedTheme = await AsyncStorage.getItem("appearance");
 
-        console.log("theme?: ", storedThemeType);
-        console.log("label?: ", storedTheme);
+        console.log("Stored Label (theme):", storedLabel);
+        console.log("Stored Theme (appearance):", storedTheme);
 
-        setTheme(
-          storedTheme === "System" ? systemTheme || "" : storedThemeType || ""
-        );
-        if (storedThemeType) setThemeType(storedTheme || "");
-        if (storedTheme) setTheme(storedTheme);
+        // 🔹 If label exists, use it to set themeType
+        if (storedLabel) {
+          setThemeType(storedLabel);
+        }
+
+        // 🔹 If theme exists, use it to set the actual theme
+        if (storedTheme) {
+          setTheme(storedTheme);
+        } else if (storedLabel === "System") {
+          // 🔹 If System is selected, use the device system theme
+          setTheme(systemTheme || "dark");
+        }
       } catch (error) {
         console.error(error);
       }
     })();
-  }, []);
+  }, [systemTheme, setTheme]);
 
   const handleThemeChange = async (title: string, label: string) => {
     try {
       setThemeType(label);
       setTheme(title);
+      // 🔹 appearance = the actual theme (light/dark)
       await AsyncStorage.setItem("appearance", title);
+      // 🔹 theme = the label (Light theme, Dark theme, System)
       await AsyncStorage.setItem("theme", label);
     } catch (error) {
       console.error(error);
@@ -65,8 +76,8 @@ const AppearanceSettings = ({ setVisibleModal }: AppearanceProps) => {
     },
   ];
 
-  console.log("What is the theme?: ", theme);
-  console.log("What is the label?: ", themeType);
+  console.log("Current theme:", theme);
+  console.log("Current label:", themeType);
 
   return (
     <BackgroundGradient className={`flex-1 p-6 `}>

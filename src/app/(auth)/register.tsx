@@ -21,7 +21,6 @@ import {
   View,
 } from "react-native";
 
-import { ID } from "react-native-appwrite";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Register() {
@@ -41,7 +40,7 @@ export default function Register() {
     confirmPassword: "",
   });
   const [agree, setAgree] = useState(false);
-  const auth = useAuth();
+  const { register } = useAuth();
 
   const signUp = async () => {
     const regex =
@@ -118,17 +117,17 @@ export default function Register() {
     try {
       setLoading(true);
 
-      await account.create(
-        ID.unique(),
+      await register(
         userInfo.email,
         userInfo.password,
         `${userInfo.fName} ${userInfo.lName}`
       );
 
-      const session = await account.createEmailPasswordSession(
-        userInfo.email,
-        userInfo.password
-      );
+      const session = await account.createEmailPasswordSession({
+        email: userInfo.email,
+        password: userInfo.password,
+      });
+
       if (!session) throw new Error("Failed to create session");
 
       const user = await account.get();
@@ -151,7 +150,7 @@ export default function Register() {
         subscription: false,
       };
 
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}`, {
         method: "POST",
         headers: {
           "X-API-Key": `${process.env.EXPO_PUBLIC_RUBBERTAPAI_API_KEY}`,
@@ -168,7 +167,8 @@ export default function Register() {
 
       Alert.alert(`${status.title}`, `${status.message}`);
 
-      router.replace("/(tabs)");
+      await account.deleteSession({ sessionId: "current" });
+      router.push("/(auth)");
     } catch (error) {
       console.error("Error registering user:", error);
       Alert.alert("Register Failed", "Failed to create account");

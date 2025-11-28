@@ -1,4 +1,5 @@
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
 import Loading from "@/src/components/LoadingComponent";
 import { ViewPressable } from "@/src/components/ViewPressable";
@@ -250,9 +251,7 @@ export default function Messages() {
   };
 
   return (
-    <SafeAreaView
-      className={`${theme === "dark" ? `bg-[rgb(63,31,17,.05)]` : `bg-[#FFDFA9]`} flex-1 `}
-    >
+    <SafeAreaView className={`flex-1`}>
       <KeyboardAvoidingView
         style={{
           flex: 1,
@@ -260,194 +259,201 @@ export default function Messages() {
         behavior={"height"}
         keyboardVerticalOffset={0}
       >
-        <View className="flex-1">
-          <View
-            className={`${theme === "dark" ? "bg-[#010101] border-[#38C282]" : "bg-[#FFDCA1] border-gray-500"} gap-4 h-24 p-6 flex-row items-center justify-between border-b-[0.5px] `}
-          >
-            <View className="flex-row items-center gap-4">
-              <FontAwesome5
-                name="arrow-left"
-                size={20}
-                color={theme === "dark" ? "#E8C282" : "black"}
-                onPress={() => router.replace("/(message)")}
-              />
-              <Image
-                style={{ height: 48, width: 48 }}
-                className="h-14 w-14 rounded-full"
-                source={
-                  !userMessage.user?.imageURL
-                    ? require("@/assets/images/anonymous_profile.png")
-                    : { uri: userMessage.user?.imageURL }
-                }
-              />
-              <View className="flex-col">
-                <AppText
-                  color={theme === "dark" ? "light" : "dark"}
-                  className="font-poppins font-bold text-lg "
-                >
-                  {userMessage.user?.email}
-                </AppText>
-                <AppText
-                  color={theme === "dark" ? "light" : "dark"}
-                  className="font-poppins font-extralight text-sm "
-                >
-                  {userMessage.user?.username}
-                </AppText>
+        <BackgroundGradient
+          className={`flex-1 flex-col ${theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`}`}
+        >
+          <View className="flex-1">
+            <View
+              className={`${theme === "dark" ? " border-[#38C282]" : " border-gray-500"} gap-4 h-24 p-6 flex-row items-center justify-between border-b-[0.5px] `}
+            >
+              <View className="flex-row items-center gap-4">
+                <FontAwesome5
+                  name="arrow-left"
+                  size={20}
+                  color={theme === "dark" ? "#E8C282" : "black"}
+                  onPress={() => router.replace("/(message)")}
+                />
+                <Image
+                  style={{ height: 48, width: 48 }}
+                  className="h-14 w-14 rounded-full"
+                  source={
+                    !userMessage.user?.imageURL
+                      ? require("@/assets/images/anonymous_profile.png")
+                      : { uri: userMessage.user?.imageURL }
+                  }
+                />
+                <View className="flex-col">
+                  <AppText
+                    color={theme === "dark" ? "light" : "dark"}
+                    className="font-poppins font-bold text-lg "
+                  >
+                    {userMessage.user?.email}
+                  </AppText>
+                  <AppText
+                    color={theme === "dark" ? "light" : "dark"}
+                    className="font-poppins font-extralight text-sm "
+                  >
+                    {userMessage.user?.username}
+                  </AppText>
+                </View>
               </View>
+              <Link
+                href={{
+                  pathname: "/(message)/[user_id]",
+                  params: { user_id: userMessage?.user?.$id || "" },
+                }}
+              >
+                <MaterialIcons name="report" size={28} color="maroon" />
+              </Link>
             </View>
-            <Link
-              href={{
-                pathname: "/(message)/[user_id]",
-                params: { user_id: userMessage?.user?.$id || "" },
-              }}
-            >
-              <MaterialIcons name="report" size={28} color="maroon" />
-            </Link>
-          </View>
-          {loading ? (
-            <View className="flex-1 items-center justify-center">
-              <Loading className="h-16 w-16" />
-            </View>
-          ) : (
-            <ScrollView
-              ref={scrollViewRef}
-              contentContainerStyle={{
-                flexGrow: 1,
-                justifyContent: "flex-end",
-                gap: 12,
-              }}
-              onContentSizeChange={() =>
-                scrollViewRef.current?.scrollToEnd({ animated: true })
-              }
-              className="flex-1 px-4 pb-2"
-            >
-              {messages?.map((msg, index) => {
-                return (
-                  <View key={index}>
-                    <View
-                      className={`${
-                        msg?.sender_id === user?.$id
-                          ? `flex-row-reverse`
-                          : `flex-row`
-                      } items-center gap-2`}
-                    >
-                      <Image
-                        source={{
-                          uri:
-                            msg?.sender_id === user?.$id
-                              ? profile?.imageURL
-                              : userMessage?.user?.imageURL,
-                        }}
-                        className="h-8 w-8 rounded-full mt-4"
-                      />
-                      <TouchableOpacity
-                        onPress={() =>
-                          setShowDate((prev) => (prev === index ? null : index))
-                        }
-                        className={`min-w-48 max-w-72 p-3 rounded-md mb-2 w-fit ${
-                          msg.sender_id === user?.$id
-                            ? `${theme === "dark" ? `bg-slate-900` : `bg-blue-500`} text-white ml-auto text-right font-hind font-medium text-base`
-                            : `bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base`
-                        }`}
-                        style={
-                          msg.$id === user?.$id
-                            ? {
-                                borderTopLeftRadius: 24,
-                                borderBottomRightRadius: 24,
-                              }
-                            : {
-                                borderTopRightRadius: 24,
-                                borderBottomLeftRadius: 24,
-                              }
-                        }
+            {loading ? (
+              <View className="flex-1 items-center justify-center">
+                <Loading className="h-16 w-16" />
+              </View>
+            ) : (
+              <ScrollView
+                ref={scrollViewRef}
+                contentContainerStyle={{
+                  flexGrow: 1,
+                  justifyContent: "flex-end",
+                  gap: 12,
+                }}
+                onContentSizeChange={() =>
+                  scrollViewRef.current?.scrollToEnd({ animated: true })
+                }
+                className="flex-1 px-4 pb-2"
+              >
+                {messages?.map((msg, index) => {
+                  return (
+                    <View key={index}>
+                      <View
+                        className={`${
+                          msg?.sender_id === user?.$id
+                            ? `flex-row-reverse`
+                            : `flex-row`
+                        } items-center gap-2`}
                       >
-                        {msg?.imageUrl && (
-                          <Image
-                            className="h-12 w-12"
-                            source={{ uri: msg?.imageUrl }}
-                          />
-                        )}
-                        <AppText
-                          color={
-                            msg?.sender_id === user?.$id ? "light" : "dark"
-                          }
-                          className="font-poppins font-semibold"
-                        >
-                          {msg?.content}
-                        </AppText>
-                        {index === showDate && (
-                          <AppText
-                            className={`text-right text-xs mt-2 ${theme === "dark" ? `light` : `text-white`}`}
-                          >
-                            {msg.$createdAt
-                              .utc()
-                              .local()
-                              .format("MM/DD/YYYY hh:mm A")}
-                          </AppText>
-                        )}
-                      </TouchableOpacity>
-                    </View>
-
-                    {index === 5 && (
-                      <View className="items-center my-4">
+                        <Image
+                          source={{
+                            uri:
+                              msg?.sender_id === user?.$id
+                                ? profile?.imageURL
+                                : userMessage?.user?.imageURL,
+                          }}
+                          className="h-8 w-8 rounded-full mt-4"
+                        />
                         <TouchableOpacity
-                          className="bg-yellow-400 px-6 py-3 rounded-full shadow-md"
-                          onPress={() => setRateModal(true)}
+                          onPress={() =>
+                            setShowDate((prev) =>
+                              prev === index ? null : index
+                            )
+                          }
+                          className={`min-w-48 max-w-72 p-3 rounded-md mb-2 w-fit ${
+                            msg.sender_id === user?.$id
+                              ? `${theme === "dark" ? `bg-slate-900` : `bg-blue-500`} text-white ml-auto text-right font-hind font-medium text-base`
+                              : `bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base`
+                          }`}
+                          style={
+                            msg.$id === user?.$id
+                              ? {
+                                  borderTopLeftRadius: 24,
+                                  borderBottomRightRadius: 24,
+                                }
+                              : {
+                                  borderTopRightRadius: 24,
+                                  borderBottomLeftRadius: 24,
+                                }
+                          }
                         >
+                          {msg?.imageUrl && (
+                            <Image
+                              className="h-12 w-12"
+                              source={{ uri: msg?.imageUrl }}
+                            />
+                          )}
                           <AppText
-                            color="dark"
-                            className="font-poppins font-bold"
+                            color={
+                              msg?.sender_id === user?.$id ? "light" : "dark"
+                            }
+                            className="font-poppins font-semibold"
                           >
-                            ⭐ Rate {userMessage.user?.username}
+                            {msg?.content}
                           </AppText>
+                          {index === showDate && (
+                            <AppText
+                              className={`text-right text-xs mt-2 ${theme === "dark" ? `light` : `text-white`}`}
+                            >
+                              {msg.$createdAt
+                                .utc()
+                                .local()
+                                .format("MM/DD/YYYY hh:mm A")}
+                            </AppText>
+                          )}
                         </TouchableOpacity>
                       </View>
-                    )}
-                  </View>
-                );
-              })}
-            </ScrollView>
-          )}
-          {!loading && (
-            <View
-              className={`${
-                lines > 2 ? "h-[72px]" : "h-14"
-              } ${theme === "dark" ? `bg-[#FFECCC]/50` : `bg-[rgb(63,31,17,.25)]`} gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
-            >
-              <View className=" flex-row absolute bottom-14 left-12 gap-4">
-                {images.length > 0 && (
-                  <Image
-                    className="h-16 w-16 rounded-md"
-                    source={{ uri: images }}
-                  />
-                )}
+
+                      {index === 5 && (
+                        <View className="items-center my-4">
+                          <TouchableOpacity
+                            className="bg-yellow-400 px-6 py-3 rounded-full shadow-md"
+                            onPress={() => setRateModal(true)}
+                          >
+                            <AppText
+                              color="dark"
+                              className="font-poppins font-bold"
+                            >
+                              ⭐ Rate {userMessage.user?.username}
+                            </AppText>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
+              </ScrollView>
+            )}
+            {!loading && (
+              <View
+                className={`${
+                  lines > 2 ? "h-[72px]" : "h-14"
+                } ${theme === "dark" ? `bg-[#FFECCC]/50` : `bg-[rgb(63,31,17,.25)]`} gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
+              >
+                <View className=" flex-row absolute bottom-14 left-12 gap-4">
+                  {images.length > 0 && (
+                    <Image
+                      className="h-16 w-16 rounded-md"
+                      source={{ uri: images }}
+                    />
+                  )}
+                </View>
+
+                <ViewPressable
+                  onPress={pickAnImage}
+                  className="h-10 w-10 bg-black rounded-full items-center justify-center"
+                >
+                  <Entypo name="folder-images" size={20} color={"white"} />
+                </ViewPressable>
+
+                <TextInput
+                  multiline
+                  placeholder="Message ..."
+                  className={`w-9/12 max-h-20 ${theme === "dark" ? `text-white` : `text-black`}`}
+                  onContentSizeChange={handleContentSizeChange}
+                  value={newMessage}
+                  onChangeText={setNewMessage}
+                />
+                <ViewPressable
+                  onPress={handleSend}
+                  className="h-10 w-10 bg-black rounded-full items-center justify-center"
+                >
+                  <Feather size={20} color={"white"} name="send" />
+                </ViewPressable>
               </View>
-
-              <ViewPressable
-                onPress={pickAnImage}
-                className="h-10 w-10 bg-black rounded-full items-center justify-center"
-              >
-                <Entypo name="folder-images" size={20} color={"white"} />
-              </ViewPressable>
-
-              <TextInput
-                multiline
-                placeholder="Message ..."
-                className={`w-9/12 max-h-20 ${theme === "dark" ? `text-white` : `text-black`}`}
-                onContentSizeChange={handleContentSizeChange}
-                value={newMessage}
-                onChangeText={setNewMessage}
-              />
-              <ViewPressable
-                onPress={handleSend}
-                className="h-10 w-10 bg-black rounded-full items-center justify-center"
-              >
-                <Feather size={20} color={"white"} name="send" />
-              </ViewPressable>
-            </View>
-          )}
-        </View>
+            )}
+          </View>
+        </BackgroundGradient>
       </KeyboardAvoidingView>
+
       <Modal
         transparent
         visible={rateModal}

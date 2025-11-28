@@ -324,6 +324,33 @@ export default function CameraLeaf() {
 
     try {
       setLoading(true);
+
+      const response2 = await fetch(
+        `https://backend-e0gn.onrender.com/predict`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: "application/json",
+          },
+          body: formData,
+        }
+      );
+
+      const data_response2 = await response2.json();
+
+      console.log(data_response2);
+
+      const isRubber = await isRubberTreeLeaf(data_response2.predictions);
+
+      if (isRubber === "Other" || isRubber === "Error") {
+        Alert.alert(
+          "Leaf Detection Error",
+          "We can only detect a rubber tree leaf."
+        );
+        return;
+      }
+
       const response = await fetch(
         "https://rubbertapai-server-1.onrender.com/predict",
         {
@@ -348,6 +375,20 @@ export default function CameraLeaf() {
     } finally {
       setLoading(false);
       setDisable(false);
+    }
+  };
+
+  const isRubberTreeLeaf = async (results: Prediction[]) => {
+    try {
+      const bestResult = results.reduce(
+        (max, item) => (item.probability > max.probability ? item : max),
+        { className: "", probability: 0 }
+      );
+
+      return bestResult.className;
+    } catch (error) {
+      console.error("Save error:", error);
+      return "Error";
     }
   };
 
@@ -505,7 +546,7 @@ export default function CameraLeaf() {
       <SafeAreaView
         style={{
           flexGrow: 1,
-          backgroundColor: "#FFECCC",
+          backgroundColor: theme === "dark" ? `#101010` : `#FFDFA9`,
           justifyContent: "center",
           alignItems: "center",
         }}

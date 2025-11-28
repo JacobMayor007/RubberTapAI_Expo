@@ -31,15 +31,6 @@ export default function Home() {
   const location = useLocation();
 
   useEffect(() => {
-    const isAuthenticate = () => {
-      if (!user) {
-        router.replace("/(auth)");
-      }
-    };
-    isAuthenticate();
-  }, [user]);
-
-  useEffect(() => {
     const fetchProfile = async () => {
       try {
         const response = await fetch(
