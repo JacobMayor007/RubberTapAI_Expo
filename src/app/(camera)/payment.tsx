@@ -1,4 +1,5 @@
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import CheckoutPlan from "@/src/components/CheckoutPlan";
 import Loading from "@/src/components/LoadingComponent";
 import PaymentMethod from "@/src/components/PaymentMethod";
@@ -103,19 +104,24 @@ export default function Payment() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-[#FFECCC] items-center justify-center">
-        <Loading className="h-20 w-20" />
+      <SafeAreaView className="flex-1">
+        <BackgroundGradient className="flex-1 items-center justify-center">
+          <Loading className="h-20 w-20 my-auto" />
+        </BackgroundGradient>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <View
-        className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} p-6`}
-      >
+      <BackgroundGradient className={`flex-1  p-6`}>
         <View className="flex-row items-center gap-4">
-          <Feather onPress={() => router.back()} name="arrow-left" size={24} />
+          <Feather
+            onPress={() => router.back()}
+            color={theme === "dark" ? `#E2C282` : `black`}
+            name="arrow-left"
+            size={24}
+          />
           <AppText
             color={theme === "dark" ? `light` : `dark`}
             className="font-poppins font-bold text-2xl"
@@ -147,7 +153,7 @@ export default function Payment() {
                 key={data?.key}
                 style={{
                   boxShadow:
-                    "4px 2px 1px 0px rgba(0, 0, 0, 0.3), 2px 6px 20px 2px rgba(0, 0, 0, 0.19)",
+                    "4px 2px 1px 0px rgba(0, 0, 0, 0.4), 2px 6px 20px 2px rgba(0, 0, 0, 0.25)",
                 }}
               >
                 <View className="flex-row items-center justify-between ">
@@ -164,7 +170,7 @@ export default function Payment() {
                     </AppText>
                   </View>
                   {data?.title === "Free" && !profile?.subscription && (
-                    <AppText className="bg-[#75A90A] p-2 rounded-md">
+                    <AppText className="bg-[#75A90A] py-2 px-4 rounded-md text-white">
                       Your current plan
                     </AppText>
                   )}
@@ -176,11 +182,10 @@ export default function Payment() {
                   {data?.title}
                 </AppText>
                 <AppText
-                  className="flex-row items-center font-poppins font-bold text-[#442111]"
-                  color={theme === "dark" ? `light` : `dark`}
+                  className={`flex-row items-center font-poppins font-bold  ${theme === "dark" ? `text-[#E8C282]` : `text-[#442111]`}`}
                 >
-                  <FontAwesome6 name={"peso-sign"} color={"#442111"} />{" "}
-                  {data?.pricing} / {data?.period}
+                  <FontAwesome6 name={"peso-sign"} /> {data?.pricing} /{" "}
+                  {data?.period}
                 </AppText>
 
                 <View className="h-[0.5px] bg-gray-600 rounded-full my-4" />
@@ -210,16 +215,18 @@ export default function Payment() {
                       boxShadow:
                         "1px 2px 1px 0px rgba(0, 0, 0, 0.3), 1px 2px 0px 2px rgba(0, 0, 0, 0.19)",
                     }}
-                    className="h-9 rounded-full items-center justify-center bg-[#75A90A] my-5"
+                    className="h-12 rounded-full items-center justify-center bg-[#75A90A] my-5"
                   >
-                    <AppText color={`light`}>Get Premium Individual</AppText>
+                    <AppText className="text-white">
+                      Get Premium Individual
+                    </AppText>
                   </TouchableOpacity>
                 )}
               </View>
             );
           })}
         </ScrollView>
-      </View>
+      </BackgroundGradient>
       <Modal
         visible={modal}
         onRequestClose={() => setModal(false)}

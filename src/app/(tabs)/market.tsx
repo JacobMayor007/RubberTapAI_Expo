@@ -103,6 +103,7 @@ export default function Market() {
         Alert.alert("Already been sent to your email, please check!");
         return;
       }
+
       Alert.alert("Account Verification", "Please verified your account!", [
         {
           text: "Not Now",
@@ -147,8 +148,6 @@ export default function Market() {
       setLoadingRequest(false);
     }
   };
-
-  console.log(chosenProduct?.user_username.length);
 
   return (
     <SafeAreaView className="flex-1">
