@@ -8,7 +8,7 @@ type ConfirmOrCancelModalProps = {
   onOk?: () => void;
   onCancel?: () => void;
   onClose?: () => void;
-  heightSize: 48 | 60 | 72 | 96;
+  heightSize: 48 | 60 | 72 | 96 | 120;
   className?: string;
   borderRounded?: number;
   blurIntensity?:
@@ -53,10 +53,7 @@ export default function ConfirmCancelModal({
       style={{
         padding,
         flexGrow: 1,
-        backgroundColor:
-          theme === "dark"
-            ? `rgba(255,255,255,${(blurIntensity ?? 0) / 100})`
-            : `rgba(0,0,0,${(blurIntensity ?? 0) / 100})`,
+        backgroundColor: `rgba(0,0,0,${(blurIntensity ?? 0) / 100})`,
         justifyContent: "center",
         alignItems: "center",
       }}
@@ -69,7 +66,7 @@ export default function ConfirmCancelModal({
           padding: padding,
           borderRadius: borderRounded,
         }}
-        className={`${theme === "dark" ? `bg-black/80` : `bg-[#FFECCC]`} z-10 pr-12`}
+        className={`${theme === "dark" ? `bg-black` : `bg-[#FFECCC]`} z-10 pr-12`}
       >
         <TouchableOpacity
           onPress={onClose}
@@ -103,7 +100,7 @@ export default function ConfirmCancelModal({
             }}
             className="h-8 w-24 bg-green-500 items-center justify-center rounded-md"
           >
-            <Text className="text-white">Ok</Text>
+            <Text className="text-white">OK</Text>
           </TouchableOpacity>
         </View>
       </View>

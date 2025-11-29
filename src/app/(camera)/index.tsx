@@ -1,5 +1,6 @@
 import { saveLeafToTreeToPlot } from "@/src/action/leafAction";
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
 import Loading from "@/src/components/LoadingComponent";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -13,6 +14,7 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
+import * as MediaLibrary from "expo-media-library";
 import { Link, router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -119,6 +121,25 @@ export default function CameraLeaf() {
     MyPlot();
     myTree();
   }, []);
+
+  const [mediaPermission, requestMediaPermission] =
+    MediaLibrary.usePermissions();
+
+  useEffect(() => {
+    if (!mediaPermission?.granted) {
+      requestMediaPermission();
+    }
+    if (!permission?.granted) {
+      permissionCamera();
+    }
+  }, []);
+
+  const permissionCamera = async () => {
+    if (!permission?.granted) {
+      await requestPermission();
+      if (!permission?.granted) return;
+    }
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -324,6 +345,33 @@ export default function CameraLeaf() {
 
     try {
       setLoading(true);
+
+      const response2 = await fetch(
+        `https://backend-e0gn.onrender.com/predict`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: "application/json",
+          },
+          body: formData,
+        }
+      );
+
+      const data_response2 = await response2.json();
+
+      console.log(data_response2);
+
+      const isRubber = await isRubberTreeLeaf(data_response2.predictions);
+
+      if (isRubber === "Other" || isRubber === "Error") {
+        Alert.alert(
+          "Leaf Detection Error",
+          "We can only detect a rubber tree leaf."
+        );
+        return;
+      }
+
       const response = await fetch(
         "https://rubbertapai-server-1.onrender.com/predict",
         {
@@ -348,6 +396,20 @@ export default function CameraLeaf() {
     } finally {
       setLoading(false);
       setDisable(false);
+    }
+  };
+
+  const isRubberTreeLeaf = async (results: Prediction[]) => {
+    try {
+      const bestResult = results.reduce(
+        (max, item) => (item.probability > max.probability ? item : max),
+        { className: "", probability: 0 }
+      );
+
+      return bestResult.className;
+    } catch (error) {
+      console.error("Save error:", error);
+      return "Error";
     }
   };
 
@@ -502,30 +564,11 @@ export default function CameraLeaf() {
 
   if (pageLoading) {
     return (
-      <SafeAreaView
-        style={{
-          flexGrow: 1,
-          backgroundColor: "#FFECCC",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Loading className="h-16 w-16" />
+      <SafeAreaView className="flex-1">
+        <BackgroundGradient className="flex-1 items-center justify-center">
+          <Loading className="h-16 w-16 my-auto" />
+        </BackgroundGradient>
       </SafeAreaView>
-    );
-  }
-
-  if (!permission) return <View />;
-  if (!permission.granted) {
-    return (
-      <View style={styles.container}>
-        <Text style={{ textAlign: "center" }}>
-          We need your permission to show the camera
-        </Text>
-        <TouchableOpacity onPress={requestPermission} style={styles.button}>
-          <Text style={{ color: "#fff" }}>Grant Permission</Text>
-        </TouchableOpacity>
-      </View>
     );
   }
 

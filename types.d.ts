@@ -82,6 +82,15 @@ type MessageHistory = {
   imageUrl: string;
 };
 
+type AppRate = {
+  $id: string;
+  rating: number;
+  feedback: string;
+  userId: string;
+  $createdAt: string;
+  $updatedAt: string;
+};
+
 type ChatRoom = {
   $id: string;
   $createdAt: Dayjs;
@@ -111,6 +120,7 @@ type Product = {
 };
 
 export {
+  AppRate,
   ChatRoom,
   Leaves_Record,
   MessageHistory,

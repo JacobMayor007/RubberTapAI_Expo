@@ -5,12 +5,10 @@ import Logo from "@/src/components/Logo";
 import TermsAndCon from "@/src/components/TermsAndCon";
 
 import { useAuth } from "@/src/contexts/AuthContext";
-import { account, database } from "@/src/lib/appwrite";
+import { account } from "@/src/lib/appwrite";
 import Feather from "@expo/vector-icons/Feather";
 import Checkbox from "expo-checkbox";
-import * as Linking from "expo-linking";
 import { Link, useRouter } from "expo-router";
-import { openAuthSessionAsync } from "expo-web-browser";
 import React, { useState } from "react";
 import {
   Alert,
@@ -23,7 +21,6 @@ import {
   View,
 } from "react-native";
 
-import { ID, OAuthProvider } from "react-native-appwrite";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Register() {
@@ -43,7 +40,7 @@ export default function Register() {
     confirmPassword: "",
   });
   const [agree, setAgree] = useState(false);
-  const auth = useAuth();
+  const { register } = useAuth();
 
   const signUp = async () => {
     const regex =
@@ -120,17 +117,17 @@ export default function Register() {
     try {
       setLoading(true);
 
-      await account.create(
-        ID.unique(),
+      await register(
         userInfo.email,
         userInfo.password,
         `${userInfo.fName} ${userInfo.lName}`
       );
 
-      const session = await account.createEmailPasswordSession(
-        userInfo.email,
-        userInfo.password
-      );
+      const session = await account.createEmailPasswordSession({
+        email: userInfo.email,
+        password: userInfo.password,
+      });
+
       if (!session) throw new Error("Failed to create session");
 
       const user = await account.get();
@@ -153,7 +150,7 @@ export default function Register() {
         subscription: false,
       };
 
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/`, {
+      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}`, {
         method: "POST",
         headers: {
           "X-API-Key": `${process.env.EXPO_PUBLIC_RUBBERTAPAI_API_KEY}`,
@@ -170,7 +167,8 @@ export default function Register() {
 
       Alert.alert(`${status.title}`, `${status.message}`);
 
-      router.replace("/(tabs)");
+      await account.deleteSession({ sessionId: "current" });
+      router.push("/(auth)");
     } catch (error) {
       console.error("Error registering user:", error);
       Alert.alert("Register Failed", "Failed to create account");
@@ -179,79 +177,79 @@ export default function Register() {
     }
   };
 
-  const googleAuth = async () => {
-    try {
-      const redirectUri = Linking.createURL("/");
+  // const googleAuth = async () => {
+  //   try {
+  //     const redirectUri = Linking.createURL("/");
 
-      // Request OAuth2 Token URL
-      const response = account.createOAuth2Token(
-        OAuthProvider.Google,
-        redirectUri
-      );
+  //     // Request OAuth2 Token URL
+  //     const response = account.createOAuth2Token(
+  //       OAuthProvider.Google,
+  //       redirectUri
+  //     );
 
-      if (!response) throw new Error("Failed to start login");
+  //     if (!response) throw new Error("Failed to start login");
 
-      // Open Auth session
-      const browserResult = await openAuthSessionAsync(
-        response.toString(),
-        redirectUri
-      );
+  //     // Open Auth session
+  //     const browserResult = await openAuthSessionAsync(
+  //       response.toString(),
+  //       redirectUri
+  //     );
 
-      if (browserResult.type !== "success") {
-        throw new Error("Failed to login");
-      }
+  //     if (browserResult.type !== "success") {
+  //       throw new Error("Failed to login");
+  //     }
 
-      // Extract credentials from URL
-      const url = new URL(browserResult.url);
-      const secret = url.searchParams.get("secret")?.toString();
-      const userId = url.searchParams.get("userId")?.toString();
+  //     // Extract credentials from URL
+  //     const url = new URL(browserResult.url);
+  //     const secret = url.searchParams.get("secret")?.toString();
+  //     const userId = url.searchParams.get("userId")?.toString();
 
-      if (!userId || !secret) {
-        throw new Error("Missing credentials from redirect");
-      }
-      const session = await account.createSession(userId, secret);
-      if (!session) throw new Error("Failed to create session");
+  //     if (!userId || !secret) {
+  //       throw new Error("Missing credentials from redirect");
+  //     }
+  //     const session = await account.createSession(userId, secret);
+  //     if (!session) throw new Error("Failed to create session");
 
-      const user = await account.get();
-      auth.setUser(user);
-      const userEmail = user.email;
-      const userName = user.name;
-      const userProfile =
-        user?.prefs?.picture ||
-        `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`;
+  //     const user = await account.get();
+  //     auth.setUser(user);
+  //     const userEmail = user.email;
+  //     const userName = user.name;
+  //     const userProfile =
+  //       user?.prefs?.picture ||
+  //       `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=random`;
 
-      try {
-        await database.getDocument(
-          "686156d00007a3127068",
-          "686b71a300125286e377",
-          userId
-        );
-        console.log("User already exists in database.");
-      } catch (err) {
-        await database.createDocument(
-          "686156d00007a3127068",
-          "686b71a300125286e377",
-          userId,
-          {
-            username: userName,
-            email: userEmail,
-            address: [],
-            imageURL: userProfile,
-            role: "farmer",
-            notifSettings: false,
-            themeSettings: false,
-            subscription: false,
-          }
-        );
-        console.log("User document created successfully.");
-      }
-      router.replace("/(tabs)");
-      return true;
-    } catch (error) {
-      console.log("Google Auth error:", error);
-      return false;
-    }
-  };
+  //     try {
+  //       await database.getDocument(
+  //         "686156d00007a3127068",
+  //         "686b71a300125286e377",
+  //         userId
+  //       );
+  //       console.log("User already exists in database.");
+  //     } catch (err) {
+  //       await database.createDocument(
+  //         "686156d00007a3127068",
+  //         "686b71a300125286e377",
+  //         userId,
+  //         {
+  //           username: userName,
+  //           email: userEmail,
+  //           address: [],
+  //           imageURL: userProfile,
+  //           role: "farmer",
+  //           notifSettings: false,
+  //           themeSettings: false,
+  //           subscription: false,
+  //         }
+  //       );
+  //       console.log("User document created successfully.");
+  //     }
+  //     router.replace("/(tabs)");
+  //     return true;
+  //   } catch (error) {
+  //     console.log("Google Auth error:", error);
+  //     return false;
+  //   }
+  // };
 
   if (loading) {
     return (

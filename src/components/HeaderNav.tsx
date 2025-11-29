@@ -90,7 +90,7 @@ export default function HeaderNav({ title, arrow }: HeaderNavProps) {
         </AppText>
       </View>
       <View className="flex-row items-center gap-5 py-4">
-        <Link href={{ pathname: "/(message)" }}>
+        <Link href="/(message)">
           <AntDesign
             name="message1"
             size={23}
