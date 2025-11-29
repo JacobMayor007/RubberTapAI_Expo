@@ -3,6 +3,7 @@ import ForgotPassword from "@/src/components/ForgotPassword";
 import Loading from "@/src/components/LoadingComponent";
 import Logo from "@/src/components/Logo";
 import { useAuth } from "@/src/contexts/AuthContext";
+import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { account } from "@/src/lib/appwrite";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -38,8 +39,6 @@ export default function Login() {
     password: "",
   });
 
-  
-
   useEffect(() => {
     const isLoggedIn = async () => {
       if (user?.$id) {
@@ -60,6 +59,34 @@ export default function Login() {
 
       if (!userInfo.password) {
         Alert.alert("Required field", "Please enter password");
+        return;
+      }
+
+      const isBuyer = await globalFunction.fetchWithTimeout(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/farmer`,
+        {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            Accept: "application/json",
+            "x-api-key": `${process.env.EXPO_PUBLIC_RUBBERTAPAI_API_KEY}`,
+          },
+          body: JSON.stringify({ email: userInfo.email }),
+        },
+        20000
+      );
+
+      const response = await isBuyer.json();
+
+      console.log(response);
+
+      if (response.role !== "farmer") {
+        Alert.alert(response.title, response.message);
+        return;
+      }
+
+      if (response.title === "Account Disabled") {
+        Alert.alert(response.title, response.message);
         return;
       }
 
