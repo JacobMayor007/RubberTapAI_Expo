@@ -18,7 +18,6 @@ import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
@@ -40,7 +39,6 @@ export default function Menu() {
   const { rain } = useWeather();
   const [rate, setRate] = useState(0);
   const [feedback, setFeedback] = useState("");
-  const router = useRouter();
   const [userRated, setUserRated] = useState<AppRate | null>(null);
   const { theme } = useTheme();
 
@@ -99,6 +97,27 @@ export default function Menu() {
     isUserRate();
   }, [profile]);
 
+  const fetchUserRatingStatus = async () => {
+    try {
+      const response = await globalFunction.fetchWithTimeout(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/rubbertapai/${profile?.$id}`,
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        },
+        25000
+      );
+
+      const data = await response.json();
+      setUserRated(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleRateApp = async (
     userId: string,
     rating: number,
@@ -123,6 +142,9 @@ export default function Menu() {
           {
             style: "default",
             text: "Ok",
+            onPress: async () => {
+              await fetchUserRatingStatus();
+            },
           },
         ]
       );
@@ -358,7 +380,7 @@ export default function Menu() {
             >
               Enjoying the app? Give us a quick rating!
             </AppText>
-            <View className="flex-col  my-auto px-5 w-full pb-10  border-4 gap-4">
+            <View className="flex-col  my-auto px-5 w-full pb-10 gap-4">
               <View className=" flex-row items-center justify-center gap-4 pl-5">
                 <AntDesign
                   name="star"
@@ -398,10 +420,10 @@ export default function Menu() {
                 value={feedback}
                 onChangeText={setFeedback}
                 placeholderTextColor="#6b7280"
-                className={`border-[1px] ${theme === "dark" ? `text-[#E8C282]` : `text-slate-800`} border-gray-500 h-28 w-full rounded-lg`}
+                className={`border-[1px] ${theme === "dark" ? `text-[#E8C282]` : `text-slate-800`} p-4 border-gray-500 h-28 w-full rounded-lg`}
               />
               <View className="w-full ">
-                <AppText className="font-bold font-poppins text-start border text-xs text-slate-500">
+                <AppText className="font-bold font-poppins text-start  text-xs text-slate-500">
                   {`(${feedback.length}/1500)`}
                 </AppText>
               </View>
