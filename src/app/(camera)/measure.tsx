@@ -22,13 +22,11 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// 🔹 YOUR PHONE REFERENCE DIMENSIONS
 const REFERENCE_PHONE = {
   height: 943.5293852994193,
   width: 423.5293998850261,
 };
 
-// 🔹 MEASUREMENT POSITIONS (in percentage from bottom)
 const MEASUREMENT_POSITIONS = {
   "1m": 0.91,
   "0.75m": 0.66,
@@ -36,7 +34,6 @@ const MEASUREMENT_POSITIONS = {
   "0m": 0.0,
 };
 
-// 🔹 FIXED RED LINE HEIGHT (from reference phone)
 const FIXED_RED_LINE_HEIGHT = Math.round(
   REFERENCE_PHONE.height * MEASUREMENT_POSITIONS["1m"]
 );
@@ -54,13 +51,13 @@ export default function App() {
   const { profile } = useAuth();
   const { theme } = useTheme();
   const [modal, setModal] = useState(false);
+
   const { height: deviceHeight, width: deviceWidth } = useWindowDimensions();
 
   console.log(
     `📱 Current Device - Height: ${deviceHeight}\nWidth: ${deviceWidth}`
   );
 
-  // 🔹 CHECK IF DEVICE DIMENSIONS ARE SUFFICIENT
   useEffect(() => {
     if (
       deviceHeight < REFERENCE_PHONE.height ||
@@ -80,7 +77,6 @@ export default function App() {
     }
   }, [deviceHeight, deviceWidth, router]);
 
-  // 🔹 BUILD MEASUREMENT LABELS WITH FIXED PIXEL POSITIONS
   const MEASUREMENT_LABELS = [
     { label: "1 m", pixelPosition: FIXED_RED_LINE_HEIGHT },
     {
@@ -98,6 +94,17 @@ export default function App() {
     { label: "0 m", pixelPosition: 0 },
   ];
 
+  useEffect(() => {
+    permissionCamera();
+  }, []);
+
+  const permissionCamera = async () => {
+    if (!permission?.granted) {
+      await requestPermission();
+      if (!permission?.granted) return;
+    }
+  };
+
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const textOpacities = useRef(
     MEASUREMENT_LABELS.map(() => new Animated.Value(0))
@@ -107,7 +114,7 @@ export default function App() {
   useEffect(() => {
     if (half) {
       Animated.timing(animatedHeight, {
-        toValue: FIXED_RED_LINE_HEIGHT, // 🔹 FIXED HEIGHT - never changes
+        toValue: FIXED_RED_LINE_HEIGHT,
         duration: 1000,
         useNativeDriver: false,
       }).start();

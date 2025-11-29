@@ -1,5 +1,6 @@
 import { saveLeafToTreeToPlot } from "@/src/action/leafAction";
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
 import Loading from "@/src/components/LoadingComponent";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -13,6 +14,7 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
+import * as MediaLibrary from "expo-media-library";
 import { Link, router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -119,6 +121,25 @@ export default function CameraLeaf() {
     MyPlot();
     myTree();
   }, []);
+
+  const [mediaPermission, requestMediaPermission] =
+    MediaLibrary.usePermissions();
+
+  useEffect(() => {
+    if (!mediaPermission?.granted) {
+      requestMediaPermission();
+    }
+    if (!permission?.granted) {
+      permissionCamera();
+    }
+  }, []);
+
+  const permissionCamera = async () => {
+    if (!permission?.granted) {
+      await requestPermission();
+      if (!permission?.granted) return;
+    }
+  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -543,30 +564,11 @@ export default function CameraLeaf() {
 
   if (pageLoading) {
     return (
-      <SafeAreaView
-        style={{
-          flexGrow: 1,
-          backgroundColor: theme === "dark" ? `#101010` : `#FFDFA9`,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Loading className="h-16 w-16" />
+      <SafeAreaView className="flex-1">
+        <BackgroundGradient className="flex-1 items-center justify-center">
+          <Loading className="h-16 w-16 my-auto" />
+        </BackgroundGradient>
       </SafeAreaView>
-    );
-  }
-
-  if (!permission) return <View />;
-  if (!permission.granted) {
-    return (
-      <View style={styles.container}>
-        <Text style={{ textAlign: "center" }}>
-          We need your permission to show the camera
-        </Text>
-        <TouchableOpacity onPress={requestPermission} style={styles.button}>
-          <Text style={{ color: "#fff" }}>Grant Permission</Text>
-        </TouchableOpacity>
-      </View>
     );
   }
 
