@@ -60,9 +60,16 @@ export default function CheckoutPlan({
   console.log("Checkout", choosePlan);
 
   return (
-    <View className="flex-1 bg-[#FFECCC] p-6">
+    <View
+      className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`}  p-6`}
+    >
       <View className="flex-row items-center gap-4">
-        <Feather onPress={() => setModal(false)} name="arrow-left" size={24} />
+        <Feather
+          color={theme === "dark" ? `#E8C282` : `dark`}
+          onPress={() => setModal(false)}
+          name="arrow-left"
+          size={24}
+        />
         <AppText
           color={theme === "dark" ? `light` : `dark`}
           className="text-2xl font-bold font-poppins"
@@ -70,14 +77,15 @@ export default function CheckoutPlan({
           Checkout
         </AppText>
       </View>
-      <View className="mt-9 border-y-[1px] py-9 gap-4">
+      <View
+        className={`mt-9 border-y-[1px] ${theme === "dark" ? `border-[#E8C282]` : `border-black`} py-9 gap-4`}
+      >
         <View className="flex-row justify-between items-center">
           <View className="flex-row items-center gap-4">
             <Logo className="h-9 w-9" />
             <View>
               <AppText
-                color={theme === "dark" ? `light` : `dark`}
-                className="font-bold text-xl text-[#442111]"
+                className={`font-bold text-xl ${theme === "dark" ? `text-[#E8C282]` : `text-[#442111]`}`}
               >
                 {choosePlan?.title} Premium
               </AppText>
@@ -86,23 +94,31 @@ export default function CheckoutPlan({
               </AppText>
             </View>
           </View>
-          <AppText className="text-[#442111] font-bold">
+          <AppText
+            className={`font-bold text-xl ${theme === "dark" ? `text-[#E8C282]` : `text-[#442111]`}`}
+          >
             <FontAwesome6 name="peso-sign" size={16} />
             {choosePlan?.pricing}/{choosePlan?.period}
           </AppText>
         </View>
         <View className="gap-2">
-          <AppText className="text-[#442111] text-sm font-bold font-poppins">
+          <AppText
+            className={`${theme === "dark" ? `text-[#E8C282]` : `text-[#442111]`} text-sm font-bold font-poppins`}
+          >
             &#8226; Monthly billing starts at the moment you paid
           </AppText>
-          <AppText className="text-[#442111] text-sm font-bold font-poppins">
+          <AppText
+            className={`${theme === "dark" ? `text-[#E8C282]` : `text-[#442111]`} text-sm font-bold font-poppins`}
+          >
             &#8226; Please ensure your payment information is up to date to
             avoid any interruption in service.
           </AppText>
         </View>
       </View>
       <View className="mt-7">
-        <AppText className="font-bold font-poppins text-xl text-[#442111]">
+        <AppText
+          className={`font-bold font-poppins text-xl ${theme === "dark" ? `text-[#E8C282]` : `text-[#442111]`}`}
+        >
           Choose how to pay
         </AppText>
         <View
@@ -116,7 +132,9 @@ export default function CheckoutPlan({
             paddingHorizontal: 24,
           }}
         >
-          <AppText className="font-bold font-poppins text-[10px] text-[#442111]">
+          <AppText
+            className={`font-bold font-poppins text-[10px]  ${theme === "dark" ? `text-[#E8C282]` : `text-[#442111]`}`}
+          >
             Pay through RubbertapAI with any supported payment method.
           </AppText>
           <View className="flex-row items-center gap-2">
@@ -128,9 +146,9 @@ export default function CheckoutPlan({
             onPress={() => {
               setType("paymentMethod");
             }}
-            className="bg-[#75A90A] w-full items-center justify-center py-2 rounded-full"
+            className={` bg-[#75A90A] w-full items-center justify-center py-2 rounded-full`}
           >
-            <AppText color="light">Continue</AppText>
+            <AppText className={`text-white`}>Continue</AppText>
           </TouchableOpacity>
         </View>
       </View>

@@ -77,7 +77,7 @@ export default function HeaderNav({ title, arrow }: HeaderNavProps) {
             name="arrow-left"
             size={20}
             onPress={() => router.back()}
-            color={theme === "dark" ? "white" : "black"}
+            color={theme === "dark" ? "#E2C282" : "black"}
           />
         ) : (
           <Logo className="w-12 h-12" />

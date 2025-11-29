@@ -205,6 +205,7 @@ export default function Login() {
               <MaterialIcons
                 name="keyboard-arrow-left"
                 size={40}
+                color="white"
                 onPress={() => router.replace("/getStarted")}
               />
               <View className="flex-col items-center justify-center pt-14 ">

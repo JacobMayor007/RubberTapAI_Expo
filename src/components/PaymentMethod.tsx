@@ -85,8 +85,12 @@ export default function PaymentMethod({
     }
   };
 
+  console.log(theme);
+
   return (
-    <ScrollView className="flex-1 bg-[#FFECCC] p-6">
+    <ScrollView
+      className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`}  p-6`}
+    >
       <View className="flex-row items-center gap-4">
         <Feather
           onPress={() => setType("checkout")}
@@ -187,17 +191,28 @@ export default function PaymentMethod({
         <View className="flex-row items-center justify-between gap-4 border-b-[0.5px] pb-4">
           <View className="flex-row items-center gap-4">
             <Logo className="h-9 w-9" />
-            <AppText>Premium Individual</AppText>
+            <AppText color={theme === "dark" ? `light` : `dark`}>
+              Premium Individual
+            </AppText>
           </View>
-          <AppText color="light" className="font-bold">
+          <AppText
+            color={theme === "dark" ? `light` : `dark`}
+            className="font-bold"
+          >
             <FontAwesome6 name="peso-sign" size={16} />
             {choosePlan?.pricing}/{choosePlan?.period}
           </AppText>
         </View>
         <View className="flex-row items-center justify-between">
-          <AppText>Total now</AppText>
-          <AppText>
-            <FontAwesome6 name="peso-sign" size={16} />
+          <AppText color={theme === "dark" ? `light` : `dark`}>
+            Total now
+          </AppText>
+          <AppText color={theme === "dark" ? `light` : `dark`}>
+            <FontAwesome6
+              name="peso-sign"
+              size={16}
+              color={theme === "dark" ? `white` : `dark`}
+            />
             {choosePlan?.pricing}.00
           </AppText>
         </View>

@@ -173,18 +173,14 @@ export default function History() {
             </View>
             <TouchableOpacity
               onPress={() => setRegisterModal(true)}
-              className={`${theme === "dark" ? `bg-gray-700` : `bg-[#75A90A]`} px-4 py-1 rounded-full gap-2 flex-row items-center`}
+              className={`bg-[#75A90A] px-4 py-1 rounded-full gap-2 flex-row items-center`}
             >
               <AppText
                 className={`text-[14px] font-poppins font-bold text-white`}
               >
                 Add Plot
               </AppText>
-              <Feather
-                name="plus"
-                size={24}
-                color={theme === "dark" ? "#E8C282" : "white"}
-              />
+              <Feather name="plus" size={24} color={"white"} />
             </TouchableOpacity>
           </View>
           {myPlot?.length < 1 ? (
@@ -264,11 +260,7 @@ export default function History() {
                     }}
                     className="bg-[#75A90A]   rounded-xl px-6 py-2 "
                   >
-                    <AppText
-                      className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
-                    >
-                      Edit
-                    </AppText>
+                    <AppText className={` text-white`}>Edit</AppText>
                   </TouchableOpacity>
                 </View>
                 <View
@@ -283,11 +275,7 @@ export default function History() {
                     }}
                     className="bg-[#75A90A] rounded-xl px-4 py-2 "
                   >
-                    <AppText
-                      className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
-                    >
-                      Delete
-                    </AppText>
+                    <AppText className={` text-white`}>Delete</AppText>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
