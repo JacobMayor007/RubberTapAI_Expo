@@ -156,7 +156,6 @@ export default function Market() {
       >
         <ScrollView contentContainerClassName="flex-1">
           <View className="px-6 pt-10 flex-1  z-50">
-            {/*Header Navbar*/}
             <HeaderNav title="Marketplace" arrow={true} />
 
             <RubberPrice />
@@ -221,6 +220,7 @@ export default function Market() {
                           color={theme === "dark" ? "light" : "dark"}
                           className="ml-1"
                         >
+                          <FontAwesome6 name="peso-sign" />{" "}
                           {data?.price.toString()} /kg
                         </AppText>
 

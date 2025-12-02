@@ -345,6 +345,27 @@ export default function CameraLeaf() {
 
     try {
       setLoading(true);
+      const response3 = await fetch(`http://192.168.1.21:8080/predict`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Accept: "application/json",
+        },
+        body: formData,
+      });
+
+      const dataOne = await response3.json();
+      const isRubberLeaf = await isRubberTreeLeaf(dataOne.predictions);
+
+      console.log(isRubberLeaf);
+
+      if (isRubberLeaf === "Other" || isRubberLeaf === "Error") {
+        Alert.alert(
+          "Leaf Detection Error",
+          "We can only detect a rubber tree leaf."
+        );
+        return;
+      }
 
       const response2 = await fetch(
         `https://backend-e0gn.onrender.com/predict`,
@@ -371,7 +392,7 @@ export default function CameraLeaf() {
         );
         return;
       }
-
+      //
       const response = await fetch(
         "https://rubbertapai-server-1.onrender.com/predict",
         {
@@ -750,7 +771,6 @@ export default function CameraLeaf() {
                 style={{
                   width: 300,
                   height: 300,
-                  marginVertical: 20,
                   borderRadius: 30,
                 }}
                 className="mx-auto"
@@ -793,7 +813,6 @@ export default function CameraLeaf() {
                           results.predictions.length > 0 && ( */}
                         <Text
                           style={{
-                            marginTop: 5,
                             fontFamily: "Poppins",
                             fontWeight: 900,
                             fontSize: 18,
@@ -812,7 +831,6 @@ export default function CameraLeaf() {
                         {/* )} */}
                         <Text
                           style={{
-                            marginTop: 5,
                             fontFamily: "Poppins",
                             fontWeight: 900,
                             fontSize: 18,
@@ -834,7 +852,7 @@ export default function CameraLeaf() {
                   </View>
                 )}
               </View>
-              <View className="mx-8 mt-2">
+              <View className="mx-8 ">
                 {diseasesDescription.map((data) => {
                   return (
                     <View key={data.key} className="">
@@ -846,7 +864,7 @@ export default function CameraLeaf() {
                         ).className && (
                         <View className="gap-4">
                           <View
-                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 1 ? `flex` : `hidden`} h-40`}
+                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 1 ? `flex` : `hidden`} h-48`}
                             style={{
                               boxShadow:
                                 "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
@@ -861,7 +879,7 @@ export default function CameraLeaf() {
                             </AppText>
                           </View>
                           <View
-                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 1 ? `flex` : `hidden`} h-40`}
+                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 1 ? `flex` : `hidden`} h-48`}
                             style={{
                               boxShadow:
                                 "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
