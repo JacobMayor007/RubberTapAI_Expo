@@ -1,4 +1,5 @@
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
 import Loading from "@/src/components/LoadingComponent";
 import { useAuth } from "@/src/contexts/AuthContext";
@@ -166,11 +167,11 @@ export default function ListTrees() {
 
   if (loading) {
     return (
-      <SafeAreaView
-        className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-1 items-center justify-center`}
+      <BackgroundGradient
+        className={` flex-1 flex-row items-center justify-center`}
       >
-        <Loading className="h-16 w-16" />
-      </SafeAreaView>
+        <Loading className="h-16 w-16 mx-auto" />
+      </BackgroundGradient>
     );
   }
 
@@ -178,122 +179,126 @@ export default function ListTrees() {
 
   return (
     <SafeAreaView className="flex-1">
-      <ScrollView
-        className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} p-6`}
-      >
-        <View className="items-center flex-row justify-between">
-          <View className="items-center flex-row gap-5">
-            <FontAwesome5
-              name="arrow-left"
-              size={20}
-              onPress={() => router.back()}
-              color={theme === "dark" ? `#E8C282` : `black`}
-            />
-            <AppText
-              color={theme === "dark" ? `light` : `dark`}
-              className="text-xl font-bold"
-            >
-              List of Trees
-            </AppText>
-          </View>
-          <TouchableOpacity
-            onPress={() => {
-              setModal(true);
-              setWhatModal("addTree");
-            }}
-            className={`${theme === "dark" ? `bg-green-700` : `bg-[#75A90A]`} px-4 py-1.5 rounded-full gap-2 flex-row items-center`}
-          >
-            <AppText
-              className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`} text-[14px] font-bold font-poppins`}
-            >
-              Add Tree
-            </AppText>
-            <Feather name="plus" size={24} color={"white"} />
-          </TouchableOpacity>
-        </View>
-        <View className="items-center flex-row">
-          {myTrees.length === 0 && (
-            <View className="justify-center mx-auto mt-20">
-              <AppText color="dark" className="font-poppins font-bold text-lg">
-                You have no trees that have been registered
+      <BackgroundGradient className="flex-1">
+        <ScrollView className={`flex-1  p-6`}>
+          <View className="items-center flex-row justify-between">
+            <View className="items-center flex-row gap-5">
+              <FontAwesome5
+                name="arrow-left"
+                size={20}
+                onPress={() => router.back()}
+                color={theme === "dark" ? `#E8C282` : `black`}
+              />
+              <AppText
+                color={theme === "dark" ? `light` : `dark`}
+                className="text-xl font-bold"
+              >
+                List of Trees
               </AppText>
             </View>
-          )}
-        </View>
-        <View className="flex-row flex-wrap mb-14">
-          {myTrees?.map((data, index) => {
-            return (
-              <TouchableOpacity
-                key={index}
-                onPress={() =>
-                  router.push({
-                    pathname: "/(history)/[plot_id]/[tree]",
-                    params: {
-                      plot_id: String(params?.plot_id),
-                      tree: data?.$id,
-                    },
-                  })
-                }
-                style={{
-                  boxShadow:
-                    "1px 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
-                }}
-                className={`${theme === "dark" ? `bg-slate-900` : `bg-[#FFD99A]`} mt-5 w-[48%] h-60 mr-2  rounded-lg`}
+            <TouchableOpacity
+              onPress={() => {
+                setModal(true);
+                setWhatModal("addTree");
+              }}
+              className={`${theme === "dark" ? `bg-green-700` : `bg-[#75A90A]`} px-4 py-1.5 rounded-full gap-2 flex-row items-center`}
+            >
+              <AppText
+                className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`} text-[14px] font-bold font-poppins`}
               >
-                {data?.image_url ? (
-                  <Image
-                    style={{
-                      borderTopLeftRadius: 8,
-                      borderTopRightRadius: 8,
-                    }}
-                    source={{ uri: data?.image_url }}
-                    className="h-[55%]"
-                  />
-                ) : (
-                  <View
-                    className={`h-[60%] items-center justify-center px-2 rounded-s-lg ${theme === "dark" ? `bg-slate-200` : `bg-slate-500`}`}
-                  >
-                    <AppText
-                      color={theme === "dark" ? `dark` : `light`}
-                      className="text-center"
-                    >
-                      There are no leaves yet
-                    </AppText>
-                  </View>
-                )}
-                <View className="flex-col  p-2 ">
-                  <View className="flex-row items-center justify-between">
-                    <AppText
-                      color={theme === "dark" ? `light` : `dark`}
-                      className="font-bold font-poppins text-lg"
-                    >
-                      Tree {`#${index + 1}`}
-                    </AppText>
-
-                    <TouchableOpacity
-                      onPress={() => {
-                        setModal(true);
-                        setTreeId(data?.$id);
-                        setWhatModal("deleteTree");
+                Add Tree
+              </AppText>
+              <Feather name="plus" size={24} color={"white"} />
+            </TouchableOpacity>
+          </View>
+          <View className="items-center flex-row">
+            {myTrees.length === 0 && (
+              <View className="justify-center mx-auto mt-20">
+                <AppText
+                  color="dark"
+                  className="font-poppins font-bold text-lg"
+                >
+                  You have no trees that have been registered
+                </AppText>
+              </View>
+            )}
+          </View>
+          <View className="flex-row flex-wrap mb-14">
+            {myTrees?.map((data, index) => {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(history)/[plot_id]/[tree]",
+                      params: {
+                        plot_id: String(params?.plot_id),
+                        tree: data?.$id,
+                      },
+                    })
+                  }
+                  style={{
+                    boxShadow:
+                      "1px 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
+                  }}
+                  className={`${theme === "dark" ? `bg-slate-900` : `bg-[#FFD99A]`} mt-5 w-[48%] h-60 mr-2  rounded-lg`}
+                >
+                  {data?.image_url ? (
+                    <Image
+                      style={{
+                        borderTopLeftRadius: 8,
+                        borderTopRightRadius: 8,
                       }}
-                      className="bg-[#75A90A] rounded-xl px-4 py-2 "
+                      source={{ uri: data?.image_url }}
+                      className="h-[55%]"
+                    />
+                  ) : (
+                    <View
+                      className={`h-[60%] items-center justify-center px-2 rounded-s-lg ${theme === "dark" ? `bg-slate-200` : `bg-slate-500`}`}
                     >
                       <AppText
-                        className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
+                        color={theme === "dark" ? `dark` : `light`}
+                        className="text-center"
                       >
-                        Delete
+                        There are no leaves yet
                       </AppText>
-                    </TouchableOpacity>
+                    </View>
+                  )}
+                  <View className="flex-col  p-2 ">
+                    <View className="flex-row items-center justify-between">
+                      <AppText
+                        color={theme === "dark" ? `light` : `dark`}
+                        className="font-bold font-poppins text-lg"
+                      >
+                        Tree {`#${index + 1}`}
+                      </AppText>
+
+                      <TouchableOpacity
+                        onPress={() => {
+                          setModal(true);
+                          setTreeId(data?.$id);
+                          setWhatModal("deleteTree");
+                        }}
+                        className="bg-[#75A90A] rounded-xl px-4 py-2 "
+                      >
+                        <AppText
+                          className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
+                        >
+                          Delete
+                        </AppText>
+                      </TouchableOpacity>
+                    </View>
+                    <AppText color={theme === "dark" ? `light` : `dark`}>
+                      {data?.$createdAt.format("MM/DD/YYYY")}
+                    </AppText>
                   </View>
-                  <AppText color={theme === "dark" ? `light` : `dark`}>
-                    {data?.$createdAt.format("MM/DD/YYYY")}
-                  </AppText>
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-      </ScrollView>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </ScrollView>
+      </BackgroundGradient>
+
       <Modal
         visible={modal}
         animationType="slide"

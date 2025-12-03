@@ -160,7 +160,7 @@ export default function History() {
             <View className="flex-row items-center gap-5">
               <FontAwesome5
                 name="arrow-left"
-                size={28}
+                size={20}
                 color={theme === "dark" ? `#E8C282` : `black`}
                 onPress={() => router.back()}
               />

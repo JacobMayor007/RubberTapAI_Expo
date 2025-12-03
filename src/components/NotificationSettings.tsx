@@ -1,7 +1,7 @@
 import { Profile } from "@/types";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useEffect, useState } from "react";
-import { SafeAreaView, Switch, View } from "react-native";
+import { Switch, View } from "react-native";
 import {
   updateMarket,
   updateMessage,
@@ -83,9 +83,11 @@ const NotificationSettings = ({ setVisibleModal }: NotificationProps) => {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1 bg-[#FFECCC] items-center justify-center">
-        <Loading className="h-16 w-16" />
-      </SafeAreaView>
+      <BackgroundGradient
+        className={` flex-1 flex-row items-center justify-center`}
+      >
+        <Loading className="h-16 w-16 mx-auto" />
+      </BackgroundGradient>
     );
   }
 

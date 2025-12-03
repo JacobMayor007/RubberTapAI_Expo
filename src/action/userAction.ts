@@ -330,7 +330,9 @@ const rateRubberTapAI = async (
       25000
     );
 
-    return response;
+    const data = await response.json();
+
+    return data;
   } catch (error) {
     console.error(error);
   }

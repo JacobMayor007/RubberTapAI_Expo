@@ -4,7 +4,7 @@ import { useTheme } from "@/src/contexts/ThemeContext";
 import Feather from "@expo/vector-icons/Feather";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
-import { Modal, TouchableOpacity, View } from "react-native";
+import { Modal, ScrollView, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Report() {
@@ -52,7 +52,7 @@ export default function Report() {
 
   return (
     <SafeAreaView className="flex-1">
-      <View
+      <ScrollView
         className={`flex-1 ${theme === "dark" ? `bg-[#010101]/40` : `bg-[#FFECCC]`} p-6`}
       >
         <Feather
@@ -94,7 +94,7 @@ export default function Report() {
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
       <Modal
         visible={modal}
         onRequestClose={() => setModal(false)}

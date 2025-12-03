@@ -1,4 +1,5 @@
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import Loading from "@/src/components/LoadingComponent";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
@@ -84,11 +85,11 @@ export default function Leaves() {
 
   if (loading) {
     return (
-      <SafeAreaView className="flex-1">
-        <View className="flex-1 bg-[#FFECCC] items-center justify-center">
-          <Loading className="h-16 w-16" />
-        </View>
-      </SafeAreaView>
+      <BackgroundGradient
+        className={` flex-1 flex-row items-center justify-center`}
+      >
+        <Loading className="h-16 w-16 mx-auto" />
+      </BackgroundGradient>
     );
   }
 
@@ -133,73 +134,73 @@ export default function Leaves() {
 
   return (
     <SafeAreaView className="flex-1">
-      <ScrollView
-        className={`flex-1 ${theme === "dark" ? `bg-gray-800` : `bg-[#FFECCC]`}`}
-      >
-        <View className="flex-1  p-6">
-          <View className="flex-row items-center gap-5">
-            <FontAwesome5
-              name="arrow-left"
-              size={20}
-              onPress={() => router.back()}
-            />
-            <AppText
-              color={theme === "dark" ? `light` : `dark`}
-              className="text-xl font-bold"
-            >
-              History Logs
-            </AppText>
-          </View>
-
-          {myLeaves.length > 0 ? (
-            <View className="flex-row flex-1 mt-8 gap-4 flex-wrap">
-              {myLeaves?.map((data, index) => {
-                return (
-                  <TouchableOpacity
-                    key={index}
-                    className="bg-[#FFD99A] h-52 rounded-lg w-[47%]"
-                    onPress={() => {
-                      setLeaf(data);
-                      setModal(true);
-                    }}
-                  >
-                    <Image
-                      source={{ uri: data?.image_leaf }}
-                      className="h-[75%] w-full"
-                    />
-                    <View className="p-2 flex-row justify-between">
-                      <AppText
-                        color="dark"
-                        className="font-poppins font-bold text-lg mt-1.5 mx-2"
-                      >
-                        Leaf #{index + 1}
-                      </AppText>
-
-                      <TouchableOpacity
-                        onPress={deleteLeaf}
-                        className="bg-[#75A90A] rounded-xl px-4 py-2 "
-                      >
-                        <AppText
-                          className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
-                        >
-                          Delete
-                        </AppText>
-                      </TouchableOpacity>
-                    </View>
-                  </TouchableOpacity>
-                );
-              })}
+      <BackgroundGradient className="flex-1">
+        <ScrollView className={`flex-1 `}>
+          <View className="flex-1  p-6">
+            <View className="flex-row items-center gap-5">
+              <FontAwesome5
+                name="arrow-left"
+                size={20}
+                onPress={() => router.back()}
+              />
+              <AppText
+                color={theme === "dark" ? `light` : `dark`}
+                className="text-xl font-bold"
+              >
+                History Logs
+              </AppText>
             </View>
-          ) : (
-            <AppText
-              className="font-poppins mt-20 mx-auto font-bold text-xl"
-              color={theme === "dark" ? "light" : "dark"}
-            >
-              There are no leaves uploaded yet.
-            </AppText>
-          )}
-        </View>
-      </ScrollView>
+
+            {myLeaves.length > 0 ? (
+              <View className="flex-row flex-1 mt-8 gap-4 flex-wrap">
+                {myLeaves?.map((data, index) => {
+                  return (
+                    <TouchableOpacity
+                      key={index}
+                      className="bg-[#FFD99A] h-52 rounded-lg w-[47%]"
+                      onPress={() => {
+                        setLeaf(data);
+                        setModal(true);
+                      }}
+                    >
+                      <Image
+                        source={{ uri: data?.image_leaf }}
+                        className="h-[75%] w-full"
+                      />
+                      <View className="p-2 flex-row justify-between">
+                        <AppText
+                          color="dark"
+                          className="font-poppins font-bold text-lg mt-1.5 mx-2"
+                        >
+                          Leaf #{index + 1}
+                        </AppText>
+
+                        <TouchableOpacity
+                          onPress={deleteLeaf}
+                          className="bg-[#75A90A] rounded-xl px-4 py-2 "
+                        >
+                          <AppText
+                            className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
+                          >
+                            Delete
+                          </AppText>
+                        </TouchableOpacity>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            ) : (
+              <AppText
+                className="font-poppins mt-20 mx-auto font-bold text-xl"
+                color={theme === "dark" ? "light" : "dark"}
+              >
+                There are no leaves uploaded yet.
+              </AppText>
+            )}
+          </View>
+        </ScrollView>
+      </BackgroundGradient>
       <Modal onRequestClose={() => setModal(true)} visible={modal} transparent>
         <View className="flex-1 bg-black/85 items-center justify-center gap-10">
           <View className="w-full px-10">

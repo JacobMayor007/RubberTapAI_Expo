@@ -17,6 +17,14 @@
       "autoIncrement": true,
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_APPWRITE_ENDPOINT": "your-appwrite-endpoint",
+        "EXPO_PUBLIC_APPWRITE_PROJECT_ID": "your-project-id",
+        "EXPO_PUBLIC_APPWRITE_DATABASE_ID": "your-database-id",
+        "EXPO_PUBLIC_APPWRITE_USER_COLLECTION_ID": "your-user-collection-id",
+        "EXPO_PUBLIC_APPWRITE_VIDEO_COLLECTION_ID": "your-video-collection-id",
+        "EXPO_PUBLIC_APPWRITE_STORAGE_ID": "your-storage-id"
       }
     }
   },

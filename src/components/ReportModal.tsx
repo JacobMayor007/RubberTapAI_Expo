@@ -5,7 +5,14 @@ import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, Image, Modal, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Image,
+  Modal,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { reportUserFetch } from "../action/reportAction";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -163,8 +170,13 @@ export default function ReportModal({
   };
 
   return (
-    <View
-      className={`flex-1 ${theme === "dark" ? `bg-[#010101]` : `bg-[#FFECCC]`} justify-between`}
+    <ScrollView
+      contentContainerStyle={{
+        flexGrow: 1,
+        flexDirection: "column",
+        backgroundColor: theme === "dark" ? `bg-[#010101]` : `bg-[#FFECCC]`,
+        justifyContent: "space-between",
+      }}
     >
       <View className="">
         <View
@@ -286,6 +298,6 @@ export default function ReportModal({
           </AppText>
         </ConfirmCancelModal>
       </Modal>
-    </View>
+    </ScrollView>
   );
 }
