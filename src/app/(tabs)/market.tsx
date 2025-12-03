@@ -154,7 +154,10 @@ export default function Market() {
       <BackgroundGradient
         className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFDFA9]`} flex-col justify-between`}
       >
-        <ScrollView contentContainerClassName="flex-1">
+        <ScrollView
+          contentContainerStyle={{ paddingBottom: 20 }}
+          scrollEventThrottle={16}
+        >
           <View className="px-6 pt-10 flex-1  z-50">
             <HeaderNav title="Marketplace" arrow={true} />
 

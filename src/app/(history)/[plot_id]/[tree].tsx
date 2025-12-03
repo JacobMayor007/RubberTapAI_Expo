@@ -201,7 +201,7 @@ export default function Leaves() {
           </View>
         </ScrollView>
       </BackgroundGradient>
-      <Modal onRequestClose={() => setModal(true)} visible={modal} transparent>
+      <Modal onRequestClose={() => setModal(false)} visible={modal} transparent>
         <View className="flex-1 bg-black/85 items-center justify-center gap-10">
           <View className="w-full px-10">
             <Feather

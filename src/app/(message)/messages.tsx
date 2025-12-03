@@ -271,7 +271,7 @@ export default function Messages() {
                   name="arrow-left"
                   size={20}
                   color={theme === "dark" ? "#E8C282" : "black"}
-                  onPress={() => router.replace("/(message)")}
+                  onPress={() => router.replace("/(tabs)/chats")}
                 />
                 <Image
                   style={{ height: 48, width: 48 }}

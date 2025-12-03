@@ -40,7 +40,7 @@ export default function ChatBox() {
 
   useEffect(() => {
     handleFirstLoad();
-  }, []);
+  }, [user]);
 
   const handleFirstLoad = async () => {
     try {
