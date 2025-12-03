@@ -141,6 +141,7 @@ export default function Leaves() {
               <FontAwesome5
                 name="arrow-left"
                 size={20}
+                color={theme === "dark" ? `#E2C282` : `black`}
                 onPress={() => router.back()}
               />
               <AppText
@@ -157,7 +158,7 @@ export default function Leaves() {
                   return (
                     <TouchableOpacity
                       key={index}
-                      className="bg-[#FFD99A] h-52 rounded-lg w-[47%]"
+                      className={`${theme === "dark" ? `bg-slate-900` : `bg-[#FFD99A]`} h-60 rounded-lg w-[47%]`}
                       onPress={() => {
                         setLeaf(data);
                         setModal(true);
@@ -165,11 +166,11 @@ export default function Leaves() {
                     >
                       <Image
                         source={{ uri: data?.image_leaf }}
-                        className="h-[75%] w-full"
+                        className="h-[75%] w-full "
                       />
                       <View className="p-2 flex-row justify-between">
                         <AppText
-                          color="dark"
+                          color={theme === "dark" ? `light` : `dark`}
                           className="font-poppins font-bold text-lg mt-1.5 mx-2"
                         >
                           Leaf #{index + 1}
@@ -177,13 +178,9 @@ export default function Leaves() {
 
                         <TouchableOpacity
                           onPress={deleteLeaf}
-                          className="bg-[#75A90A] rounded-xl px-4 py-2 "
+                          className="bg-[#75A90A] rounded-xl px-4 py-2"
                         >
-                          <AppText
-                            className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
-                          >
-                            Delete
-                          </AppText>
+                          <AppText className={`text-white`}>Delete</AppText>
                         </TouchableOpacity>
                       </View>
                     </TouchableOpacity>
@@ -201,13 +198,13 @@ export default function Leaves() {
           </View>
         </ScrollView>
       </BackgroundGradient>
-      <Modal onRequestClose={() => setModal(true)} visible={modal} transparent>
+      <Modal onRequestClose={() => setModal(false)} visible={modal} transparent>
         <View className="flex-1 bg-black/85 items-center justify-center gap-10">
           <View className="w-full px-10">
             <Feather
               name="x"
               size={32}
-              color="white"
+              color={theme === "dark" ? "#E2C282" : "white"}
               onPress={() => setModal(false)}
             />
           </View>

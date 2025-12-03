@@ -144,7 +144,7 @@ export default function RegisterPlot({
               boxShadow:
                 "1px 1px 1px 1px rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
             }}
-            className="h-8 w-24 bg-green-500 items-center justify-center rounded-md"
+            className="h-8 w-24 bg-[#75A90A] items-center justify-center rounded-md"
           >
             <Text className="text-white">Save</Text>
           </TouchableOpacity>

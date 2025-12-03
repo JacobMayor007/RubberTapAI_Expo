@@ -1,4 +1,5 @@
 import { AppText } from "@/src/components/AppText";
+import BackgroundGradient from "@/src/components/BackgroundGradient";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import Feather from "@expo/vector-icons/Feather";
@@ -163,19 +164,6 @@ export default function App() {
     }
   }, [half]);
 
-  if (!permission?.granted) {
-    return (
-      <View style={styles.container}>
-        <Text style={{ textAlign: "center" }}>
-          We need your permission to show the camera
-        </Text>
-        <TouchableOpacity onPress={requestPermission} style={styles.button}>
-          <Text style={{ color: "#fff" }}>Grant Permission</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
-
   const takePhoto = async () => {
     if (!cameraRef.current || isCapturing) return;
     setIsCapturing(true);
@@ -208,135 +196,131 @@ export default function App() {
   if (showInstructions === "first") {
     return (
       <SafeAreaView className="flex-1">
-        {instructionPage === "one" && (
-          <Pressable
-            style={{
-              backgroundColor: theme === "dark" ? `#101010` : `#FFDFA9`,
-            }}
-            onPress={() => setInstructionPage("two")}
-            className=" flex-1 p-6 gap-4"
-          >
-            <Feather
-              color={theme === "dark" ? `#E8C282` : `black`}
-              onPress={() => setShowInstructions("")}
-              name="x"
-              size={32}
-            />
-
-            <AppText
-              className={`${
-                theme === "dark" ? `text-[#E8C282]` : `text-red-500`
-              } font-bold text-xl`}
-            >
-              📸 Please read the instructions first:
-            </AppText>
-
-            <AppText
-              className={`${
-                theme === "dark" ? `text-[#E8C282]` : `text-black`
-              } font-bold text-lg`}
-            >
-              1️⃣ Position your camera so the rubber tree trunk is centered in
-              the frame.
-            </AppText>
-
-            <Image
-              style={{
-                alignSelf: "center",
-              }}
-              source={require("@/assets/images/Instruction_One.png")}
-              className="h-[50%] w-56"
-            />
-
-            <AppText
-              className={`${
-                theme === "dark" ? `text-[#E8C282]` : `text-black`
-              } font-bold text-lg`}
-            >
-              2️⃣ Make sure the tree fits inside the left and right overlays.
-            </AppText>
-
-            <Text
-              style={{
-                alignSelf: "flex-end",
-              }}
+        <BackgroundGradient className="flex-1">
+          {instructionPage === "one" && (
+            <Pressable
               onPress={() => setInstructionPage("two")}
-              className="bg-green-500 px-5 py-2 text-white font-bold rounded-md"
+              className=" flex-1 p-6 gap-4"
             >
-              Next
-            </Text>
-          </Pressable>
-        )}
-        {instructionPage === "two" && (
-          <Pressable
-            style={{
-              backgroundColor: theme === "dark" ? `#101010` : `#FFDFA9`,
-            }}
-            onPress={() => {
-              setInstructionPage("");
-              setShowInstructions("");
-            }}
-            className="flex-1 p-6 gap-4 py-20"
-          >
-            <AppText
-              className={`${
-                theme === "dark" ? `text-[#E8C282]` : `text-black`
-              } font-bold `}
-            >
-              3️⃣ Press and hold the round button below to start measuring.
-            </AppText>
+              <Feather
+                color={theme === "dark" ? `#E8C282` : `black`}
+                onPress={() => setShowInstructions("")}
+                name="x"
+                size={32}
+              />
 
-            <Image
-              style={{
-                alignSelf: "center",
-              }}
-              source={require("@/assets/images/Instruction_Two.png")}
-              className="h-72 w-32"
-            />
-
-            <AppText
-              className={`${
-                theme === "dark" ? `text-[#E8C282]` : `text-black`
-              } font-bold text-center mt-4`}
-            >
-              ✋ Tip: Hold your phone vertically and ensure the full trunk is
-              visible for the most accurate measurement.
-            </AppText>
-
-            <AppText
-              className={`${
-                theme === "dark" ? `text-[#E8C282]` : `text-black`
-              } font-bold text-center mt-4`}
-            >
-              ✋ Tip: You can hold your phone to your other hand, and pin point
-              the rubber tree trunk where it says the 1m in the camera
-            </AppText>
-            <Image
-              style={{
-                alignSelf: "center",
-              }}
-              source={require("@/assets/images/AI_Image_2.png")}
-              className="h-80 w-96"
-            />
-            <View className="flex-row justify-between items-center px-8 mt-4">
               <AppText
-                onPress={() => setInstructionPage("one")}
-                className="bg-gray-500 px-4 py-2 font-bold rounded-md text-white"
+                className={`${
+                  theme === "dark" ? `text-[#E8C282]` : `text-red-500`
+                } font-bold text-xl`}
               >
-                Previous
+                📸 Please read the instructions first:
               </AppText>
+
               <AppText
-                onPress={() => {
-                  setInstructionPage("");
-                  setShowInstructions("");
+                className={`${
+                  theme === "dark" ? `text-[#E8C282]` : `text-black`
+                } font-bold text-lg`}
+              >
+                1️⃣ Position your camera so the rubber tree trunk is centered in
+                the frame.
+              </AppText>
+
+              <Image
+                style={{
+                  alignSelf: "center",
                 }}
-                className={`bg-green-500 px-5 py-2 font-bold rounded-md text-white`}
+                source={require("@/assets/images/Instruction_One.png")}
+                className="h-[50%] w-56"
+              />
+
+              <AppText
+                className={`${
+                  theme === "dark" ? `text-[#E8C282]` : `text-black`
+                } font-bold text-lg`}
+              >
+                2️⃣ Make sure the tree fits inside the left and right overlays.
+              </AppText>
+
+              <Text
+                style={{
+                  alignSelf: "flex-end",
+                }}
+                onPress={() => setInstructionPage("two")}
+                className="bg-green-500 px-5 py-2 text-white font-bold rounded-md"
               >
                 Next
+              </Text>
+            </Pressable>
+          )}
+          {instructionPage === "two" && (
+            <Pressable
+              onPress={() => {
+                setInstructionPage("");
+                setShowInstructions("");
+              }}
+              className="flex-1 p-6 gap-4 py-20"
+            >
+              <AppText
+                className={`${
+                  theme === "dark" ? `text-[#E8C282]` : `text-black`
+                } font-bold `}
+              >
+                3️⃣ Press and hold the round button below to start measuring.
               </AppText>
-            </View>
-          </Pressable>
-        )}
+
+              <Image
+                style={{
+                  alignSelf: "center",
+                }}
+                source={require("@/assets/images/Instruction_Two.png")}
+                className="h-72 w-32"
+              />
+
+              <AppText
+                className={`${
+                  theme === "dark" ? `text-[#E8C282]` : `text-black`
+                } font-bold text-center mt-4`}
+              >
+                ✋ Tip: Hold your phone vertically and ensure the full trunk is
+                visible for the most accurate measurement.
+              </AppText>
+
+              <AppText
+                className={`${
+                  theme === "dark" ? `text-[#E8C282]` : `text-black`
+                } font-bold text-center mt-4`}
+              >
+                ✋ Tip: You can hold your phone to your other hand, and pin
+                point the rubber tree trunk where it says the 1m in the camera
+              </AppText>
+              <Image
+                style={{
+                  alignSelf: "center",
+                }}
+                source={require("@/assets/images/AI_Image_2.png")}
+                className="h-80 w-96"
+              />
+              <View className="flex-row justify-between items-center px-8 mt-4">
+                <AppText
+                  onPress={() => setInstructionPage("one")}
+                  className="bg-gray-500 px-4 py-2 font-bold rounded-md text-white"
+                >
+                  Previous
+                </AppText>
+                <AppText
+                  onPress={() => {
+                    setInstructionPage("");
+                    setShowInstructions("");
+                  }}
+                  className={`bg-green-500 px-5 py-2 font-bold rounded-md text-white`}
+                >
+                  Next
+                </AppText>
+              </View>
+            </Pressable>
+          )}
+        </BackgroundGradient>
       </SafeAreaView>
     );
   }
@@ -347,115 +331,118 @@ export default function App() {
         <SafeAreaView className="flex-1 ">
           <ScrollView
             contentContainerStyle={{
-              padding: 24,
               gap: 12,
               paddingBottom: 20,
               backgroundColor: theme === "dark" ? `#101010` : `#FFDFA9`,
             }}
             showsVerticalScrollIndicator={true}
           >
-            <View className="flex-row items-center gap-4">
-              <Feather
-                name="arrow-left"
-                color={theme === "dark" ? `white` : `black`}
-                size={32}
-                onPress={() => handleClosePhoto()}
-              />
-              <AppText
-                className={`${theme === "dark" ? `text-[#E8C282]` : `text-[#3F1F11]`} font-bold font-poppins text-2xl`}
-              >
-                Result
-              </AppText>
-            </View>
+            <BackgroundGradient className="flex-1 p-6">
+              <View className="flex-row items-center gap-4">
+                <Feather
+                  name="arrow-left"
+                  color={theme === "dark" ? `#E2C282` : `black`}
+                  size={32}
+                  onPress={() => handleClosePhoto()}
+                />
+                <AppText
+                  className={`${theme === "dark" ? `text-[#E8C282]` : `text-[#3F1F11]`} font-bold font-poppins text-2xl`}
+                >
+                  Result
+                </AppText>
+              </View>
 
-            <Image
-              className="mx-auto h-[220px] w-[60%] rounded-lg mt-4"
-              source={{ uri: capturedPhoto }}
-              resizeMode="cover"
-            />
-
-            <View
-              style={{
-                backgroundColor: theme === "dark" ? `#101010` : `#FFDFA9`,
-                boxShadow:
-                  "rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px",
-              }}
-              className="mt-4 px-4 py-4 gap-4 rounded-xl"
-            >
-              <AppText
-                className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold`}
-              >
-                Method: Rubber Tree Measure
-              </AppText>
-
-              <AppText
-                className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold`}
-              >
-                Date: {dayjs().format("MM/DD/YYYY hh:mm A")}
-              </AppText>
-
-              <AppText
-                className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold text-xl`}
-              >
-                Tapping Guidance:
-              </AppText>
-
-              <AppText
-                className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} tracking-wide leading-6 font-poppins`}
-              >
-                {"    "}Rubber tapping involves carefully making incisions on
-                the bark of rubber trees to collect latex without harming the
-                plant. The cut should be made at an angle to allow latex to flow
-                smoothly into the collection cup. Ensure that the bark is not
-                cut too deeply, as this can damage the tree and reduce latex
-                yield. Regular and proper tapping helps maintain healthy trees
-                and consistent latex production.
-              </AppText>
-            </View>
-            <View
-              style={{
-                boxShadow:
-                  "rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px",
-                backgroundColor: theme === "dark" ? `#101010` : `#FFDFA9`,
-              }}
-              className="mt-4 px-4 py-4  gap-4 rounded-xl"
-            >
               <Image
-                source={require("@/assets/images/ReferToImage.png")}
-                className="w-full h-48 rounded-lg"
-                resizeMode="contain"
+                className="mx-auto h-[220px] w-[60%] rounded-lg mt-4"
+                source={{ uri: capturedPhoto }}
+                resizeMode="cover"
               />
-              <AppText
-                className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold`}
-              >
-                Refer to this image / GIF
-              </AppText>
-              <TouchableOpacity
-                onPress={() =>
-                  Linking.openURL("https://www.youtube.com/watch?v=j-gpYFBktuc")
-                }
+
+              <View
+                style={{
+                  backgroundColor: theme === "dark" ? `#101010` : `#FFDFA9`,
+                  boxShadow:
+                    "rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px",
+                }}
+                className="mt-4 px-4 py-4 gap-4 rounded-xl"
               >
                 <AppText
-                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-blue-600"} font-poppins font-bold underline`}
+                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold`}
                 >
-                  https://www.youtube.com/watch?v=j-gpYFBktuc
+                  Method: Rubber Tree Measure
                 </AppText>
-              </TouchableOpacity>
-            </View>
 
-            <TouchableOpacity
-              onPress={() => {
-                handleClosePhoto();
-                router.push("/(camera)");
-              }}
-              className="self-end bg-green-600 px-5 py-3 rounded-full mt-6"
-            >
-              <Text
-                style={{ color: "white", fontSize: 18, fontWeight: "bold" }}
+                <AppText
+                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold`}
+                >
+                  Date: {dayjs().format("MM/DD/YYYY hh:mm A")}
+                </AppText>
+
+                <AppText
+                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold text-xl`}
+                >
+                  Tapping Guidance:
+                </AppText>
+
+                <AppText
+                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} tracking-wide leading-6 font-poppins`}
+                >
+                  {"    "}Rubber tapping involves carefully making incisions on
+                  the bark of rubber trees to collect latex without harming the
+                  plant. The cut should be made at an angle to allow latex to
+                  flow smoothly into the collection cup. Ensure that the bark is
+                  not cut too deeply, as this can damage the tree and reduce
+                  latex yield. Regular and proper tapping helps maintain healthy
+                  trees and consistent latex production.
+                </AppText>
+              </View>
+              <View
+                style={{
+                  boxShadow:
+                    "rgba(50, 50, 93, 0.25) 0px 6px 12px -2px, rgba(0, 0, 0, 0.3) 0px 3px 7px -3px",
+                  backgroundColor: theme === "dark" ? `#101010` : `#FFDFA9`,
+                }}
+                className="mt-4 px-4 py-4  gap-4 rounded-xl"
               >
-                Done
-              </Text>
-            </TouchableOpacity>
+                <Image
+                  source={require("@/assets/images/ReferToImage.png")}
+                  className="w-full h-48 rounded-lg"
+                  resizeMode="contain"
+                />
+                <AppText
+                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold`}
+                >
+                  Refer to this image / GIF
+                </AppText>
+                <TouchableOpacity
+                  onPress={() =>
+                    Linking.openURL(
+                      "https://www.youtube.com/watch?v=j-gpYFBktuc"
+                    )
+                  }
+                >
+                  <AppText
+                    className={`${theme === "dark" ? "text-[#E2C282]" : "text-blue-600"} font-poppins font-bold underline`}
+                  >
+                    https://www.youtube.com/watch?v=j-gpYFBktuc
+                  </AppText>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                onPress={() => {
+                  handleClosePhoto();
+                  router.push("/(camera)");
+                }}
+                className="self-end bg-green-600 px-5 py-3 rounded-full mt-6"
+              >
+                <Text
+                  style={{ color: "white", fontSize: 18, fontWeight: "bold" }}
+                >
+                  Done
+                </Text>
+              </TouchableOpacity>
+            </BackgroundGradient>
           </ScrollView>
         </SafeAreaView>
       ) : (

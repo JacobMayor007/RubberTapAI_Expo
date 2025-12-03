@@ -7,7 +7,6 @@ export default function MessageLayout() {
         headerShown: false,
       }}
     >
-      <Stack.Screen name="index" />
       <Stack.Screen name="messages" />
       <Stack.Screen name="[user_id]" />
     </Stack>

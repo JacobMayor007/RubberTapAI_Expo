@@ -28,9 +28,11 @@ import { ID } from "react-native-appwrite";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
 import { useLocation } from "../contexts/LocationContext";
+import { useTheme } from "../contexts/ThemeContext";
 import { globalFunction } from "../global/fetchWithTimeout";
 import { storage } from "../lib/appwrite";
 import { AppText } from "./AppText";
+import BackgroundGradient from "./BackgroundGradient";
 import { Button } from "./Button";
 import Loading from "./LoadingComponent";
 import { ViewPressable } from "./ViewPressable";
@@ -58,7 +60,7 @@ export default function EditProduct({
   const [uri, setUri] = useState<string | null>(null);
   const [confirmModal, setConfirmModal] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const { theme } = useTheme();
   const address = useLocation();
 
   const categories = [
@@ -331,21 +333,15 @@ export default function EditProduct({
 
   if (loading) {
     return (
-      <SafeAreaView
-        style={{
-          flexGrow: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#FFECCC",
-        }}
-      >
-        <Loading className="h-16 w-16" />
+      <SafeAreaView className="flex-1">
+        <BackgroundGradient className="flex-1 items-center justify-center">
+          <Loading className="h-16 w-16 my-auto" />
+        </BackgroundGradient>
       </SafeAreaView>
     );
   }
-
   return (
-    <View className="flex-1 bg-[#FFECCC] border">
+    <BackgroundGradient className="flex-1 ">
       <KeyboardAvoidingView
         behavior="height"
         keyboardVerticalOffset={0}
@@ -362,10 +358,11 @@ export default function EditProduct({
               <FontAwesome5
                 name="arrow-left"
                 size={20}
+                color={theme === "dark" ? `#E2C282` : `black`}
                 onPress={() => setAddProductModal(false)}
               />
               <AppText
-                color={"dark"}
+                color={theme === "dark" ? `light` : `dark`}
                 className="font-poppins font-extrabold text-2xl"
               >
                 Edit Product
@@ -373,13 +370,13 @@ export default function EditProduct({
             </View>
           </View>
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? `light` : `dark`}
             className="font-poppins font-bold text-xl mt-2"
           >
             Rubber/Latex*
           </AppText>
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? `light` : `dark`}
             className="font-poppins font-light text-sm mt-1"
           >
             You can sell your harvest latex and waste rubber here.
@@ -388,7 +385,7 @@ export default function EditProduct({
           {chosenProduct?.productURL ? (
             <TouchableOpacity
               style={{ height: 150 }}
-              className="border mt-2 rounded-xl items-center justify-center"
+              className={`border mt-2 rounded-xl items-center justify-center ${theme === "dark" ? `border-[#E2C282]` : ``}`}
               onPress={() => {
                 setCameraModal(true);
                 requestCameraPermission();
@@ -402,7 +399,7 @@ export default function EditProduct({
           ) : (
             <View
               style={{ height: 150 }}
-              className="border mt-2 rounded-xl items-center justify-center"
+              className={`border mt-2 rounded-xl items-center justify-center ${theme === "dark" ? `border-[#E2C282]` : ``} `}
             >
               <View className="flex-row gap-4">
                 <ViewPressable
@@ -421,28 +418,34 @@ export default function EditProduct({
                   <Entypo name="folder-images" size={40} />
                 </ViewPressable>
               </View>
-              <AppText color={"dark"} className="font-poppins text-sm mt-4">
+              <AppText
+                color={theme === "dark" ? `light` : `dark`}
+                className="font-poppins text-sm mt-4"
+              >
                 Upload the photo of your item/rubber waste/latex
               </AppText>
             </View>
           )}
 
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? `light` : `dark`}
             className=" mt-2 font-poppins font-bold text-lg"
           >
             Category*
           </AppText>
-          <View className="h-12 border relative rounded-lg items-center px-4 flex-row justify-between">
+          <View
+            className={`h-14 border relative rounded-lg items-center px-4 flex-row justify-between ${theme === "dark" ? `border-[#E2C282]` : ``}`}
+          >
             <AppText
-              color={"dark"}
-              className={`font-poppins font-light w-11/12 ${!category ? `text-[#727272]` : `text-black`}`}
+              color={theme === "dark" ? `light` : `dark`}
+              className={`font-poppins font-light w-11/12 capitalize`}
             >
               {!category ? `Choose type of category` : category}
             </AppText>
             <MaterialIcons
               onPress={() => setCategoryVisible((prev) => !prev)}
               size={42}
+              color={theme === "dark" ? `#E2C282` : `black`}
               name={categoryVisible ? `arrow-drop-up` : `arrow-drop-down`}
             />
             {categoryVisible && (
@@ -450,13 +453,13 @@ export default function EditProduct({
                 {categories.map((data, index) => {
                   return (
                     <AppText
-                      color="dark"
+                      color={theme === "dark" ? `light` : `dark`}
                       key={index}
                       onPress={() => {
                         setCategoryVisible(false);
                         setCategory(data?.name);
                       }}
-                      className=" h-12 py-2 px-4 rounded-md border-b-[1px]"
+                      className={`h-12 py-2 px-4 rounded-md border-b-[1px]`}
                     >
                       {data?.name}
                     </AppText>
@@ -466,15 +469,17 @@ export default function EditProduct({
             )}
           </View>
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? `light` : `dark`}
             className=" mt-2 font-poppins font-bold text-lg"
           >
             Price*
           </AppText>
-          <View className="h-12 border rounded-lg items-center px-4 flex-row justify-between">
+          <View
+            className={`h-12 border rounded-lg items-center px-4 flex-row justify-between ${theme === "dark" ? `border-[#E2C282]` : ``}`}
+          >
             <TextInput
               placeholder="Enter Price per kilo"
-              className="placeholder:text-[#727272] font-light  w-11/12"
+              className={`placeholder:text-[#727272] font-light  w-11/12 ${theme === "dark" ? `text-[#E2C282]` : `text-slate-900`} `}
               value={price}
               onChangeText={(text) => {
                 const sanitizedText = text.replace(/[^0-9.]/g, "");
@@ -482,41 +487,49 @@ export default function EditProduct({
               }}
               keyboardType="numeric"
             />
+
             <FontAwesome6 name="peso-sign" size={16} color={"green"} />
           </View>
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? `light` : `dark`}
             className="mt-2 font-poppins font-bold text-lg "
           >
             Description*
           </AppText>
-          <View className="border-[1px] h-32 rounded-lg p-2">
+          <View
+            className={`border-[1px] h-32 rounded-lg p-2 ${theme === "dark" ? `border-[#E2C282]` : ``}`}
+          >
             <TextInput
               placeholder="Enter description of the product"
               value={description}
               placeholderTextColor={"#797979"}
               onChangeText={(e) => setDescription(e)}
               multiline
-              className=" drop-shadow-2xl text-slate-900 font-light"
+              className={`drop-shadow-2xl ${theme === "dark" ? `text-[#E2C282]` : `text-slate-900`} font-light`}
             />
           </View>
           <AppText
-            color={"dark"}
+            color={theme === "dark" ? `light` : `dark`}
             className="mt-3 font-poppins font-bold text-lg"
           >
             Sellers Details
           </AppText>
-          <View className="h-28 border flex-row rounded-lg mb-7 items-center px-7 gap-4">
+          <View
+            className={`h-28 border flex-row rounded-lg mb-7 items-center px-7 gap-4 ${theme === "dark" ? `border-[#E2C282]` : ``}`}
+          >
             <Image
               className="h-12 w-12 rounded-full"
               source={{ uri: profile?.imageURL }}
             />
             <View className="flex-col gap-1 text-wrap">
-              <AppText color={"dark"} className="font-poppins font-bold">
+              <AppText
+                color={theme === "dark" ? `light` : `dark`}
+                className="font-poppins font-bold"
+              >
                 {chosenProduct?.user_username}
               </AppText>
               <AppText
-                color={"dark"}
+                color={theme === "dark" ? `light` : `dark`}
                 className="w-4/12 font-poppins font-extralight text-sm text-wrap overflow-hidden "
               >
                 {chosenProduct?.address}
@@ -529,7 +542,11 @@ export default function EditProduct({
             className="my-2 py-1 rounded-full font-poppins font-bold text-xl"
           />
         </ScrollView>
-        <Modal visible={cameraModal} animationType="slide">
+        <Modal
+          visible={cameraModal}
+          onRequestClose={() => setConfirmModal(false)}
+          animationType="slide"
+        >
           {permission && (
             <CameraView
               facing={flip}
@@ -586,7 +603,12 @@ export default function EditProduct({
             </CameraView>
           )}
         </Modal>
-        <Modal visible={confirmModal} animationType="slide" transparent>
+        <Modal
+          visible={confirmModal}
+          animationType="slide"
+          transparent
+          onRequestClose={() => setConfirmModal(false)}
+        >
           <BlurView
             intensity={90}
             className="flex-1 items-center justify-center"
@@ -599,12 +621,15 @@ export default function EditProduct({
                   className="h-6 w-6"
                 />
               </View>
-              <AppText color={"dark"} className="font-poppins">
+              <AppText
+                color={theme === "dark" ? `light` : `dark`}
+                className="font-poppins"
+              >
                 Do you wish to confirm?
               </AppText>
               <View className="flex-row items-center gap-10">
                 <AppText
-                  color={"dark"}
+                  color={theme === "dark" ? `light` : `dark`}
                   onPress={() => setConfirmModal(false)}
                   className="py-2 px-6 bg-slate-200 rounded-lg font-poppins font-semibold"
                 >
@@ -625,6 +650,6 @@ export default function EditProduct({
           </BlurView>
         </Modal>
       </KeyboardAvoidingView>
-    </View>
+    </BackgroundGradient>
   );
 }

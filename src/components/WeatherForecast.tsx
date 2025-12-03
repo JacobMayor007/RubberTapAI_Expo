@@ -299,7 +299,7 @@ const WeatherForecast = () => {
                 <View className="flex-row justify-between gap-2 mb-6">
                   <View
                     className={`flex-1 p-4 rounded-xl ${
-                      theme === "dark" ? "bg-gray-800/50" : "bg-gray-100"
+                      theme === "dark" ? "bg-black/80" : "bg-gray-100"
                     }`}
                   >
                     <Ionicons
@@ -322,7 +322,7 @@ const WeatherForecast = () => {
                   </View>
                   <View
                     className={`flex-1 p-4 rounded-xl ${
-                      theme === "dark" ? "bg-gray-800/50" : "bg-gray-100"
+                      theme === "dark" ? "bg-black/80" : "bg-gray-100"
                     }`}
                   >
                     <Ionicons
@@ -345,7 +345,7 @@ const WeatherForecast = () => {
                   </View>
                   <View
                     className={`flex-1 p-4 rounded-xl ${
-                      theme === "dark" ? "bg-gray-800/50" : "bg-gray-100"
+                      theme === "dark" ? "bg-black/80" : "bg-gray-100"
                     }`}
                   >
                     <Ionicons
@@ -386,10 +386,10 @@ const WeatherForecast = () => {
                       className={`mb-3 p-4 rounded-xl flex-row items-center justify-between ${
                         isCurrentHour
                           ? theme === "dark"
-                            ? "bg-gradient-to-r from-green-900/50 to-emerald-900/50"
+                            ? "bg-gray-800/40"
                             : "bg-gradient-to-r from-green-200 to-emerald-200"
                           : theme === "dark"
-                            ? "bg-gray-800/40"
+                            ? "bg-black/80"
                             : "bg-gray-50"
                       }`}
                       style={{

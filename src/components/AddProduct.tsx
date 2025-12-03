@@ -337,7 +337,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
                       setCameraModal(true);
                       requestCameraPermission();
                     }}
-                    className={`h-20 w-20 flex-row rounded-lg items-center justify-center ${theme === "dark" ? `bg-slate-100` : ``}`}
+                    className={`h-20 w-20 flex-row rounded-lg items-center justify-center ${theme === "dark" ? `bg-slate-900` : ``}`}
                   >
                     <SimpleLineIcons
                       name="camera"
@@ -347,7 +347,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
                   </ViewPressable>
                   <ViewPressable
                     onPress={pickAnImage}
-                    className={`h-20 w-20 flex-row rounded-lg items-center justify-center ${theme === "dark" ? `bg-slate-100` : ``}`}
+                    className={`h-20 w-20 flex-row rounded-lg items-center justify-center ${theme === "dark" ? `bg-slate-900` : ``}`}
                   >
                     <Entypo
                       name="folder-images"
@@ -387,7 +387,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
               />
               {categoryVisible && (
                 <View
-                  className={`absolute ${theme === "dark" && "bg-slate-600"} rounded-lg p-2 bg-white w-full -left-2 z-20 top-11 gap-2 justify-center`}
+                  className={`absolute ${theme === "dark" ? "bg-slate-900" : ` bg-white`} rounded-lg p-2 w-full -left-2 z-20 top-11 gap-2 justify-center`}
                 >
                   {categories.map((data, index) => {
                     return (
@@ -398,7 +398,7 @@ export default function AddProduct({ setAddProductModal }: AddProductProps) {
                           setCategoryVisible(false);
                           setCategory(data?.name);
                         }}
-                        className=" h-12 py-2 px-4 rounded-md border-b-[1px]"
+                        className={`h-12 py-2 px-4 rounded-md border-b-[1px] ${theme === "dark" ? `border-[#E2C282]` : ``}`}
                       >
                         {data?.name}
                       </AppText>
