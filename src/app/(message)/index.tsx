@@ -77,7 +77,7 @@ export default function ChatBox() {
       setLoading(true);
 
       const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/chat-room/${user?.$id}`,
+        `${process.env.EXPO_PUBLIC_BASE_URL}/chat-room/${user_id}`,
         {
           method: "GET",
           headers: {

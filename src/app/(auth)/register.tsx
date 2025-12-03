@@ -172,7 +172,6 @@ export default function Register() {
     } catch (error: any) {
       console.error("Error registering user:", error);
 
-      // Check if it's an Appwrite exception
       if (error.message && error.message.includes("already exists")) {
         Alert.alert(
           "Registration Failed",

@@ -90,13 +90,12 @@ export default function HeaderNav({ title, arrow }: HeaderNavProps) {
         </AppText>
       </View>
       <View className="flex-row items-center gap-5 py-4">
-        <Link href="/(message)">
-          <AntDesign
-            name="message1"
-            size={23}
-            color={theme === "dark" ? "#E8C282" : "black"}
-          />
-        </Link>
+        <AntDesign
+          name="message1"
+          size={23}
+          color={theme === "dark" ? "#E8C282" : "black"}
+          onPress={() => router.push("/(message)")}
+        />
         <Link href={{ pathname: "/(tabs)/myNotifications" }}>
           <Ionicons
             name="notifications-outline"

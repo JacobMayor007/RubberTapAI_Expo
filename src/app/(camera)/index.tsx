@@ -345,21 +345,28 @@ export default function CameraLeaf() {
 
     try {
       setLoading(true);
-      const response3 = await fetch(`http://192.168.1.21:8080/predict`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Accept: "application/json",
-        },
-        body: formData,
-      });
+      const response3 = await fetch(
+        `https://rubbertapai-server-3.onrender.com/predict`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "multipart/form-data",
+            Accept: "application/json",
+          },
+          body: formData,
+        }
+      );
 
       const dataOne = await response3.json();
       const isRubberLeaf = await isRubberTreeLeaf(dataOne.predictions);
 
-      console.log(isRubberLeaf);
+      console.log("Server 3:", isRubberLeaf);
 
-      if (isRubberLeaf === "Other" || isRubberLeaf === "Error") {
+      if (
+        isRubberLeaf === "Mango Leaf" ||
+        isRubberLeaf === "Papaya Leaf" ||
+        isRubberLeaf === "Error"
+      ) {
         Alert.alert(
           "Leaf Detection Error",
           "We can only detect a rubber tree leaf."
