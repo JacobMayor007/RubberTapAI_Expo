@@ -110,7 +110,7 @@ export default function CameraLeaf() {
       [
         {
           style: "default",
-          text: "Confirm",
+          text: "OK",
           onPress: () => router.back(),
         },
       ]
