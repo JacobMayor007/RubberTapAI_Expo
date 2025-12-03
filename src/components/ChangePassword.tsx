@@ -27,6 +27,7 @@ export default function ChangePassword({
           <Feather
             onPress={() => setConfirmModal(false)}
             name="arrow-left"
+            color={theme === "dark" ? `#E2C282` : `black`}
             size={32}
           />
           <AppText
@@ -140,14 +141,14 @@ function InputPasswords() {
         <TextInput
           value={password.oldPassword}
           secureTextEntry={!showPassword}
-          placeholderTextColor={"#000000"}
+          placeholderTextColor={theme === "dark" ? "#E8C282" : "#000000"}
           onFocus={() => setFocusedInput("second")}
           onBlur={() => setFocusedInput("")}
           placeholder="Old Password"
-          className={`h-14 text-white border-2 rounded-md pl-4 pr-12 ${
+          className={`h-14 ${theme === "dark" ? `text-[#E2C282]` : `text-black`} border-2 rounded-md pl-4 pr-12 ${
             focusedInput === "second"
               ? "border-green-800 border-[2px] bg-[#E8C282]/30"
-              : "border-black border-[1px]"
+              : `${theme === "dark" ? `border-green-800` : `border-black`} border-[1px]`
           }`}
           onChangeText={(e) => setPassword({ ...password, oldPassword: e })}
         />
@@ -156,9 +157,17 @@ function InputPasswords() {
           className="absolute right-4 top-4"
         >
           {showPassword ? (
-            <Feather name="eye" size={20} color={"#000000"} />
+            <Feather
+              name="eye"
+              size={20}
+              color={theme === "dark" ? `#E2C282` : `black`}
+            />
           ) : (
-            <Feather name="eye-off" color={"#000000"} size={20} />
+            <Feather
+              name="eye-off"
+              color={theme === "dark" ? `#E2C282` : `black`}
+              size={20}
+            />
           )}
         </Pressable>
       </View>
@@ -167,14 +176,14 @@ function InputPasswords() {
           value={password.newPassword}
           onChangeText={(e) => setPassword({ ...password, newPassword: e })}
           secureTextEntry={!showConfirmPassword}
-          placeholderTextColor={"#000000"}
+          placeholderTextColor={theme === "dark" ? "#E8C282" : "#000000"}
           placeholder="New Password"
           onFocus={() => setFocusedInput("sixth")}
           onBlur={() => setFocusedInput("")}
           className={`h-14 text-slate-100 border-2 rounded-md px-4 ${
             focusedInput === "sixth"
               ? "border-green-800 border-[2px] bg-[#E8C282]/30"
-              : "border-black border-[1px]"
+              : `${theme === "dark" ? `border-green-800` : `border-black`} border-[1px]`
           }`}
         />
         <Pressable
@@ -182,9 +191,17 @@ function InputPasswords() {
           className="absolute right-4 top-4"
         >
           {showConfirmPassword ? (
-            <Feather name="eye" size={20} color={"#000000"} />
+            <Feather
+              name="eye"
+              size={20}
+              color={theme === "dark" ? `#E2C282` : `black`}
+            />
           ) : (
-            <Feather name="eye-off" color={"#000000"} size={20} />
+            <Feather
+              name="eye-off"
+              color={theme === "dark" ? `#E2C282` : `black`}
+              size={20}
+            />
           )}
         </Pressable>
       </View>
@@ -195,14 +212,14 @@ function InputPasswords() {
             setPassword({ ...password, confirmNewPassword: e })
           }
           secureTextEntry={!showConfirmNewPassword}
-          placeholderTextColor={"#000000"}
+          placeholderTextColor={theme === "dark" ? "#E8C282" : "#000000"}
           placeholder="Confirm New Password"
           onFocus={() => setFocusedInput("seventh")}
           onBlur={() => setFocusedInput("")}
           className={`h-14 text-slate-100 border-2 rounded-md px-4 ${
             focusedInput === "seventh"
-              ? "border-green-800 border-[2px] bg-[#E8C282]/30"
-              : "border-black border-[1px]"
+              ? `border-green-800 border-[2px] bg-[#E8C282]/30`
+              : `${theme === "dark" ? `border-green-800` : `border-black`} border-[1px]`
           }`}
         />
         <Pressable
@@ -210,9 +227,17 @@ function InputPasswords() {
           className="absolute right-4 top-4"
         >
           {showConfirmNewPassword ? (
-            <Feather name="eye" size={20} color={"#000000"} />
+            <Feather
+              name="eye"
+              size={20}
+              color={theme === "dark" ? `#E2C282` : `black`}
+            />
           ) : (
-            <Feather name="eye-off" color={"#000000"} size={20} />
+            <Feather
+              name="eye-off"
+              color={theme === "dark" ? `#E2C282` : `black`}
+              size={20}
+            />
           )}
         </Pressable>
       </View>

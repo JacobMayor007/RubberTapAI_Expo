@@ -7,15 +7,14 @@ import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
-import { account } from "@/src/lib/appwrite";
 import { ChatRoom, Profile } from "@/types";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
 import { Link, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   Image,
   Modal,
   ScrollView,
@@ -24,6 +23,8 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+dayjs.extend(utc);
+
 export default function ChatBox() {
   const router = useRouter();
   const [visibleModal, setVisibleModal] = useState(false);
@@ -32,23 +33,10 @@ export default function ChatBox() {
   const [chatHistory, setChatHistory] = useState<ChatRoom[]>([]);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [userVerification, setUserVerification] = useState(false);
 
   const messageUser = useMessage();
   const { theme } = useTheme();
   const { user } = useAuth();
-
-  useEffect(() => {
-    handleFirstLoad();
-  }, [user]);
-
-  const handleFirstLoad = async () => {
-    try {
-      await getChat(user?.$id || "");
-    } catch (e) {
-      console.error(e);
-    }
-  };
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -72,31 +60,33 @@ export default function ChatBox() {
     fetchProfile();
   }, [user?.$id]);
 
-  const getChat = async (user_id: string) => {
-    try {
-      setLoading(true);
+  useEffect(() => {
+    const getChat = async () => {
+      try {
+        setLoading(true);
 
-      const response = await fetch(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/chat-room/${user_id}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
+        const response = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/chat-room/${user?.$id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
 
-      const data = await response.json();
+        const data = await response.json();
 
-      setChatHistory(data);
-    } catch (error) {
-      console.error("Upload error:", error);
-    } finally {
-      setTimeout(() => {
+        setChatHistory(data);
+      } catch (error) {
+        console.error("Upload error:", error);
+      } finally {
         setLoading(false);
-      }, 300);
-    }
-  };
+      }
+    };
+
+    getChat();
+  }, [user?.$id]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -170,41 +160,6 @@ export default function ChatBox() {
     }
   };
 
-  const isUserVerified = () => {
-    if (!user?.emailVerification) {
-      if (userVerification) {
-        Alert.alert("Already been sent to your email, please check!");
-        return;
-      }
-      Alert.alert("Account Verification", "Please verified your account!", [
-        {
-          text: "Not Now",
-          onPress: () => router.back(),
-          style: "cancel",
-        },
-        {
-          text: "Ok",
-          onPress: async () => {
-            try {
-              setUserVerification(true);
-
-              const result = await account.createVerification(
-                "https://rubbertapai.netlify.app/"
-              );
-              console.log("Verification email sent:", result);
-
-              Alert.alert("Verification email sent", "Please check your email");
-            } catch (error) {
-              console.error("Failed to send verification:", error);
-            }
-          },
-        },
-      ]);
-
-      return;
-    }
-  };
-
   return (
     <SafeAreaView className="flex-1">
       <BackgroundGradient
@@ -228,7 +183,15 @@ export default function ChatBox() {
             </View>
             <Logo className="h-11 w-11" />
           </View>
-          <View className="mt-2  bg-[rgb(43,43,43,0.2)] h-11 rounded-2xl flex-row items-center gap-3 px-4">
+          <View
+            style={{
+              boxShadow:
+                theme === "dark"
+                  ? "rgba(232, 194, 130, 0.2) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px"
+                  : "",
+            }}
+            className={`mt-2 ${theme === "dark" ? `bg-[#202020]` : `bg-[rgb(43,43,43,0.2)]`}  h-11 rounded-2xl flex-row items-center gap-3 px-4`}
+          >
             <Fontisto
               name="search"
               size={20}
@@ -329,18 +292,28 @@ export default function ChatBox() {
             <FontAwesome5
               name="arrow-left"
               size={20}
+              color={theme === "dark" ? `#E2C282` : `black`}
               onPress={() => {
                 setVisibleModal(false);
               }}
             />
-            <View className="bg-[rgb(43,43,43,0.2)] h-12 w-11/12 rounded-3xl gap-2 flex-row items-center px-2">
+            <View
+              style={{
+                boxShadow:
+                  theme === "dark"
+                    ? "rgba(232, 194, 130, 0.2) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px"
+                    : "",
+              }}
+              className="bg-[rgb(43,43,43,0.2)] h-12 w-11/12 rounded-3xl gap-2 flex-row items-center px-2"
+            >
               <Logo className="h-10 w-10 mt-1 " />
               <TouchableOpacity className="h-full w-10/12 ">
                 <TextInput
                   placeholder="Search user"
                   value={searchValue}
                   onChangeText={setSearchValue}
-                  className="h-full w-full border-none  placeholder:font-poppins placeholder:font-extrabold placeholder:text-slate-800"
+                  placeholderTextColor={theme === "dark" ? `#E2C282` : `black`}
+                  className={`h-full w-full border-none  placeholder:font-poppins placeholder:font-extrabold ${theme === "dark" ? `text-[#E2C282]` : `text-black`}`}
                 />
               </TouchableOpacity>
             </View>
@@ -351,16 +324,16 @@ export default function ChatBox() {
             ) : (
               <View className="mt-4">
                 {searchValue.length < 1 && (
-                  <AppText color={"dark"}>
+                  <AppText color={theme === "dark" ? `light` : `dark`}>
                     Please input a name on the search bar to search a user.
                   </AppText>
                 )}
 
                 {searchUser.length === 0 && searchValue.length > 1 && (
-                  <AppText color={"dark"}>
+                  <AppText color={theme === "dark" ? `light` : `dark`}>
                     There are no username, or email named{" "}
                     <AppText
-                      color={"dark"}
+                      color={theme === "dark" ? `light` : `dark`}
                       className="font-poppins font-bold italic"
                     >
                       {searchValue}
@@ -372,13 +345,11 @@ export default function ChatBox() {
                   return (
                     <ViewPressable
                       onPress={() => {
-                        !user?.emailVerification
-                          ? isUserVerified()
-                          : messageUser.setUser(data);
+                        messageUser.setUser(data);
                         router.push("/(message)/messages");
                       }}
                       key={index}
-                      className="flex-row items-center mb-2 border-b-[0.5px] py-2 border-black"
+                      className={`flex-row items-center mb-2 border-b-[0.5px] py-2 ${theme === "dark" ? `border-[#E2C282]` : `border-black`}`}
                     >
                       <Image
                         style={{ height: 48, width: 48 }}
@@ -387,13 +358,13 @@ export default function ChatBox() {
                       />
                       <View className="ml-2 justify-center flex-col">
                         <AppText
-                          color={"dark"}
+                          color={theme === "dark" ? `light` : `dark`}
                           className="font-poppins font-bold"
                         >
                           Email: {data.email}
                         </AppText>
                         <AppText
-                          color={"dark"}
+                          color={theme === "dark" ? `light` : `dark`}
                           className="font-poppins font-medium"
                         >
                           Username: {data.username}

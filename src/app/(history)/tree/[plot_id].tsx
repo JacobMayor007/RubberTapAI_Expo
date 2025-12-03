@@ -201,10 +201,10 @@ export default function ListTrees() {
                 setModal(true);
                 setWhatModal("addTree");
               }}
-              className={`${theme === "dark" ? `bg-green-700` : `bg-[#75A90A]`} px-4 py-1.5 rounded-full gap-2 flex-row items-center`}
+              className={` bg-[#75A90A] px-4 py-1.5 rounded-full gap-2 flex-row items-center`}
             >
               <AppText
-                className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`} text-[14px] font-bold font-poppins`}
+                className={`text-white text-[14px] font-bold font-poppins`}
               >
                 Add Tree
               </AppText>
@@ -215,7 +215,7 @@ export default function ListTrees() {
             {myTrees.length === 0 && (
               <View className="justify-center mx-auto mt-20">
                 <AppText
-                  color="dark"
+                  color={theme === "dark" ? `light` : `dark`}
                   className="font-poppins font-bold text-lg"
                 >
                   You have no trees that have been registered
@@ -281,11 +281,7 @@ export default function ListTrees() {
                         }}
                         className="bg-[#75A90A] rounded-xl px-4 py-2 "
                       >
-                        <AppText
-                          className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
-                        >
-                          Delete
-                        </AppText>
+                        <AppText className={`text-white`}>Delete</AppText>
                       </TouchableOpacity>
                     </View>
                     <AppText color={theme === "dark" ? `light` : `dark`}>
@@ -320,7 +316,7 @@ export default function ListTrees() {
           >
             <AppText
               className="m-auto pb-4 font-bold font-poppins text-xl"
-              color="dark"
+              color={theme === "dark" ? `light` : `dark`}
             >
               Confirmation on adding trees
             </AppText>

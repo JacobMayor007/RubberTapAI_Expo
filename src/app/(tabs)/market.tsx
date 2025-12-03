@@ -11,7 +11,6 @@ import RubberPrice from "@/src/components/RubberPrice";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
-import { account } from "@/src/lib/appwrite";
 import { Product, Profile } from "@/types";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
@@ -41,7 +40,6 @@ export default function Market() {
   const [chosenProduct, setChosenProduct] = useState<Product | null>(null);
 
   const [loadingRequest, setLoadingRequest] = useState(false);
-  const [userVerification, setUserVerification] = useState(false);
   const [addEditModal, setAddEditModal] = useState("");
   const { theme } = useTheme();
 
@@ -97,40 +95,6 @@ export default function Market() {
     getMyProduct();
   }, [user?.$id]);
 
-  const isUserVerified = () => {
-    if (!user?.emailVerification) {
-      if (userVerification) {
-        Alert.alert("Already been sent to your email, please check!");
-        return;
-      }
-
-      Alert.alert("Account Verification", "Please verified your account!", [
-        {
-          text: "Not Now",
-          onPress: () => console.log("Cancel"),
-          style: "cancel",
-        },
-        {
-          text: "Ok",
-          onPress: async () => {
-            try {
-              setUserVerification(true);
-
-              const result = await account.createVerification({
-                url: "https://rubbertapai.netlify.app/",
-              });
-              console.log("Verification email sent:", result);
-
-              Alert.alert("Verification email sent", "Please check your email");
-            } catch (error) {
-              console.error("Failed to send verification:", error);
-            }
-          },
-        },
-      ]);
-    }
-  };
-
   const deleteHandle = async () => {
     try {
       setLoadingRequest(true);
@@ -171,23 +135,15 @@ export default function Market() {
               </AppText>
               <TouchableOpacity
                 onPress={() => {
-                  !user?.emailVerification
-                    ? isUserVerified()
-                    : setAddProductModal(true);
+                  setAddProductModal(true);
                   setAddEditModal("add");
                 }}
-                className={`${theme === "dark" ? `bg-green-700` : `bg-[#75A90A]`} flex-row gap-2 items-center px-4 py-2 rounded-full `}
+                className={` bg-[#75A90A] flex-row gap-2 items-center px-4 py-2 rounded-full `}
               >
-                <AppText
-                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-white"} font-poppins font-semibold`}
-                >
+                <AppText className={`text-white font-poppins font-semibold`}>
                   Add Product
                 </AppText>
-                <Feather
-                  size={20}
-                  color={theme === "dark" ? "#E8C282" : "white"}
-                  name="plus"
-                />
+                <Feather size={20} color={"white"} name="plus" />
               </TouchableOpacity>
             </View>
 
@@ -204,7 +160,7 @@ export default function Market() {
                         boxShadow:
                           "1px 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)",
                       }}
-                      className={`flex-row items-center ${theme === "dark" ? `bg-slate-700` : `bg-[#F3E0C1]`} w-full whitespace-nowrap rounded-lg p-4 overflow-hidden`}
+                      className={`flex-row items-center ${theme === "dark" ? `bg-gray-900` : `bg-[#F3E0C1]`} w-full whitespace-nowrap rounded-lg p-4 overflow-hidden`}
                       key={index}
                     >
                       <Image
@@ -242,11 +198,9 @@ export default function Market() {
                             setChosenProduct(data);
                             setViewModal(true);
                           }}
-                          className={`h-9 px-4 ${theme === "dark" ? `bg-green-800` : `bg-[#75A90A]`} rounded-full items-center justify-center self-end mt-2`}
+                          className={`h-9 px-4 bg-[#75A90A] rounded-full items-center justify-center self-end mt-2`}
                         >
-                          <AppText
-                            className={`${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
-                          >
+                          <AppText className={`text-white`}>
                             View Details
                           </AppText>
                         </TouchableOpacity>

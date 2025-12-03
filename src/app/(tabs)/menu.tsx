@@ -6,6 +6,7 @@ import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
 import EditProfile from "@/src/components/EditProfile";
 import HeaderNav from "@/src/components/HeaderNav";
 import HelpAndSupport from "@/src/components/HelpAndSupport";
+import Loading from "@/src/components/LoadingComponent";
 import Logout from "@/src/components/Logout";
 import NavigationBar from "@/src/components/Navigation";
 import NotificationSettings from "@/src/components/NotificationSettings";
@@ -41,10 +42,12 @@ export default function Menu() {
   const [feedback, setFeedback] = useState("");
   const [userRated, setUserRated] = useState<AppRate | null>(null);
   const { theme } = useTheme();
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        setLoading(true);
         const response = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
           {
@@ -92,6 +95,8 @@ export default function Menu() {
         setUserRated(data);
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
     isUserRate();
@@ -159,6 +164,16 @@ export default function Menu() {
     }
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView className="flex-1">
+        <BackgroundGradient className="flex-1 items-center justify-center">
+          <Loading className="h-16 w-16 my-auto" />
+        </BackgroundGradient>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1">
       <BackgroundGradient
@@ -198,13 +213,9 @@ export default function Menu() {
                     setVisibleModal(true);
                     setModalShown("editProfile");
                   }}
-                  className={`${theme !== "dark" ? `bg-[#75A90A]` : `bg-gray-600`} h-7 w-16 justify-center items-center rounded-full`}
+                  className={`bg-[#75A90A]  h-9 w-20 justify-center items-center rounded-full`}
                 >
-                  <AppText
-                    className={`${theme === "dark" ? `#E2C282` : `text-white`}`}
-                  >
-                    Edit
-                  </AppText>
+                  <AppText className={`text-white`}>Edit</AppText>
                 </TouchableOpacity>
               </View>
               <View

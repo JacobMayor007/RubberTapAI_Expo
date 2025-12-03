@@ -3,6 +3,7 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Image, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../contexts/ThemeContext";
 import { AppText } from "./AppText";
+import BackgroundGradient from "./BackgroundGradient";
 import Logo from "./Logo";
 
 type CheckoutProps = {
@@ -60,9 +61,7 @@ export default function CheckoutPlan({
   console.log("Checkout", choosePlan);
 
   return (
-    <View
-      className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`}  p-6`}
-    >
+    <BackgroundGradient className={`flex-1 p-6`}>
       <View className="flex-row items-center gap-4">
         <Feather
           color={theme === "dark" ? `#E8C282` : `dark`}
@@ -152,6 +151,6 @@ export default function CheckoutPlan({
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </BackgroundGradient>
   );
 }

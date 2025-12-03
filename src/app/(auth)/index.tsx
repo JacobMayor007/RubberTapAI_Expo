@@ -308,7 +308,11 @@ export default function Login() {
               </View>
             </View>
           </ScrollView>
-          <Modal visible={forgotModal} animationType="slide">
+          <Modal
+            visible={forgotModal}
+            animationType="slide"
+            onRequestClose={() => setForgotModal(false)}
+          >
             <ForgotPassword setForgotModal={setForgotModal} />
           </Modal>
         </KeyboardAvoidingView>

@@ -157,18 +157,23 @@ export default function AllMyNotifications() {
                 {!data?.isRead && (
                   <Text className="h-1 w-1 rounded-full bg-blue-500" />
                 )}
-                <Image
-                  src={data?.senderProfile}
-                  className="h-10 w-10 rounded-full"
-                />
-                <View className=" border-b-[0.5px] w-9/12 py-2">
+                {!data?.message.includes("warned") && (
+                  <Image
+                    src={data?.senderProfile}
+                    className="h-10 w-10 rounded-full"
+                  />
+                )}
+                <View
+                  className={`border-b-[0.5px] ${data?.message.includes("warned") ? `w-10/12` : `w-9/12`} py-2`}
+                >
                   <AppText
-                    color={theme === "dark" ? `light` : `dark`}
-                    className={`font-poppins ${data?.isRead ? `font-normal text-sm` : `font-bold`} text-base`}
+                    className={`font-poppins ${data?.isRead ? `font-normal text-sm` : `font-bold`} ${data?.message.includes("warned") ? `text-red-500` : theme === "dark" ? `text-[#E2C282]` : `text-[#442111]`} text-base`}
                   >
-                    {data?.message.length < 43
+                    {data?.message.includes("warned")
                       ? data?.message
-                      : `${data?.message.slice(0, 42)}...`}
+                      : data?.message.length < 43
+                        ? data?.message
+                        : `${data?.message.slice(0, 42)}...`}
                   </AppText>
                   <AppText
                     color={theme === "dark" ? `light` : `dark`}

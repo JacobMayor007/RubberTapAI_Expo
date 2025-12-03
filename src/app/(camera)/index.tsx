@@ -415,6 +415,7 @@ export default function CameraLeaf() {
       const data = await response.json();
       setResults(data);
       saveToDatabase(data.predictions);
+      setTakes(takes + 1);
     } catch (error) {
       console.error("Upload error:", error);
       setResults({
@@ -600,6 +601,8 @@ export default function CameraLeaf() {
     );
   }
 
+  console.log(results);
+
   return (
     <SafeAreaView style={{ flexGrow: 1 }}>
       <CameraView
@@ -736,7 +739,11 @@ export default function CameraLeaf() {
         animationType="slide"
         visible={resultModal}
         transparent={!results ? true : false}
-        onRequestClose={() => setResultModal(false)}
+        onRequestClose={() => {
+          setUri(null);
+          setResults(null);
+          setResultModal(false);
+        }}
       >
         {loading ? (
           <View className="flex-1 bg-black/50">
@@ -756,10 +763,10 @@ export default function CameraLeaf() {
             </View>
           </View>
         ) : (
-          <View
+          <BackgroundGradient
             className={`flex-1 justify-between border ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} `}
           >
-            <View>
+            <View className="flex-1">
               <Feather
                 name="x"
                 size={30}
@@ -823,7 +830,7 @@ export default function CameraLeaf() {
                             fontFamily: "Poppins",
                             fontWeight: 900,
                             fontSize: 18,
-                            color: theme === "dark" ? "white" : "black",
+                            color: theme === "dark" ? "#E2C282" : "black",
                           }}
                         >
                           Detected:
@@ -841,7 +848,7 @@ export default function CameraLeaf() {
                             fontFamily: "Poppins",
                             fontWeight: 900,
                             fontSize: 18,
-                            color: theme === "dark" ? "white" : "black",
+                            color: theme === "dark" ? "#E2C282" : "black",
                           }}
                         >
                           Probability:{" "}
@@ -859,7 +866,7 @@ export default function CameraLeaf() {
                   </View>
                 )}
               </View>
-              <View className="mx-8 ">
+              <View className="mx-8 mt-3">
                 {diseasesDescription.map((data) => {
                   return (
                     <View key={data.key} className="">
@@ -969,28 +976,28 @@ export default function CameraLeaf() {
                 })}
               </View>
             </View>
-            <View
-              className={`pb-5 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} items-end `}
-            >
-              <TouchableOpacity
-                onPress={() => {
-                  setSaveModal(true);
-                  setResultModal(false);
-                }}
-                className={`${theme === "dark" ? `bg-green-500` : `bg-[#000000]/75`} rounded-full h-12 px-7 tracking-widest  items-center justify-center mr-4`}
-              >
-                <Text
-                  style={{
-                    fontWeight: 700,
-                    color: "white",
+            {!diseasesDescription && (
+              <View className={`pb-5 items-end `}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSaveModal(true);
+                    setResultModal(false);
                   }}
-                  className="font-poppins"
+                  className={`${theme === "dark" ? `bg-green-500` : `bg-[#000000]/75`} rounded-full h-12 px-7 tracking-widest  items-center justify-center mr-4`}
                 >
-                  Save To Record
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+                  <Text
+                    style={{
+                      fontWeight: 700,
+                      color: "white",
+                    }}
+                    className="font-poppins"
+                  >
+                    Save To Record
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </BackgroundGradient>
         )}
       </Modal>
 
