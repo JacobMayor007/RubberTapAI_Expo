@@ -100,7 +100,7 @@ const AppearanceSettings = ({ setVisibleModal }: AppearanceProps) => {
           <Pressable
             onPress={() => handleThemeChange(data.title, data.label)}
             key={data?.key}
-            className="flex-row items-center gap-4 my-2"
+            className="flex-row items-center gap-4 my-3"
           >
             {themeType === data?.label ? (
               <Fontisto name="radio-btn-active" color={"#009A1C"} size={22} />
@@ -111,7 +111,10 @@ const AppearanceSettings = ({ setVisibleModal }: AppearanceProps) => {
                 size={22}
               />
             )}
-            <AppText color={theme === "dark" ? "light" : "dark"}>
+            <AppText
+              color={theme === "dark" ? "light" : "dark"}
+              className="text-xl"
+            >
               {data?.label}
             </AppText>
           </Pressable>
