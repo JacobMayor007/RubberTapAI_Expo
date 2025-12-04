@@ -151,6 +151,7 @@ export default function AllMyNotifications() {
             return (
               <TouchableOpacity
                 key={index}
+                disabled={data?.message.includes("warned")}
                 onPress={() => handleMessageUser(data?.userId)}
                 className="flex-row items-center gap-4"
               >
