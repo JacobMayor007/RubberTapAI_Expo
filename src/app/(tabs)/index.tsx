@@ -1,6 +1,8 @@
 import DashboardBackground from "@/src/components/DashboardBackground";
+import Loading from "@/src/components/LoadingComponent";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useLocation } from "@/src/contexts/LocationContext";
+import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { Profile } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -13,7 +15,6 @@ import { useEffect, useRef, useState } from "react";
 import { Linking } from "react-native";
 
 import {
-  ActivityIndicator,
   Alert,
   Platform,
   SafeAreaView as RNFSafeAreaView,
@@ -35,6 +36,7 @@ export default function Home() {
   const { user } = useAuth();
   const router = useRouter();
   const location = useLocation();
+  const { theme } = useTheme();
 
   const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -376,8 +378,16 @@ export default function Home() {
       <RNFSafeAreaView
         style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
       >
-        <ActivityIndicator size="large" />
-        <Text style={{ marginTop: 12 }}>Initializing…</Text>
+        <Loading className="h-16 w-16" />
+        <Text
+          style={{
+            marginTop: 12,
+            color: theme === "dark" ? `#E2C282` : `black`,
+            letterSpacing: 1,
+          }}
+        >
+          Initializing…
+        </Text>
       </RNFSafeAreaView>
     );
   }

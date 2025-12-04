@@ -976,7 +976,7 @@ export default function CameraLeaf() {
                 })}
               </View>
             </View>
-            {!diseasesDescription && (
+            {results && (
               <View className={`pb-5 items-end `}>
                 <TouchableOpacity
                   onPress={() => {
@@ -1007,9 +1007,7 @@ export default function CameraLeaf() {
         onRequestClose={() => setSaveModal(false)}
         className={`flex-1`}
       >
-        <View
-          className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-1 p-6 `}
-        >
+        <BackgroundGradient className={` flex-1 p-6 `}>
           <FontAwesome5
             name="arrow-left"
             size={20}
@@ -1030,7 +1028,7 @@ export default function CameraLeaf() {
                   : setSaveModal(false);
                 setRegisterModal(true);
               }}
-              className={`${theme === "dark" ? `bg-slate-500` : `bg-green-500`}  h-11 px-7 gap-4 rounded-full items-center flex-row justify-center`}
+              className={`bg-[#75A90A]  h-11 px-7 gap-4 rounded-full items-center flex-row justify-center`}
             >
               <Text className="text-white font-bold text-center">
                 Register{`\n`}Tree Plot
@@ -1103,7 +1101,7 @@ export default function CameraLeaf() {
               </View>
             </ScrollView>
           )}
-        </View>
+        </BackgroundGradient>
       </Modal>
 
       <Modal
@@ -1112,9 +1110,7 @@ export default function CameraLeaf() {
         animationType="fade"
         className={`flex-1`}
       >
-        <View
-          className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} flex-1 p-6 `}
-        >
+        <BackgroundGradient className={` flex-1 p-6 `}>
           <View className="flex-row items-center justify-between ">
             <View className="flex-row items-center gap-5">
               <FontAwesome5
@@ -1124,6 +1120,7 @@ export default function CameraLeaf() {
                   setTreeModal(false);
                   setSaveModal(true);
                 }}
+                color={theme === "dark" ? `white` : `black`}
               />
               <Text
                 className={`font-poppins text-lg font-bold ${theme === "dark" ? `text-white` : `text-black`}`}
@@ -1142,7 +1139,7 @@ export default function CameraLeaf() {
                 }
                 setAddTreeModal(true);
               }}
-              className={`${theme === "dark" ? `bg-slate-500` : `bg-green-500`}  h-11 px-7 gap-4 rounded-full items-center flex-row justify-center`}
+              className={`bg-[#75A90A]  h-11 px-7 gap-4 rounded-full items-center flex-row justify-center`}
             >
               <Text className="text-white font-bold text-center">
                 Register{`\n`}Tree
@@ -1219,7 +1216,7 @@ export default function CameraLeaf() {
               ))}
             </ScrollView>
           )}
-        </View>
+        </BackgroundGradient>
       </Modal>
       <Modal visible={registerModal} animationType="slide" transparent>
         <ConfirmCancelModal

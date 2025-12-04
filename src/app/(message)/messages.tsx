@@ -350,7 +350,7 @@ export default function Messages() {
                           }
                           className={`min-w-48 max-w-72 p-3 rounded-md mb-2 w-fit ${
                             msg.sender_id === user?.$id
-                              ? `${theme === "dark" ? `bg-slate-900` : `bg-blue-500`} text-white ml-auto text-right font-hind font-medium text-base`
+                              ? `${theme === "dark" ? `bg-blue-900` : `bg-blue-500`} text-white ml-auto text-right font-hind font-medium text-base`
                               : `bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base`
                           }`}
                           style={

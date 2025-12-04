@@ -95,7 +95,7 @@ const NotificationSettings = ({ setVisibleModal }: NotificationProps) => {
 
   return (
     <BackgroundGradient
-      className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} p-6 gap-2`}
+      className={`flex-1 ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} p-6 gap-4`}
     >
       <View className="flex-row items-center gap-4 mt-4 mb-8">
         <FontAwesome5
@@ -111,10 +111,10 @@ const NotificationSettings = ({ setVisibleModal }: NotificationProps) => {
           Notification Settings
         </AppText>
       </View>
-      <View className="flex-row justify-between items-center border-b-[0.5px] border-[#046A10] pb-2">
+      <View className="flex-row justify-between items-center border-b-[0.5px] border-[#046A10] pb-2 mb-3">
         <AppText
           color={theme === "dark" ? `light` : `dark`}
-          className="font-poppins text-lg"
+          className="font-poppins text-xl"
         >
           Enable notifications
         </AppText>
@@ -128,10 +128,10 @@ const NotificationSettings = ({ setVisibleModal }: NotificationProps) => {
         />
       </View>
       <View className="flex-col justify-between items-center border-b-[0.5px] border-[#046A10] pb-4">
-        <View className="flex-row justify-between items-center w-full">
+        <View className="flex-row justify-between items-center w-full mb-3">
           <AppText
             color={theme === "dark" ? `light` : `dark`}
-            className="font-poppins text-lg font-medium"
+            className="font-poppins text-xl font-medium"
           >
             Rubber market price
           </AppText>
@@ -145,10 +145,10 @@ const NotificationSettings = ({ setVisibleModal }: NotificationProps) => {
             value={profile?.marketAlert}
           />
         </View>
-        <View className="flex-row justify-between items-center  w-full">
+        <View className="flex-row justify-between items-center  w-full mb-3">
           <AppText
             color={theme === "dark" ? `light` : `dark`}
-            className="font-poppins text-lg font-medium"
+            className="font-poppins text-xl font-medium"
           >
             Incoming rain alerts
           </AppText>
@@ -165,7 +165,7 @@ const NotificationSettings = ({ setVisibleModal }: NotificationProps) => {
         <View className="flex-row justify-between items-center  w-full">
           <AppText
             color={theme === "dark" ? `light` : `dark`}
-            className="font-poppins text-lg font-medium"
+            className="font-poppins text-xl font-medium"
           >
             Message alerts
           </AppText>
