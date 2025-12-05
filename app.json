@@ -1,10 +1,7 @@
 {
   "expo": {
     "name": "rubbertapai",
-    "platforms": [
-      "android",
-      "web"
-    ],
+    "platforms": ["android", "web"],
     "slug": "rubbertapai",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,6 +14,7 @@
     },
     "android": {
       "package": "com.anonymous.rubbertapai",
+      "minSdkVersion": 26,
       "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
@@ -59,7 +57,15 @@
         {
           "cameraPermission": "Allow RubberTapAI to access your camera"
         }
-      ]
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow RubberTapAI to access your photos",
+          "savePhotosPermission": "Allow RubberTapAI to save photos"
+        }
+      ],
+      "react-native-vision-camera"
     ],
     "experiments": {
       "typedRoutes": true

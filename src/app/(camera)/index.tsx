@@ -7,6 +7,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useLocation } from "@/src/contexts/LocationContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
+import { compressImage } from "@/src/services/imageCompressionUtil";
 import { Plot, Profile, SubscriptionData, Tree_Record } from "@/types";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
@@ -297,7 +298,10 @@ export default function CameraLeaf() {
       const photo = await cameraRef.current.takePictureAsync();
       if (photo?.uri) {
         setUri(photo.uri);
-        await uploadImage(photo.uri);
+        const compressedUri = await compressImage(photo.uri, 5900);
+        console.log("Photo compressed", compressedUri);
+
+        await uploadImage(compressedUri);
       }
     } catch (error) {
       console.log("Error taking photo:", error);
@@ -326,7 +330,9 @@ export default function CameraLeaf() {
       if (!result.canceled) {
         const selectedUris = result.assets[0].uri;
         setUri(selectedUris);
-        await uploadImage(selectedUris);
+        const compressedUri = await compressImage(result.assets[0].uri, 500);
+
+        await uploadImage(compressedUri);
       }
     } catch (error) {
       console.error(error);
@@ -601,7 +607,32 @@ export default function CameraLeaf() {
     );
   }
 
-  console.log(results);
+  const savePhotoToGallery = async (uri: string) => {
+    try {
+      // Request media library permissions
+      const permission = await MediaLibrary.requestPermissionsAsync();
+      if (!permission.granted) {
+        Alert.alert(
+          "Permission Denied",
+          "We need permission to save photos to your gallery"
+        );
+        return false;
+      }
+
+      // Save the photo to gallery
+      const asset = await MediaLibrary.createAssetAsync(uri);
+      await MediaLibrary.createAlbumAsync("RubberTapai", asset, false);
+
+      Alert.alert("Success", "Photo saved to gallery!");
+      return true;
+    } catch (error) {
+      console.error("Error saving photo:", error);
+      Alert.alert("Error", "Failed to save photo to gallery");
+      return false;
+    }
+  };
+
+  console.log(uri);
 
   return (
     <SafeAreaView style={{ flexGrow: 1 }}>
@@ -659,7 +690,7 @@ export default function CameraLeaf() {
           </View>
           {dropdown ? (
             <Link
-              href="/(camera)/measure"
+              href="/(camera)/measureTwo"
               className="px-12 py-3 rounded-full  bg-black/50 z-20"
             >
               <AppText>Measure Tree Trunk</AppText>
@@ -746,7 +777,7 @@ export default function CameraLeaf() {
         }}
       >
         {loading ? (
-          <View className="flex-1 bg-black/50">
+          <BackgroundGradient className="flex-1 ">
             <Feather
               name="x"
               size={30}
@@ -761,7 +792,7 @@ export default function CameraLeaf() {
               <Loading className="h-20 w-20" />
               <AppText>Analyzing Images</AppText>
             </View>
-          </View>
+          </BackgroundGradient>
         ) : (
           <BackgroundGradient
             className={`flex-1 justify-between border ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} `}
@@ -977,13 +1008,13 @@ export default function CameraLeaf() {
               </View>
             </View>
             {results && (
-              <View className={`pb-5 items-end `}>
+              <View className={`pb-5 items-end gap-3`}>
                 <TouchableOpacity
                   onPress={() => {
                     setSaveModal(true);
                     setResultModal(false);
                   }}
-                  className={`${theme === "dark" ? `bg-green-500` : `bg-[#000000]/75`} rounded-full h-12 px-7 tracking-widest  items-center justify-center mr-4`}
+                  className={`${theme === "dark" ? `bg-green-500` : `bg-[#000000]/75`} rounded-full h-12 px-7 tracking-widest items-center justify-center mr-4`}
                 >
                   <Text
                     style={{

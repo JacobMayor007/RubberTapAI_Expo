@@ -1,5 +1,6 @@
 import { AppText } from "@/src/components/AppText";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
+import TreeMeasurementGuidance from "@/src/components/TreeMeasurementGuidance";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import Feather from "@expo/vector-icons/Feather";
@@ -184,7 +185,6 @@ export default function App() {
     }
   };
 
-  // 🔹 Reset animations when photo is cleared
   const handleClosePhoto = () => {
     setCapturedPhoto("");
     setHalf(false);
@@ -446,121 +446,136 @@ export default function App() {
           </ScrollView>
         </SafeAreaView>
       ) : (
-        <CameraView ref={cameraRef} style={styles.camera}>
-          <View style={styles.leftOverlay}>
-            <Link href="/(camera)" className="mt-10 mx-10">
-              <Feather name="arrow-left" size={32} color={"white"} />
-            </Link>
-          </View>
-          <View style={styles.rightOverlay}>
-            {profile?.subscription ? (
-              <View
-                style={{
-                  alignSelf: "center",
-                }}
-                className="absolute bottom-10 bg-gray-600 py-3 rounded-lg flex-row items-center gap-1 px-3 "
-              >
-                <FontAwesome5 name="crown" size={28} color={"yellow"} />
-                <AppText className="font-bold ml-2 text-lg">Unlimited</AppText>
-              </View>
-            ) : (
-              <Pressable className="absolute bottom-0 gap-1">
-                <View className="flex-row items-center gap-2">
+        <View style={styles.cameraContainer}>
+          <CameraView ref={cameraRef} style={styles.camera}>
+            {/* 🔹 LEFT OVERLAY */}
+            <View style={styles.leftOverlay}>
+              <Link href="/(camera)" className="mt-10 mx-10">
+                <Feather name="arrow-left" size={32} color={"white"} />
+              </Link>
+            </View>
+
+            {/* 🔹 RIGHT OVERLAY */}
+            <View style={styles.rightOverlay}>
+              {profile?.subscription ? (
+                <View
+                  style={{
+                    alignSelf: "center",
+                  }}
+                  className="absolute bottom-10 bg-gray-600 py-3 rounded-lg flex-row items-center gap-1 px-3 "
+                >
                   <FontAwesome5 name="crown" size={28} color={"yellow"} />
-                  <TouchableOpacity
-                    style={{ transform: "skewX(-10deg)" }}
-                    className="font-poppins p-2  font-bold bg-gray-600"
-                  >
-                    <Text
-                      style={{
-                        color: "white",
-                        fontFamily: "Poppins",
-                        fontWeight: 900,
-                      }}
-                    >
-                      {!takes ? 0 : takes}/25 Scan
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <Link href={{ pathname: "/(camera)/payment" }}>
-                  <AppText
-                    color={"light"}
-                    className="font-poppins text-center tracking-widest font-bold  underline"
-                  >
-                    Get Unlimited
+                  <AppText className="font-bold ml-2 text-lg">
+                    Unlimited
                   </AppText>
-                </Link>
-              </Pressable>
-            )}
-          </View>
-          <TouchableOpacity
-            style={styles.button}
-            onPressIn={() => setHalf(true)}
-            onPressOut={async () => {
-              setHalf(false);
-              setModal(true);
-              await takePhoto();
-            }}
-            delayLongPress={100}
-            delayPressOut={100}
-          >
-            <View className="flex-1 rounded-full border-[1.5px] border-black" />
-          </TouchableOpacity>
+                </View>
+              ) : (
+                <Pressable className="absolute bottom-0 gap-1">
+                  <View className="flex-row items-center gap-2">
+                    <FontAwesome5 name="crown" size={28} color={"yellow"} />
+                    <TouchableOpacity
+                      style={{ transform: "skewX(-10deg)" }}
+                      className="font-poppins p-2  font-bold bg-gray-600"
+                    >
+                      <Text
+                        style={{
+                          color: "white",
+                          fontFamily: "Poppins",
+                          fontWeight: 900,
+                        }}
+                      >
+                        {!takes ? 0 : takes}/25 Scan
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Link href={{ pathname: "/(camera)/payment" }}>
+                    <AppText
+                      color={"light"}
+                      className="font-poppins text-center tracking-widest font-bold  underline"
+                    >
+                      Get Unlimited
+                    </AppText>
+                  </Link>
+                </Pressable>
+              )}
+            </View>
 
-          {/* 🔹 FIXED RED LINE HEIGHT - never changes */}
-          <Animated.View
-            style={{
-              alignSelf: "center",
-              backgroundColor: "red",
-              width: 12,
-              position: "absolute",
-              bottom: 0,
-              zIndex: -10,
-              height: animatedHeight.interpolate({
-                inputRange: [0, FIXED_RED_LINE_HEIGHT],
-                outputRange: [0, FIXED_RED_LINE_HEIGHT],
-              }),
-            }}
-          />
+            {/* 🔹 REAL-TIME GUIDANCE OVERLAY */}
+            <TreeMeasurementGuidance
+              cameraRef={cameraRef}
+              isMeasuring={!half}
+            />
 
-          {/* 🔹 Circle positioned at fixed 1m position */}
-          <Animated.View
-            style={{
-              position: "absolute",
-              bottom: FIXED_RED_LINE_HEIGHT,
-              alignSelf: "center",
-              backgroundColor: "white",
-              height: 24,
-              width: 24,
-              borderRadius: 12,
-              opacity: circleOpacity,
-            }}
-          />
+            {/* 🔹 CAPTURE BUTTON */}
+            <TouchableOpacity
+              style={styles.button}
+              onPressIn={() => setHalf(true)}
+              onPressOut={async () => {
+                setHalf(false);
+                setModal(true);
+                await takePhoto();
+              }}
+              delayLongPress={100}
+              delayPressOut={100}
+            >
+              <View className="flex-1 rounded-full border-[1.5px] border-black" />
+            </TouchableOpacity>
 
-          {/* 🔹 Dynamically generated labels with FIXED pixel positions */}
-          {MEASUREMENT_LABELS.map((item, index) => (
+            {/* 🔹 RED LINE ANIMATION */}
             <Animated.View
-              key={index}
+              style={{
+                alignSelf: "center",
+                backgroundColor: "red",
+                width: 12,
+                position: "absolute",
+                bottom: 0,
+                zIndex: -10,
+                height: animatedHeight.interpolate({
+                  inputRange: [0, FIXED_RED_LINE_HEIGHT],
+                  outputRange: [0, FIXED_RED_LINE_HEIGHT],
+                }),
+              }}
+            />
+
+            {/* 🔹 CIRCLE AT 1M MARK */}
+            <Animated.View
               style={{
                 position: "absolute",
-                bottom: item.pixelPosition,
+                bottom: FIXED_RED_LINE_HEIGHT,
                 alignSelf: "center",
-                marginLeft: 60,
-                opacity: textOpacities[index],
+                backgroundColor: "white",
+                height: 24,
+                width: 24,
+                borderRadius: 12,
+                opacity: circleOpacity,
               }}
-            >
-              <Text
+            />
+
+            {/* 🔹 MEASUREMENT LABELS */}
+            {MEASUREMENT_LABELS.map((item, index) => (
+              <Animated.View
+                key={index}
                 style={{
-                  color: "white",
-                  fontSize: 20,
-                  fontWeight: "bold",
+                  position: "absolute",
+                  bottom: item.pixelPosition,
+                  alignSelf: "center",
+                  marginLeft: 60,
+                  opacity: textOpacities[index],
                 }}
               >
-                {item.label}
-              </Text>
-            </Animated.View>
-          ))}
-        </CameraView>
+                <Text
+                  style={{
+                    color: "white",
+                    fontSize: 20,
+                    fontWeight: "bold",
+                  }}
+                >
+                  {item.label}
+                </Text>
+              </Animated.View>
+            ))}
+          </CameraView>
+        </View>
       )}
     </View>
   );
@@ -571,7 +586,11 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     backgroundColor: "#000",
   },
-  camera: { flexGrow: 1 },
+  cameraContainer: {
+    flex: 1,
+    position: "relative",
+  },
+  camera: { flex: 1 },
   leftOverlay: {
     position: "absolute",
     left: 0,
@@ -579,6 +598,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: "37%",
     backgroundColor: "rgba(0,0,0,0.80)",
+    zIndex: 20,
   },
   rightOverlay: {
     position: "absolute",
@@ -587,6 +607,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: "37%",
     backgroundColor: "rgba(0,0,0,0.80)",
+    zIndex: 20,
   },
 
   button: {
