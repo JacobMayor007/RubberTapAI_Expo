@@ -163,7 +163,9 @@ export default function ChatBox() {
   return (
     <SafeAreaView className="flex-1">
       <BackgroundGradient
-        className={`flex-1 flex-col ${theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`}`}
+        className={`flex-1 flex-col ${
+          theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`
+        }`}
       >
         <View className="flex-1 flex-col gap-2 p-6 ">
           <View className="flex-row items-center gap-2 justify-between">
@@ -190,7 +192,9 @@ export default function ChatBox() {
                   ? "rgba(232, 194, 130, 0.2) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px"
                   : "",
             }}
-            className={`mt-2 ${theme === "dark" ? `bg-[#202020]` : `bg-[rgb(43,43,43,0.2)]`}  h-11 rounded-2xl flex-row items-center gap-3 px-4`}
+            className={`mt-2 ${
+              theme === "dark" ? `bg-[#202020]` : `bg-[rgb(43,43,43,0.2)]`
+            }  h-11 rounded-2xl flex-row items-center gap-3 px-4`}
           >
             <Fontisto
               name="search"
@@ -199,7 +203,9 @@ export default function ChatBox() {
             />
             <AppText
               onPress={() => setVisibleModal(true)}
-              className={`w-11/12 h-full pt-2.5 ${theme === "dark" ? `text-[#E2C282]` : `text-white`}`}
+              className={`w-11/12 h-full pt-2.5 ${
+                theme === "dark" ? `text-[#E2C282]` : `text-white`
+              }`}
             >
               Search
             </AppText>
@@ -214,7 +220,7 @@ export default function ChatBox() {
                 return (
                   <Link
                     onPress={async () => await handleMessageUser(other.id)}
-                    href={"/(message)/messages"}
+                    href={"/(message)/testing"}
                     key={chat.$id || chatIndex}
                     className="flex-row py-2 mt-2 items-center"
                   >
@@ -313,7 +319,9 @@ export default function ChatBox() {
                   value={searchValue}
                   onChangeText={setSearchValue}
                   placeholderTextColor={theme === "dark" ? `#E2C282` : `black`}
-                  className={`h-full w-full border-none  placeholder:font-poppins placeholder:font-extrabold ${theme === "dark" ? `text-[#E2C282]` : `text-black`}`}
+                  className={`h-full w-full border-none  placeholder:font-poppins placeholder:font-extrabold ${
+                    theme === "dark" ? `text-[#E2C282]` : `text-black`
+                  }`}
                 />
               </TouchableOpacity>
             </View>
@@ -349,7 +357,9 @@ export default function ChatBox() {
                         router.push("/(message)/messages");
                       }}
                       key={index}
-                      className={`flex-row items-center mb-2 border-b-[0.5px] py-2 ${theme === "dark" ? `border-[#E2C282]` : `border-black`}`}
+                      className={`flex-row items-center mb-2 border-b-[0.5px] py-2 ${
+                        theme === "dark" ? `border-[#E2C282]` : `border-black`
+                      }`}
                     >
                       <Image
                         style={{ height: 48, width: 48 }}

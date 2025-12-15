@@ -9,6 +9,7 @@ export default function MessageLayout() {
     >
       <Stack.Screen name="messages" />
       <Stack.Screen name="[user_id]" />
+      <Stack.Screen name="testing" />
     </Stack>
   );
 }
