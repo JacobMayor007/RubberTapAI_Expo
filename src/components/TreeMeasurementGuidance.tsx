@@ -38,6 +38,7 @@ interface GuidanceMessage {
 interface Props {
   isMeasuring: boolean;
   cameraRef?: any;
+  setStatus: (disable: boolean) => void;
 }
 
 /* -----------------------
@@ -152,6 +153,7 @@ const buildGuidanceMessage = (g: MeasurementGuidance): GuidanceMessage => {
 const TreeMeasurementGuidance: React.FC<Props> = ({
   isMeasuring,
   cameraRef,
+  setStatus,
 }) => {
   const { theme } = useTheme();
   const [guidance, setGuidance] = useState<MeasurementGuidance>({
@@ -176,9 +178,6 @@ const TreeMeasurementGuidance: React.FC<Props> = ({
       const normX = data.x / magnitude;
       const normY = data.y / magnitude;
       const normZ = data.z / magnitude;
-
-      console.log("Raw Accelerometer Data:", data);
-      console.log("Normalized Values:", { normX, normY, normZ, magnitude });
 
       let angle: AngleState = "good";
 
@@ -207,15 +206,6 @@ const TreeMeasurementGuidance: React.FC<Props> = ({
       let stability: StabilityState = "good";
       if (avgAccel > 11) stability = "unstable";
       else if (avgAccel > 10.5) stability = "shaking";
-
-      console.log(
-        "Angle:",
-        angle,
-        "Stability:",
-        stability,
-        "AvgAccel:",
-        avgAccel
-      );
 
       // Placeholder distance/focus
       let distance: DistanceState = "good";
@@ -285,15 +275,17 @@ const TreeMeasurementGuidance: React.FC<Props> = ({
       );
       animationLoopRef.current = loop;
       loop.start();
+      setStatus(true);
     } else {
       pulseAnim.setValue(1);
+      setStatus(false);
     }
 
     return () => {
       animationLoopRef.current?.stop?.();
       animationLoopRef.current = null;
     };
-  }, [guidance.overallStatus]);
+  }, [guidance.overallStatus, guidance]);
 
   const message = useMemo(() => buildGuidanceMessage(guidance), [guidance]);
   const statusColor = STATUS_COLORS[guidance.overallStatus];

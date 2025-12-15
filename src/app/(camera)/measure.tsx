@@ -1,5 +1,7 @@
 import { AppText } from "@/src/components/AppText";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
+import DistanceChecker from "@/src/components/DistanceChecker";
+import MeasuringInstructions from "@/src/components/MeasuringInstruction";
 import TreeMeasurementGuidance from "@/src/components/TreeMeasurementGuidance";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
@@ -7,6 +9,7 @@ import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import dayjs from "dayjs";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as ImageManipulator from "expo-image-manipulator";
 import { Link, useRouter } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -22,6 +25,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { getColors } from "react-native-image-colors";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const REFERENCE_PHONE = {
@@ -40,9 +44,155 @@ const FIXED_RED_LINE_HEIGHT = Math.round(
   REFERENCE_PHONE.height * MEASUREMENT_POSITIONS["1m"]
 );
 
+// Type definitions
+interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
+
+interface HSL {
+  h: number;
+  s: number;
+  l: number;
+}
+
+interface ColorRange {
+  h: [number, number];
+  s: [number, number];
+  l: [number, number];
+}
+
+interface ImageColorsResultType {
+  dominant?: string;
+  average?: string;
+  platform?: string;
+  darkMuted?: string;
+  darkVibrant?: string;
+  lightMuted?: string;
+  lightVibrant?: string;
+  muted?: string;
+  vibrant?: string;
+}
+
+// Rubber tree color ranges (golden to light to dark brown bark)
+// Based on actual rubber tree trunk colors
+const RUBBER_TREE_COLOR_RANGES: { [key: string]: ColorRange } = {
+  goldenBrown: { h: [30, 60], s: [20, 70], l: [35, 65] }, // Golden brown tones
+  lightBrown: { h: [20, 50], s: [15, 60], l: [45, 70] }, // Light brown tones
+  mediumBrown: { h: [15, 45], s: [25, 75], l: [30, 55] }, // Medium brown tones
+  darkBrown: { h: [10, 40], s: [30, 80], l: [20, 45] }, // Dark brown tones
+  warmGray: { h: [20, 50], s: [5, 30], l: [40, 65] }, // Warm gray/tan tones
+};
+
+// Convert hex to RGB
+const hexToRgb = (hex: string): RGB | null => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : null;
+};
+
+// Convert RGB to HSL
+const rgbToHsl = (r: number, g: number, b: number): HSL => {
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  const max = Math.max(r, g, b),
+    min = Math.min(r, g, b);
+  let h: number = 0,
+    s: number = 0,
+    l: number = (max + min) / 2;
+
+  if (max === min) {
+    h = s = 0;
+  } else {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r:
+        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        break;
+      case g:
+        h = ((b - r) / d + 2) / 6;
+        break;
+      case b:
+        h = ((r - g) / d + 4) / 6;
+        break;
+    }
+  }
+
+  return {
+    h: Math.round(h * 360),
+    s: Math.round(s * 100),
+    l: Math.round(l * 100),
+  };
+};
+
+// Check if color matches rubber tree
+const isRubberTreeColor = (hexColor: string): boolean => {
+  const rgb = hexToRgb(hexColor);
+  if (!rgb) return false;
+
+  const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+  // Check if it matches any of the rubber tree color ranges
+  const matchesGoldenBrown =
+    hsl.h >= RUBBER_TREE_COLOR_RANGES.goldenBrown.h[0] &&
+    hsl.h <= RUBBER_TREE_COLOR_RANGES.goldenBrown.h[1] &&
+    hsl.s >= RUBBER_TREE_COLOR_RANGES.goldenBrown.s[0] &&
+    hsl.s <= RUBBER_TREE_COLOR_RANGES.goldenBrown.s[1] &&
+    hsl.l >= RUBBER_TREE_COLOR_RANGES.goldenBrown.l[0] &&
+    hsl.l <= RUBBER_TREE_COLOR_RANGES.goldenBrown.l[1];
+
+  const matchesLightBrown =
+    hsl.h >= RUBBER_TREE_COLOR_RANGES.lightBrown.h[0] &&
+    hsl.h <= RUBBER_TREE_COLOR_RANGES.lightBrown.h[1] &&
+    hsl.s >= RUBBER_TREE_COLOR_RANGES.lightBrown.s[0] &&
+    hsl.s <= RUBBER_TREE_COLOR_RANGES.lightBrown.s[1] &&
+    hsl.l >= RUBBER_TREE_COLOR_RANGES.lightBrown.l[0] &&
+    hsl.l <= RUBBER_TREE_COLOR_RANGES.lightBrown.l[1];
+
+  const matchesMediumBrown =
+    hsl.h >= RUBBER_TREE_COLOR_RANGES.mediumBrown.h[0] &&
+    hsl.h <= RUBBER_TREE_COLOR_RANGES.mediumBrown.h[1] &&
+    hsl.s >= RUBBER_TREE_COLOR_RANGES.mediumBrown.s[0] &&
+    hsl.s <= RUBBER_TREE_COLOR_RANGES.mediumBrown.s[1] &&
+    hsl.l >= RUBBER_TREE_COLOR_RANGES.mediumBrown.l[0] &&
+    hsl.l <= RUBBER_TREE_COLOR_RANGES.mediumBrown.l[1];
+
+  const matchesDarkBrown =
+    hsl.h >= RUBBER_TREE_COLOR_RANGES.darkBrown.h[0] &&
+    hsl.h <= RUBBER_TREE_COLOR_RANGES.darkBrown.h[1] &&
+    hsl.s >= RUBBER_TREE_COLOR_RANGES.darkBrown.s[0] &&
+    hsl.s <= RUBBER_TREE_COLOR_RANGES.darkBrown.s[1] &&
+    hsl.l >= RUBBER_TREE_COLOR_RANGES.darkBrown.l[0] &&
+    hsl.l <= RUBBER_TREE_COLOR_RANGES.darkBrown.l[1];
+
+  const matchesWarmGray =
+    hsl.h >= RUBBER_TREE_COLOR_RANGES.warmGray.h[0] &&
+    hsl.h <= RUBBER_TREE_COLOR_RANGES.warmGray.h[1] &&
+    hsl.s >= RUBBER_TREE_COLOR_RANGES.warmGray.s[0] &&
+    hsl.s <= RUBBER_TREE_COLOR_RANGES.warmGray.s[1] &&
+    hsl.l >= RUBBER_TREE_COLOR_RANGES.warmGray.l[0] &&
+    hsl.l <= RUBBER_TREE_COLOR_RANGES.warmGray.l[1];
+
+  return (
+    matchesGoldenBrown ||
+    matchesLightBrown ||
+    matchesMediumBrown ||
+    matchesDarkBrown ||
+    matchesWarmGray
+  );
+};
+
 export default function App() {
   const [showInstructions, setShowInstructions] = useState("first");
-  const [instructionPage, setInstructionPage] = useState("one");
+  const [distance, setDistance] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [half, setHalf] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
@@ -53,12 +203,10 @@ export default function App() {
   const { profile } = useAuth();
   const { theme } = useTheme();
   const [modal, setModal] = useState(false);
+  const [colors, setColors] = useState<ImageColorsResultType | null>(null);
+  const [status, setStatus] = useState(false);
 
   const { height: deviceHeight, width: deviceWidth } = useWindowDimensions();
-
-  console.log(
-    `📱 Current Device - Height: ${deviceHeight}\nWidth: ${deviceWidth}`
-  );
 
   useEffect(() => {
     if (
@@ -176,10 +324,66 @@ export default function App() {
       });
 
       console.log("📸 Captured photo:", photo.uri);
+
+      const screenRatio = deviceWidth / photo.width;
+      const cropLeftPixels = Math.round((deviceWidth * 0.415) / screenRatio);
+      const visibleWidth = photo.width - cropLeftPixels * 2;
+
+      const croppedPhoto = await ImageManipulator.manipulateAsync(
+        photo.uri,
+        [
+          {
+            crop: {
+              originX: cropLeftPixels,
+              originY: 0,
+              width: visibleWidth,
+              height: photo.height,
+            },
+          },
+        ],
+        { compress: 1, format: ImageManipulator.SaveFormat.JPEG }
+      );
+
+      console.log("✂️ Cropped photo:", croppedPhoto.uri);
+      const url = croppedPhoto.uri;
+      const result: ImageColorsResultType = await getColors(url);
+      console.log("🎨 Detected colors:", result);
+
+      // Validate if the detected colors match rubber tree
+      const dominant = result.dominant || result.vibrant || "";
+      const average = result.average || result.muted || "";
+
+      const isDominantMatch = isRubberTreeColor(dominant);
+      const isAverageMatch = isRubberTreeColor(average);
+
+      console.log(`🌳 Dominant color match: ${isDominantMatch}`);
+      console.log(`🌳 Average color match: ${isAverageMatch}`);
+
+      if (!isDominantMatch || !isAverageMatch) {
+        Alert.alert(
+          "⚠️ Try Again",
+          "You are too far from the rubber tree or the image doesn't show the tree clearly. Please move closer and try again.",
+          [
+            {
+              text: "OK",
+              onPress: () => {
+                setHalf(false);
+                setModal(false);
+              },
+            },
+          ]
+        );
+        setIsCapturing(false);
+        return;
+      }
+
+      // Colors match - proceed with photo
       setCapturedPhoto(photo.uri);
+      setColors(result);
       setModal(true);
     } catch (error) {
       console.error("Error capturing photo:", error);
+      Alert.alert("Error", "Failed to capture photo. Please try again.");
     } finally {
       setIsCapturing(false);
     }
@@ -194,135 +398,7 @@ export default function App() {
   };
 
   if (showInstructions === "first") {
-    return (
-      <SafeAreaView className="flex-1">
-        <BackgroundGradient className="flex-1">
-          {instructionPage === "one" && (
-            <Pressable
-              onPress={() => setInstructionPage("two")}
-              className=" flex-1 p-6 gap-4"
-            >
-              <Feather
-                color={theme === "dark" ? `#E8C282` : `black`}
-                onPress={() => setShowInstructions("")}
-                name="x"
-                size={32}
-              />
-
-              <AppText
-                className={`${
-                  theme === "dark" ? `text-[#E8C282]` : `text-red-500`
-                } font-bold text-xl`}
-              >
-                📸 Please read the instructions first:
-              </AppText>
-
-              <AppText
-                className={`${
-                  theme === "dark" ? `text-[#E8C282]` : `text-black`
-                } font-bold text-lg`}
-              >
-                1️⃣ Position your camera so the rubber tree trunk is centered in
-                the frame.
-              </AppText>
-
-              <Image
-                style={{
-                  alignSelf: "center",
-                }}
-                source={require("@/assets/images/Instruction_One.png")}
-                className="h-[50%] w-56"
-              />
-
-              <AppText
-                className={`${
-                  theme === "dark" ? `text-[#E8C282]` : `text-black`
-                } font-bold text-lg`}
-              >
-                2️⃣ Make sure the tree fits inside the left and right overlays.
-              </AppText>
-
-              <Text
-                style={{
-                  alignSelf: "flex-end",
-                }}
-                onPress={() => setInstructionPage("two")}
-                className="bg-green-500 px-5 py-2 text-white font-bold rounded-md"
-              >
-                Next
-              </Text>
-            </Pressable>
-          )}
-          {instructionPage === "two" && (
-            <Pressable
-              onPress={() => {
-                setInstructionPage("");
-                setShowInstructions("");
-              }}
-              className="flex-1 p-6 gap-4 py-20"
-            >
-              <AppText
-                className={`${
-                  theme === "dark" ? `text-[#E8C282]` : `text-black`
-                } font-bold `}
-              >
-                3️⃣ Press and hold the round button below to start measuring.
-              </AppText>
-
-              <Image
-                style={{
-                  alignSelf: "center",
-                }}
-                source={require("@/assets/images/Instruction_Two.png")}
-                className="h-72 w-32"
-              />
-
-              <AppText
-                className={`${
-                  theme === "dark" ? `text-[#E8C282]` : `text-black`
-                } font-bold text-center mt-4`}
-              >
-                ✋ Tip: Hold your phone vertically and ensure the full trunk is
-                visible for the most accurate measurement.
-              </AppText>
-
-              <AppText
-                className={`${
-                  theme === "dark" ? `text-[#E8C282]` : `text-black`
-                } font-bold text-center mt-4`}
-              >
-                ✋ Tip: You can hold your phone to your other hand, and pin
-                point the rubber tree trunk where it says the 1m in the camera
-              </AppText>
-              <Image
-                style={{
-                  alignSelf: "center",
-                }}
-                source={require("@/assets/images/AI_Image_2.png")}
-                className="h-80 w-96"
-              />
-              <View className="flex-row justify-between items-center px-8 mt-4">
-                <AppText
-                  onPress={() => setInstructionPage("one")}
-                  className="bg-gray-500 px-4 py-2 font-bold rounded-md text-white"
-                >
-                  Previous
-                </AppText>
-                <AppText
-                  onPress={() => {
-                    setInstructionPage("");
-                    setShowInstructions("");
-                  }}
-                  className={`bg-green-500 px-5 py-2 font-bold rounded-md text-white`}
-                >
-                  Next
-                </AppText>
-              </View>
-            </Pressable>
-          )}
-        </BackgroundGradient>
-      </SafeAreaView>
-    );
+    return <MeasuringInstructions setShowInstructions={setShowInstructions} />;
   }
 
   return (
@@ -346,14 +422,16 @@ export default function App() {
                   onPress={() => handleClosePhoto()}
                 />
                 <AppText
-                  className={`${theme === "dark" ? `text-[#E8C282]` : `text-[#3F1F11]`} font-bold font-poppins text-2xl`}
+                  className={`${
+                    theme === "dark" ? `text-[#E8C282]` : `text-[#3F1F11]`
+                  } font-bold font-poppins text-2xl`}
                 >
                   Result
                 </AppText>
               </View>
 
               <Image
-                className="mx-auto h-[220px] w-[60%] rounded-lg mt-4"
+                className="mx-auto h-72 w-56 rounded-lg mt-4"
                 source={{ uri: capturedPhoto }}
                 resizeMode="cover"
               />
@@ -367,25 +445,33 @@ export default function App() {
                 className="mt-4 px-4 py-4 gap-4 rounded-xl"
               >
                 <AppText
-                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold`}
+                  className={`${
+                    theme === "dark" ? "text-[#E2C282]" : "text-black"
+                  } font-poppins font-bold`}
                 >
                   Method: Rubber Tree Measure
                 </AppText>
 
                 <AppText
-                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold`}
+                  className={`${
+                    theme === "dark" ? "text-[#E2C282]" : "text-black"
+                  } font-poppins font-bold`}
                 >
                   Date: {dayjs().format("MM/DD/YYYY hh:mm A")}
                 </AppText>
 
                 <AppText
-                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold text-xl`}
+                  className={`${
+                    theme === "dark" ? "text-[#E2C282]" : "text-black"
+                  } font-poppins font-bold text-xl`}
                 >
                   Tapping Guidance:
                 </AppText>
 
                 <AppText
-                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} tracking-wide leading-6 font-poppins`}
+                  className={`${
+                    theme === "dark" ? "text-[#E2C282]" : "text-black"
+                  } tracking-wide leading-6 font-poppins`}
                 >
                   {"    "}Rubber tapping involves carefully making incisions on
                   the bark of rubber trees to collect latex without harming the
@@ -410,7 +496,9 @@ export default function App() {
                   resizeMode="contain"
                 />
                 <AppText
-                  className={`${theme === "dark" ? "text-[#E2C282]" : "text-black"} font-poppins font-bold`}
+                  className={`${
+                    theme === "dark" ? "text-[#E2C282]" : "text-black"
+                  } font-poppins font-bold`}
                 >
                   Refer to this image / GIF
                 </AppText>
@@ -422,7 +510,9 @@ export default function App() {
                   }
                 >
                   <AppText
-                    className={`${theme === "dark" ? "text-[#E2C282]" : "text-blue-600"} font-poppins font-bold underline`}
+                    className={`${
+                      theme === "dark" ? "text-[#E2C282]" : "text-blue-600"
+                    } font-poppins font-bold underline`}
                   >
                     https://www.youtube.com/watch?v=j-gpYFBktuc
                   </AppText>
@@ -447,134 +537,133 @@ export default function App() {
         </SafeAreaView>
       ) : (
         <View style={styles.cameraContainer}>
-          <CameraView ref={cameraRef} style={styles.camera}>
-            {/* 🔹 LEFT OVERLAY */}
-            <View style={styles.leftOverlay}>
-              <Link href="/(camera)" className="mt-10 mx-10">
-                <Feather name="arrow-left" size={32} color={"white"} />
-              </Link>
-            </View>
-
-            {/* 🔹 RIGHT OVERLAY */}
-            <View style={styles.rightOverlay}>
-              {profile?.subscription ? (
-                <View
-                  style={{
-                    alignSelf: "center",
-                  }}
-                  className="absolute bottom-10 bg-gray-600 py-3 rounded-lg flex-row items-center gap-1 px-3 "
-                >
-                  <FontAwesome5 name="crown" size={28} color={"yellow"} />
-                  <AppText className="font-bold ml-2 text-lg">
-                    Unlimited
-                  </AppText>
-                </View>
-              ) : (
-                <Pressable className="absolute bottom-0 gap-1">
-                  <View className="flex-row items-center gap-2">
+          {distance ? (
+            <CameraView ref={cameraRef} style={styles.camera}>
+              <View style={styles.leftOverlay}>
+                <Link href="/(camera)" className="mt-10 mx-10">
+                  <Feather name="arrow-left" size={32} color={"white"} />
+                </Link>
+              </View>
+              <View style={styles.rightOverlay}>
+                {profile?.subscription ? (
+                  <View
+                    style={{
+                      alignSelf: "center",
+                    }}
+                    className="absolute bottom-10 bg-gray-600 py-3 rounded-lg flex-row items-center gap-1 px-3 "
+                  >
                     <FontAwesome5 name="crown" size={28} color={"yellow"} />
-                    <TouchableOpacity
-                      style={{ transform: "skewX(-10deg)" }}
-                      className="font-poppins p-2  font-bold bg-gray-600"
-                    >
-                      <Text
-                        style={{
-                          color: "white",
-                          fontFamily: "Poppins",
-                          fontWeight: 900,
-                        }}
-                      >
-                        {!takes ? 0 : takes}/25 Scan
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-                  <Link href={{ pathname: "/(camera)/payment" }}>
-                    <AppText
-                      color={"light"}
-                      className="font-poppins text-center tracking-widest font-bold  underline"
-                    >
-                      Get Unlimited
+                    <AppText className="font-bold ml-2 text-lg">
+                      Unlimited
                     </AppText>
-                  </Link>
-                </Pressable>
-              )}
-            </View>
+                  </View>
+                ) : (
+                  <Pressable className="absolute bottom-0 gap-1">
+                    <View className="flex-row items-center gap-2">
+                      <FontAwesome5 name="crown" size={28} color={"yellow"} />
+                      <TouchableOpacity
+                        style={{ transform: "skewX(-10deg)" }}
+                        className="font-poppins p-2  font-bold bg-gray-600"
+                      >
+                        <Text
+                          style={{
+                            color: "white",
+                            fontFamily: "Poppins",
+                            fontWeight: 900,
+                          }}
+                        >
+                          {!takes ? 0 : takes}/25 Scan
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                    <Link href={{ pathname: "/(camera)/payment" }}>
+                      <AppText
+                        color={"light"}
+                        className="font-poppins text-center tracking-widest font-bold  underline"
+                      >
+                        Get Unlimited
+                      </AppText>
+                    </Link>
+                  </Pressable>
+                )}
+              </View>
 
-            {/* 🔹 REAL-TIME GUIDANCE OVERLAY */}
-            <TreeMeasurementGuidance
-              cameraRef={cameraRef}
-              isMeasuring={!half}
-            />
+              <TreeMeasurementGuidance
+                cameraRef={cameraRef}
+                isMeasuring={!half}
+                setStatus={setStatus}
+              />
 
-            {/* 🔹 CAPTURE BUTTON */}
-            <TouchableOpacity
-              style={styles.button}
-              onPressIn={() => setHalf(true)}
-              onPressOut={async () => {
-                setHalf(false);
-                setModal(true);
-                await takePhoto();
-              }}
-              delayLongPress={100}
-              delayPressOut={100}
-            >
-              <View className="flex-1 rounded-full border-[1.5px] border-black" />
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.button}
+                disabled={status}
+                onPressIn={() => setHalf(true)}
+                onPressOut={async () => {
+                  setHalf(false);
+                  setModal(true);
+                  await takePhoto();
+                }}
+                delayLongPress={100}
+                delayPressOut={100}
+                className={`${status ? `bg-gray-500` : `bg-white`}`}
+              >
+                <View className="flex-1 rounded-full border-[1.5px] border-black" />
+              </TouchableOpacity>
 
-            {/* 🔹 RED LINE ANIMATION */}
-            <Animated.View
-              style={{
-                alignSelf: "center",
-                backgroundColor: "red",
-                width: 12,
-                position: "absolute",
-                bottom: 0,
-                zIndex: -10,
-                height: animatedHeight.interpolate({
-                  inputRange: [0, FIXED_RED_LINE_HEIGHT],
-                  outputRange: [0, FIXED_RED_LINE_HEIGHT],
-                }),
-              }}
-            />
-
-            {/* 🔹 CIRCLE AT 1M MARK */}
-            <Animated.View
-              style={{
-                position: "absolute",
-                bottom: FIXED_RED_LINE_HEIGHT,
-                alignSelf: "center",
-                backgroundColor: "white",
-                height: 24,
-                width: 24,
-                borderRadius: 12,
-                opacity: circleOpacity,
-              }}
-            />
-
-            {/* 🔹 MEASUREMENT LABELS */}
-            {MEASUREMENT_LABELS.map((item, index) => (
               <Animated.View
-                key={index}
+                style={{
+                  alignSelf: "center",
+                  backgroundColor: "red",
+                  width: 12,
+                  position: "absolute",
+                  bottom: 0,
+                  zIndex: -10,
+                  height: animatedHeight.interpolate({
+                    inputRange: [0, FIXED_RED_LINE_HEIGHT],
+                    outputRange: [0, FIXED_RED_LINE_HEIGHT],
+                  }),
+                }}
+              />
+
+              <Animated.View
                 style={{
                   position: "absolute",
-                  bottom: item.pixelPosition,
+                  bottom: FIXED_RED_LINE_HEIGHT,
                   alignSelf: "center",
-                  marginLeft: 60,
-                  opacity: textOpacities[index],
+                  backgroundColor: "white",
+                  height: 24,
+                  width: 24,
+                  borderRadius: 12,
+                  opacity: circleOpacity,
                 }}
-              >
-                <Text
+              />
+
+              {MEASUREMENT_LABELS.map((item, index) => (
+                <Animated.View
+                  key={index}
                   style={{
-                    color: "white",
-                    fontSize: 20,
-                    fontWeight: "bold",
+                    position: "absolute",
+                    bottom: item.pixelPosition,
+                    alignSelf: "center",
+                    marginLeft: 60,
+                    opacity: textOpacities[index],
                   }}
                 >
-                  {item.label}
-                </Text>
-              </Animated.View>
-            ))}
-          </CameraView>
+                  <Text
+                    style={{
+                      color: "white",
+                      fontSize: 20,
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {item.label}
+                  </Text>
+                </Animated.View>
+              ))}
+            </CameraView>
+          ) : (
+            <DistanceChecker />
+          )}
         </View>
       )}
     </View>
@@ -611,7 +700,6 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    backgroundColor: "#FFFFFF",
     padding: 4,
     height: 72,
     width: 72,

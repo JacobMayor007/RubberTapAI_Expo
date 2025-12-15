@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import {
   Alert,
   Animated,
+  AppState,
+  BackHandler,
   Easing,
   Image,
   ImageBackground,
@@ -20,6 +22,7 @@ export default function IndexScreen() {
   const router = useRouter();
   const spinValue = useRef(new Animated.Value(0)).current;
   const [networkChecked, setNetworkChecked] = useState(false);
+  const [hasInternet, setHasInternet] = useState(true);
   const auth = useAuth();
 
   const spin = () => {
@@ -36,14 +39,41 @@ export default function IndexScreen() {
     spin();
 
     const checkConnection = async () => {
-      const state = await NetInfo.fetch();
+      try {
+        const state = await NetInfo.fetch();
 
-      if (!state.isConnected || !state.isInternetReachable) {
+        if (!state.isConnected || !state.isInternetReachable) {
+          setHasInternet(false);
+          Alert.alert(
+            "⚠️ No Internet Connection",
+            state.isConnected
+              ? "Poor connection detected. Please check your connection and try again."
+              : "No internet connection detected. Please enable internet and try again.",
+            [
+              {
+                text: "Go Back",
+                onPress: () => router.back(),
+                style: "cancel",
+              },
+            ]
+          );
+        } else {
+          setHasInternet(true);
+        }
+      } catch (error) {
+        console.error("Error checking connection:", error);
+        setHasInternet(false);
         Alert.alert(
-          "Connection Issue",
-          state.isConnected
-            ? "Poor connection detected"
-            : "No internet connection detected"
+          "⚠️ Connection Error",
+          "Failed to check internet connection. Please try again.",
+          [
+            {
+              text: "OK",
+              onPress: () =>
+                AppState.currentState === "active" && BackHandler.exitApp(),
+              style: "cancel",
+            },
+          ]
         );
       }
 
@@ -51,34 +81,31 @@ export default function IndexScreen() {
     };
 
     checkConnection();
+
     return () => {
       spinValue.stopAnimation();
     };
-  }, []);
+  }, [router]);
 
   useEffect(() => {
-    if (networkChecked && auth.isReady) {
+    if (!networkChecked || !hasInternet) return;
+
+    if (auth.isReady) {
       const navigate = async () => {
         try {
           await account.get();
-          console.log("User exists, redirecting to tabs");
-          console.log();
-
+          console.log("✅ User exists, redirecting to tabs");
           setTimeout(() => router.replace("/(tabs)"), 1500);
         } catch (error) {
-          console.log("No user, redirecting to getStarted");
+          console.log("❌ No user, redirecting to getStarted");
           setTimeout(() => router.replace("/getStarted"), 1500);
         }
       };
       navigate();
     }
-  }, [networkChecked, auth.isReady, auth.profile]);
+  }, [networkChecked, hasInternet, auth.isReady, auth.profile, router]);
 
-  const rotate = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ["0deg", "360deg"],
-  });
-
+  // Check Appwrite availability
   useEffect(() => {
     const checkAppwriteAvailability = async () => {
       try {
@@ -94,26 +121,23 @@ export default function IndexScreen() {
 
         if (response.ok) {
           console.log("✅ Appwrite reachable and healthy");
-          return { status: "online" };
         } else if (response.status >= 500) {
           console.log("⚠️ Appwrite server internal error");
-          return { status: "internal-error" };
         } else {
-          console.log(
-            "❌ Appwrite responded with other error",
-            response.status
-          );
-          return { status: "error", code: response.status };
+          console.log("❌ Appwrite responded with error:", response.status);
         }
       } catch (error: any) {
-        console.log("💥 Network error or cannot reach Appwrite", error);
-        return { status: "unreachable" };
+        console.log("💥 Cannot reach Appwrite:", error.message);
       }
     };
+
     checkAppwriteAvailability();
   }, []);
 
-  console.log(networkChecked, auth.isReady);
+  const rotate = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
 
   return (
     <SafeAreaView className="h-screen">

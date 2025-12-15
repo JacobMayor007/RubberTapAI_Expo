@@ -82,6 +82,14 @@ export default function Messages() {
     fetchProfile();
   }, [user?.$id]);
 
+  useEffect(() => {
+    const ws = new WebSocket(
+      `${process.env.EXPO_PUBLIC_BASE_URL}/received-messages/${user?.$id}/${userMessage?.user?.$id}`
+    );
+
+    ws.onmessage = (msg) => console.log(msg.data);
+  }, []);
+
   const pickAnImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -260,11 +268,15 @@ export default function Messages() {
         keyboardVerticalOffset={0}
       >
         <BackgroundGradient
-          className={`flex-1 flex-col ${theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`}`}
+          className={`flex-1 flex-col ${
+            theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`
+          }`}
         >
           <View className="flex-1">
             <View
-              className={`${theme === "dark" ? " border-[#38C282]" : " border-gray-500"} gap-4 h-24 p-6 flex-row items-center justify-between border-b-[0.5px] `}
+              className={`${
+                theme === "dark" ? " border-[#38C282]" : " border-gray-500"
+              } gap-4 h-24 p-6 flex-row items-center justify-between border-b-[0.5px] `}
             >
               <View className="flex-row items-center gap-4">
                 <FontAwesome5
@@ -350,7 +362,11 @@ export default function Messages() {
                           }
                           className={`min-w-48 max-w-72 p-3 rounded-md mb-2 w-fit ${
                             msg.sender_id === user?.$id
-                              ? `${theme === "dark" ? `bg-blue-900` : `bg-blue-500`} text-white ml-auto text-right font-hind font-medium text-base`
+                              ? `${
+                                  theme === "dark"
+                                    ? `bg-blue-900`
+                                    : `bg-blue-500`
+                                } text-white ml-auto text-right font-hind font-medium text-base`
                               : `bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base`
                           }`}
                           style={
@@ -381,7 +397,9 @@ export default function Messages() {
                           </AppText>
                           {index === showDate && (
                             <AppText
-                              className={`text-right text-xs mt-2 ${theme === "dark" ? `light` : `text-white`}`}
+                              className={`text-right text-xs mt-2 ${
+                                theme === "dark" ? `light` : `text-white`
+                              }`}
                             >
                               {msg.$createdAt
                                 .utc()
@@ -414,9 +432,11 @@ export default function Messages() {
             )}
             {!loading && (
               <View
-                className={`${
-                  lines > 2 ? "h-[72px]" : "h-14"
-                } ${theme === "dark" ? `bg-[#FFECCC]/50` : `bg-[rgb(63,31,17,.25)]`} gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
+                className={`${lines > 2 ? "h-[72px]" : "h-14"} ${
+                  theme === "dark"
+                    ? `bg-[#FFECCC]/50`
+                    : `bg-[rgb(63,31,17,.25)]`
+                } gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
               >
                 <View className=" flex-row absolute bottom-14 left-12 gap-4">
                   {images.length > 0 && (
@@ -437,7 +457,9 @@ export default function Messages() {
                 <TextInput
                   multiline
                   placeholder="Message ..."
-                  className={`w-9/12 max-h-20 ${theme === "dark" ? `text-white` : `text-black`}`}
+                  className={`w-9/12 max-h-20 ${
+                    theme === "dark" ? `text-white` : `text-black`
+                  }`}
                   onContentSizeChange={handleContentSizeChange}
                   value={newMessage}
                   onChangeText={setNewMessage}
