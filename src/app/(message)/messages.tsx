@@ -6,6 +6,7 @@ import { ViewPressable } from "@/src/components/ViewPressable";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
+import { globalFunction } from "@/src/global/fetchWithTimeout";
 import { storage } from "@/src/lib/appwrite";
 import { MessageHistory, Profile } from "@/types";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -35,208 +36,239 @@ import { SafeAreaView } from "react-native-safe-area-context";
 dayjs.extend(utc);
 
 export default function Messages() {
-  const { user } = useAuth();
   const userMessage = useMessage();
-  const router = useRouter();
-  const { theme } = useTheme();
-
   const scrollViewRef = useRef<any>(null);
-  const wsRef = useRef<WebSocket | null>(null);
-
-  const [messages, setMessages] = useState<MessageHistory[]>([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { user } = useAuth();
+  const router = useRouter();
+  const [lines, setLines] = useState(1);
   const [newMessage, setNewMessage] = useState("");
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [images, setImages] = useState("");
   const [loading, setLoading] = useState(true);
-  const [lines, setLines] = useState(1);
-  const [showDate, setShowDate] = useState<number | null>(null);
   const [rateModal, setRateModal] = useState(false);
   const [rateUser, setRateUser] = useState(0);
   const [feedback, setFeedback] = useState("");
+  const { theme } = useTheme();
+  const [showDate, setShowDate] = useState<Number | null>(null);
 
-  // Handle dynamic TextInput height
+  const [messages, setMessages] = useState<MessageHistory[]>([]);
+
   const handleContentSizeChange = (event: any) => {
     const contentHeight = event.nativeEvent.contentSize.height;
     const lineHeight = 20;
-    setLines(Math.floor(contentHeight / lineHeight));
+    const calculatedLines = Math.floor(contentHeight / lineHeight);
+    setLines(calculatedLines);
   };
 
-  // Fetch user profile
   useEffect(() => {
-    if (!user?.$id) return;
-    (async () => {
+    const fetchProfile = async () => {
       try {
         const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user.$id}`
+          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+            },
+          }
         );
+
         const data = await response.json();
         setProfile(data);
-      } catch (err) {
-        console.error("Profile fetch error:", err);
+      } catch (error) {
+        console.error("Upload error:", error);
       }
-    })();
+    };
+    fetchProfile();
   }, [user?.$id]);
-
-  // Setup WebSocket
-  useEffect(() => {
-    if (!user?.$id || !userMessage?.user?.$id) return;
-
-    const ws = new WebSocket(`ws://10.142.74.33:8080/ws/chat`);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      console.log("✅ WS Connected in messages");
-      ws.send(JSON.stringify({ type: "CONNECT", userId: user.$id }));
-      // Fetch initial conversation messages
-      ws.send(
-        JSON.stringify({
-          type: "GET_CONVERSATION_MESSAGES",
-          userId: user.$id,
-          receiverId: userMessage?.user?.$id,
-        })
-      );
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-
-      switch (data.type) {
-        case "RECEIVE_MESSAGE":
-        case "MESSAGE_SENT":
-          setMessages((prev) => [
-            ...prev,
-            { ...data.message, $createdAt: dayjs(data.message.$createdAt) },
-          ]);
-          break;
-        case "CONVERSATION_MESSAGES":
-          const normalized = data.messages.map((m: MessageHistory) => ({
-            ...m,
-            $createdAt: dayjs(m.$createdAt),
-          }));
-          setMessages(
-            normalized.sort(
-              (a: any, b: any) =>
-                a.$createdAt.valueOf() - b.$createdAt.valueOf()
-            )
-          );
-          setLoading(false);
-          break;
-        case "ERROR":
-          console.error("WS Error:", data.message);
-          break;
-      }
-    };
-
-    ws.onerror = (err) => console.error("WS error:", err);
-    ws.onclose = () => console.log("WS disconnected");
-
-    return () => ws.close();
-  }, [user?.$id, userMessage?.user?.$id]);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    scrollViewRef.current?.scrollToEnd({ animated: true });
-  }, [messages]);
 
   const pickAnImage = async () => {
     const permissionResult =
       await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) return alert("Permission denied!");
 
-    const result = await ImagePicker.launchImageLibraryAsync({
+    if (permissionResult.granted === false) {
+      alert("Permission to access camera roll is required!");
+      return;
+    }
+
+    let result = await ImagePicker.launchImageLibraryAsync({
       quality: 1,
       aspect: [1, 1],
     });
-    if (!result.canceled) return setImages(result.assets[0].uri);
+    if (!result.canceled) {
+      const selectedUris = result.assets[0].uri;
+      setImages(selectedUris);
+    }
   };
 
-  const handleSend = async () => {
-    if (!newMessage.trim())
-      return Alert.alert("Error", "Please input a message first");
+  useEffect(() => {
+    if (!user?.$id || !userMessage?.user?.$id) return;
 
-    let fileUrl = "";
-    if (images) {
-      const fileInfo = await FileSystem.getInfoAsync(images);
-      if (fileInfo.exists) {
-        const result = await storage.createFile(
-          `${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}`,
-          ID.unique(),
-          {
-            uri: images,
-            name: `image_${Date.now()}.jpg`,
-            type: "image/jpeg",
-            size: fileInfo.size,
-          }
+    const getMessages = async () => {
+      try {
+        const sentResponse = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/sent-messages/${user.$id}/${userMessage?.user?.$id}`
         );
-        fileUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}/files/${result.$id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&mode=admin`;
-        setImages("");
-      }
-    }
 
-    const payload = {
-      type: "SEND_MESSAGE",
-      userId: user?.$id,
-      receiver_id: userMessage?.user?.$id,
-      lastMessage: newMessage,
-      senderProfile: profile?.imageURL,
-      receiverProfile: userMessage?.user?.imageURL,
-      senderName: user?.name,
-      receiverName: userMessage?.user?.username,
-      fileUrl,
+        const sentMessages = await sentResponse.json();
+
+        const receivedResponse = await fetch(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/received-messages/${user.$id}/${userMessage?.user?.$id}`
+        );
+        const receivedMessages = await receivedResponse.json();
+
+        const normalize = (msgs: MessageHistory[]) =>
+          msgs.map((msg) => ({
+            ...msg,
+            $createdAt: dayjs(msg.$createdAt),
+          }));
+
+        const combined = [
+          ...normalize(sentMessages),
+          ...normalize(receivedMessages),
+        ].sort((a, b) => a.$createdAt.valueOf() - b.$createdAt.valueOf());
+
+        setMessages(combined);
+      } catch (err) {
+        console.error("Error fetching messages:", err);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    wsRef.current?.send(JSON.stringify(payload));
+    getMessages();
+  }, [user?.$id, userMessage?.user?.$id, messages]);
+
+  const handleSend = async () => {
     setNewMessage("");
+    if (newMessage === "") {
+      Alert.alert("Error", "Please input a message first");
+      return;
+    }
+
+    try {
+      let fileUrl = "";
+
+      if (images) {
+        const fileInfo = await FileSystem.getInfoAsync(images);
+
+        if (!fileInfo.exists) {
+          console.error("File does not exist!");
+        } else {
+          const result = await storage.createFile(
+            `${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}`,
+            ID.unique(),
+            {
+              uri: images,
+              name: `image_${Date.now()}.jpg`,
+              type: "image/jpeg",
+              size: fileInfo.size,
+            }
+          );
+
+          console.log("Image uploaded!", result);
+
+          fileUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}/files/${result.$id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&mode=admin`;
+        }
+
+        setImages("");
+      }
+
+      const data = {
+        userId: user?.$id,
+        receiver_id: userMessage?.user?.$id,
+        lastMessage: newMessage,
+        senderProfile: profile?.imageURL,
+        receiverProfile: userMessage?.user?.imageURL,
+        senderName: user?.name,
+        receiverName: userMessage?.user?.username,
+        fileUrl: fileUrl ? fileUrl : ``,
+        API_KEY: profile?.API_KEY,
+      };
+
+      await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/sent-message`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      setNewMessage("");
+    } catch (error) {
+      console.error("There is an error sending the message", error);
+      return [];
+    }
   };
 
-  // Auto-hide date
   useEffect(() => {
-    if (showDate) setTimeout(() => setShowDate(null), 10000);
+    if (showDate) {
+      setTimeout(() => {
+        setShowDate(null);
+      }, 10000);
+    }
   }, [showDate]);
 
   const rateAndFeedbackUser = async () => {
-    if (!userMessage?.user) return;
     try {
       setLoading(true);
-      const response = await fetch(`${process.env.EXPO_PUBLIC_BASE_URL}/rate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId: user?.$id,
-          receivedId: userMessage.user.$id,
-          rate: rateUser,
-          feedback,
-          ratedByName: profile?.fullName,
-          ratedByImage: profile?.imageURL,
-          ratedName: userMessage.user.fullName,
-          ratedImage: userMessage?.user?.imageURL,
-        }),
-      });
-      console.log(await response.json());
+      const result = await globalFunction.fetchWithTimeout(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/rate`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            userId: user?.$id,
+            receivedId: userMessage?.user?.$id,
+            API_KEY: profile?.API_KEY,
+            rate: rateUser,
+            feedback: feedback,
+            ratedByName: profile?.fullName,
+            ratedByImage: profile?.imageURL,
+            ratedName: userMessage.user?.fullName,
+            ratedImage: userMessage?.user?.imageURL,
+          }),
+        },
+        20000
+      );
+
+      const response = await result.json();
+
+      console.log(response);
       setFeedback("");
       setRateUser(0);
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
     } finally {
-      setLoading(false);
-      setRateModal(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 300);
     }
   };
 
   return (
-    <SafeAreaView className="flex-1">
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior="height">
+    <SafeAreaView className={`flex-1`}>
+      <KeyboardAvoidingView
+        style={{
+          flex: 1,
+        }}
+        behavior={"height"}
+        keyboardVerticalOffset={0}
+      >
         <BackgroundGradient
-          className={`flex-1 ${
-            theme === "dark" ? "bg-[#101010]" : "bg-[#FFDFA9]"
+          className={`flex-1 flex-col ${
+            theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`
           }`}
         >
           <View className="flex-1">
-            {/* Header */}
             <View
-              className={`flex-row items-center justify-between h-24 p-6 border-b ${
-                theme === "dark" ? "border-[#38C282]" : "border-gray-500"
-              }`}
+              className={`${
+                theme === "dark" ? " border-[#38C282]" : " border-gray-500"
+              } gap-4 h-24 p-6 flex-row items-center justify-between border-b-[0.5px] `}
             >
               <View className="flex-row items-center gap-4">
                 <FontAwesome5
@@ -247,19 +279,23 @@ export default function Messages() {
                 />
                 <Image
                   style={{ height: 48, width: 48 }}
-                  className="rounded-full"
-                  source={{ uri: userMessage?.user?.imageURL || "" }}
+                  className="h-14 w-14 rounded-full"
+                  source={
+                    !userMessage.user?.imageURL
+                      ? require("@/assets/images/anonymous_profile.png")
+                      : { uri: userMessage.user?.imageURL }
+                  }
                 />
                 <View className="flex-col">
                   <AppText
                     color={theme === "dark" ? "light" : "dark"}
-                    className="font-bold text-lg"
+                    className="font-poppins font-bold text-lg "
                   >
                     {userMessage.user?.email}
                   </AppText>
                   <AppText
                     color={theme === "dark" ? "light" : "dark"}
-                    className="font-extralight text-sm"
+                    className="font-poppins font-extralight text-sm "
                   >
                     {userMessage.user?.username}
                   </AppText>
@@ -274,10 +310,10 @@ export default function Messages() {
                 <MaterialIcons name="report" size={28} color="maroon" />
               </Link>
             </View>
-
-            {/* Messages */}
             {loading ? (
-              <Loading />
+              <View className="flex-1 items-center justify-center">
+                <Loading className="h-16 w-16" />
+              </View>
             ) : (
               <ScrollView
                 ref={scrollViewRef}
@@ -286,119 +322,210 @@ export default function Messages() {
                   justifyContent: "flex-end",
                   gap: 12,
                 }}
+                onContentSizeChange={() =>
+                  scrollViewRef.current?.scrollToEnd({ animated: true })
+                }
+                className="flex-1 px-4 pb-2"
               >
-                {messages.map((msg, idx) => (
-                  <View
-                    key={idx}
-                    className={`flex-row ${
-                      msg.sender_id === user?.$id
-                        ? "flex-row-reverse"
-                        : "flex-row"
-                    } items-center gap-2`}
-                  >
-                    <Image
-                      source={{
-                        uri:
-                          msg.sender_id === user?.$id
-                            ? profile?.imageURL
-                            : userMessage?.user?.imageURL,
-                      }}
-                      className="h-8 w-8 rounded-full mt-4"
-                    />
-                    <TouchableOpacity
-                      onPress={() =>
-                        setShowDate((prev) => (prev === idx ? null : idx))
-                      }
-                      className={`min-w-48 max-w-72 p-3 rounded-md mb-2 w-fit ${
-                        msg.sender_id === user?.$id
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-300 text-black"
-                      }`}
-                    >
-                      {msg.imageUrl && (
+                {messages?.map((msg, index) => {
+                  return (
+                    <View key={index}>
+                      <View
+                        className={`${
+                          msg?.sender_id === user?.$id
+                            ? `flex-row-reverse`
+                            : `flex-row`
+                        } items-center gap-2`}
+                      >
                         <Image
-                          source={{ uri: msg.imageUrl }}
-                          className="h-12 w-12"
+                          source={{
+                            uri:
+                              msg?.sender_id === user?.$id
+                                ? profile?.imageURL
+                                : userMessage?.user?.imageURL,
+                          }}
+                          className="h-8 w-8 rounded-full mt-4"
                         />
+                        <TouchableOpacity
+                          onPress={() =>
+                            setShowDate((prev) =>
+                              prev === index ? null : index
+                            )
+                          }
+                          className={`min-w-48 max-w-72 p-3 rounded-md mb-2 w-fit ${
+                            msg.sender_id === user?.$id
+                              ? `${
+                                  theme === "dark"
+                                    ? `bg-blue-900`
+                                    : `bg-blue-500`
+                                } text-white ml-auto text-right font-hind font-medium text-base`
+                              : `bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base`
+                          }`}
+                          style={
+                            msg.$id === user?.$id
+                              ? {
+                                  borderTopLeftRadius: 24,
+                                  borderBottomRightRadius: 24,
+                                }
+                              : {
+                                  borderTopRightRadius: 24,
+                                  borderBottomLeftRadius: 24,
+                                }
+                          }
+                        >
+                          {msg?.imageUrl && (
+                            <Image
+                              className="h-12 w-12"
+                              source={{ uri: msg?.imageUrl }}
+                            />
+                          )}
+                          <AppText className="text-white font-poppins font-semibold">
+                            {msg?.content}
+                          </AppText>
+                          {index === showDate && (
+                            <AppText
+                              className={`text-right text-xs mt-2 ${
+                                theme === "dark" ? `light` : `text-white`
+                              }`}
+                            >
+                              {msg.$createdAt
+                                .utc()
+                                .local()
+                                .format("MM/DD/YYYY hh:mm A")}
+                            </AppText>
+                          )}
+                        </TouchableOpacity>
+                      </View>
+
+                      {index === 5 && (
+                        <View className="items-center my-4">
+                          <TouchableOpacity
+                            className="bg-yellow-400 px-6 py-3 rounded-full shadow-md"
+                            onPress={() => setRateModal(true)}
+                          >
+                            <AppText
+                              color="dark"
+                              className="font-poppins font-bold"
+                            >
+                              ⭐ Rate {userMessage.user?.username}
+                            </AppText>
+                          </TouchableOpacity>
+                        </View>
                       )}
-                      <AppText className="font-semibold">{msg.content}</AppText>
-                      {idx === showDate && (
-                        <AppText className="text-xs mt-2">
-                          {msg.$createdAt
-                            .utc()
-                            .local()
-                            .format("MM/DD/YYYY hh:mm A")}
-                        </AppText>
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                ))}
+                    </View>
+                  );
+                })}
               </ScrollView>
             )}
+            {!loading && (
+              <View
+                className={`${lines > 2 ? "h-[72px]" : "h-14"} ${
+                  theme === "dark"
+                    ? `bg-[#FFECCC]/50`
+                    : `bg-[rgb(63,31,17,.25)]`
+                } gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
+              >
+                <View className=" flex-row absolute bottom-14 left-12 gap-4">
+                  {images.length > 0 && (
+                    <Image
+                      className="h-16 w-16 rounded-md"
+                      source={{ uri: images }}
+                    />
+                  )}
+                </View>
 
-            {/* Input */}
-            <View
-              className={`flex-row items-center gap-2 px-4 ${
-                lines > 2 ? "h-18" : "h-14"
-              }`}
-            >
-              <ViewPressable
-                onPress={pickAnImage}
-                className="h-10 w-10 bg-black rounded-full items-center justify-center"
-              >
-                <Entypo name="folder-images" size={20} color="white" />
-              </ViewPressable>
-              <TextInput
-                multiline
-                value={newMessage}
-                onChangeText={setNewMessage}
-                onContentSizeChange={handleContentSizeChange}
-                placeholder="Message..."
-                className={`flex-1 ${
-                  theme === "dark" ? "text-white" : "text-black"
-                }`}
-              />
-              <ViewPressable
-                onPress={handleSend}
-                className="h-10 w-10 bg-black rounded-full items-center justify-center"
-              >
-                <Feather name="send" size={20} color="white" />
-              </ViewPressable>
-            </View>
+                <ViewPressable
+                  onPress={pickAnImage}
+                  className="h-10 w-10 bg-black rounded-full items-center justify-center"
+                >
+                  <Entypo name="folder-images" size={20} color={"white"} />
+                </ViewPressable>
+
+                <TextInput
+                  multiline
+                  placeholder="Message ..."
+                  className={`w-9/12 max-h-20 ${
+                    theme === "dark" ? `text-white` : `text-black`
+                  }`}
+                  onContentSizeChange={handleContentSizeChange}
+                  value={newMessage}
+                  onChangeText={setNewMessage}
+                />
+                <ViewPressable
+                  onPress={handleSend}
+                  className="h-10 w-10 bg-black rounded-full items-center justify-center"
+                >
+                  <Feather size={20} color={"white"} name="send" />
+                </ViewPressable>
+              </View>
+            )}
           </View>
         </BackgroundGradient>
       </KeyboardAvoidingView>
 
-      {/* Rate Modal */}
       <Modal
         transparent
         visible={rateModal}
         onRequestClose={() => setRateModal(false)}
       >
         <ConfirmCancelModal
-          onOk={rateAndFeedbackUser}
-          onCancel={() => setRateModal(false)}
           heightSize={96}
+          padding={10}
+          blurIntensity={70}
+          borderRounded={12}
+          onClose={() => setRateModal(false)}
+          onCancel={() => setRateModal(false)}
+          onOk={() => {
+            rateAndFeedbackUser();
+            setRateModal(false);
+          }}
         >
-          <AppText>Rate user: {userMessage?.user?.fullName}</AppText>
-          <View className="flex-row gap-2">
-            {[1, 2, 3, 4, 5].map((i) => (
+          <AppText color="dark" className="font-bold font-poppins text-lg m-2">
+            Rate user: {userMessage?.user?.fullName}
+          </AppText>
+          <View className="flex-col m-auto pb-10 gap-4 ">
+            <View className=" flex-row items-center gap-4 pl-5">
               <AntDesign
-                key={i}
                 name="star"
+                onPress={() => setRateUser(1)}
                 size={32}
-                color={rateUser >= i ? "#fadb14" : "gray"}
-                onPress={() => setRateUser(i)}
+                color={rateUser > 0 ? "#fadb14" : ""}
               />
-            ))}
+              <AntDesign
+                name="star"
+                onPress={() => setRateUser(2)}
+                size={32}
+                color={rateUser > 1 ? "#fadb14" : ""}
+              />
+              <AntDesign
+                name="star"
+                onPress={() => setRateUser(3)}
+                size={32}
+                color={rateUser > 2 ? "#fadb14" : ""}
+              />
+              <AntDesign
+                name="star"
+                onPress={() => setRateUser(4)}
+                size={32}
+                color={rateUser > 3 ? "#fadb14" : ""}
+              />
+              <AntDesign
+                name="star"
+                onPress={() => setRateUser(5)}
+                size={32}
+                color={rateUser > 4 ? "#fadb14" : ""}
+              />
+            </View>
+            <TextInput
+              multiline
+              placeholder="(Optional)"
+              textAlignVertical="top"
+              value={feedback}
+              onChangeText={setFeedback}
+              placeholderTextColor="#6b7280"
+              className="border-[1px] text-slate-800 border-gray-500 h-28 w-72 rounded-lg"
+            />
           </View>
-          <TextInput
-            multiline
-            value={feedback}
-            onChangeText={setFeedback}
-            placeholder="Optional feedback"
-            className="border rounded p-2 h-28"
-          />
         </ConfirmCancelModal>
       </Modal>
     </SafeAreaView>

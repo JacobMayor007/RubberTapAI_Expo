@@ -25,7 +25,6 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
-import { getColors } from "react-native-image-colors";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const REFERENCE_PHONE = {
@@ -44,152 +43,6 @@ const FIXED_RED_LINE_HEIGHT = Math.round(
   REFERENCE_PHONE.height * MEASUREMENT_POSITIONS["1m"]
 );
 
-// Type definitions
-interface RGB {
-  r: number;
-  g: number;
-  b: number;
-}
-
-interface HSL {
-  h: number;
-  s: number;
-  l: number;
-}
-
-interface ColorRange {
-  h: [number, number];
-  s: [number, number];
-  l: [number, number];
-}
-
-interface ImageColorsResultType {
-  dominant?: string;
-  average?: string;
-  platform?: string;
-  darkMuted?: string;
-  darkVibrant?: string;
-  lightMuted?: string;
-  lightVibrant?: string;
-  muted?: string;
-  vibrant?: string;
-}
-
-// Rubber tree color ranges (golden to light to dark brown bark)
-// Based on actual rubber tree trunk colors
-const RUBBER_TREE_COLOR_RANGES: { [key: string]: ColorRange } = {
-  goldenBrown: { h: [30, 60], s: [20, 70], l: [35, 65] }, // Golden brown tones
-  lightBrown: { h: [20, 50], s: [15, 60], l: [45, 70] }, // Light brown tones
-  mediumBrown: { h: [15, 45], s: [25, 75], l: [30, 55] }, // Medium brown tones
-  darkBrown: { h: [10, 40], s: [30, 80], l: [20, 45] }, // Dark brown tones
-  warmGray: { h: [20, 50], s: [5, 30], l: [40, 65] }, // Warm gray/tan tones
-};
-
-// Convert hex to RGB
-const hexToRgb = (hex: string): RGB | null => {
-  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result
-    ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      }
-    : null;
-};
-
-// Convert RGB to HSL
-const rgbToHsl = (r: number, g: number, b: number): HSL => {
-  r /= 255;
-  g /= 255;
-  b /= 255;
-  const max = Math.max(r, g, b),
-    min = Math.min(r, g, b);
-  let h: number = 0,
-    s: number = 0,
-    l: number = (max + min) / 2;
-
-  if (max === min) {
-    h = s = 0;
-  } else {
-    const d = max - min;
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
-    switch (max) {
-      case r:
-        h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
-        break;
-      case g:
-        h = ((b - r) / d + 2) / 6;
-        break;
-      case b:
-        h = ((r - g) / d + 4) / 6;
-        break;
-    }
-  }
-
-  return {
-    h: Math.round(h * 360),
-    s: Math.round(s * 100),
-    l: Math.round(l * 100),
-  };
-};
-
-// Check if color matches rubber tree
-const isRubberTreeColor = (hexColor: string): boolean => {
-  const rgb = hexToRgb(hexColor);
-  if (!rgb) return false;
-
-  const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-
-  // Check if it matches any of the rubber tree color ranges
-  const matchesGoldenBrown =
-    hsl.h >= RUBBER_TREE_COLOR_RANGES.goldenBrown.h[0] &&
-    hsl.h <= RUBBER_TREE_COLOR_RANGES.goldenBrown.h[1] &&
-    hsl.s >= RUBBER_TREE_COLOR_RANGES.goldenBrown.s[0] &&
-    hsl.s <= RUBBER_TREE_COLOR_RANGES.goldenBrown.s[1] &&
-    hsl.l >= RUBBER_TREE_COLOR_RANGES.goldenBrown.l[0] &&
-    hsl.l <= RUBBER_TREE_COLOR_RANGES.goldenBrown.l[1];
-
-  const matchesLightBrown =
-    hsl.h >= RUBBER_TREE_COLOR_RANGES.lightBrown.h[0] &&
-    hsl.h <= RUBBER_TREE_COLOR_RANGES.lightBrown.h[1] &&
-    hsl.s >= RUBBER_TREE_COLOR_RANGES.lightBrown.s[0] &&
-    hsl.s <= RUBBER_TREE_COLOR_RANGES.lightBrown.s[1] &&
-    hsl.l >= RUBBER_TREE_COLOR_RANGES.lightBrown.l[0] &&
-    hsl.l <= RUBBER_TREE_COLOR_RANGES.lightBrown.l[1];
-
-  const matchesMediumBrown =
-    hsl.h >= RUBBER_TREE_COLOR_RANGES.mediumBrown.h[0] &&
-    hsl.h <= RUBBER_TREE_COLOR_RANGES.mediumBrown.h[1] &&
-    hsl.s >= RUBBER_TREE_COLOR_RANGES.mediumBrown.s[0] &&
-    hsl.s <= RUBBER_TREE_COLOR_RANGES.mediumBrown.s[1] &&
-    hsl.l >= RUBBER_TREE_COLOR_RANGES.mediumBrown.l[0] &&
-    hsl.l <= RUBBER_TREE_COLOR_RANGES.mediumBrown.l[1];
-
-  const matchesDarkBrown =
-    hsl.h >= RUBBER_TREE_COLOR_RANGES.darkBrown.h[0] &&
-    hsl.h <= RUBBER_TREE_COLOR_RANGES.darkBrown.h[1] &&
-    hsl.s >= RUBBER_TREE_COLOR_RANGES.darkBrown.s[0] &&
-    hsl.s <= RUBBER_TREE_COLOR_RANGES.darkBrown.s[1] &&
-    hsl.l >= RUBBER_TREE_COLOR_RANGES.darkBrown.l[0] &&
-    hsl.l <= RUBBER_TREE_COLOR_RANGES.darkBrown.l[1];
-
-  const matchesWarmGray =
-    hsl.h >= RUBBER_TREE_COLOR_RANGES.warmGray.h[0] &&
-    hsl.h <= RUBBER_TREE_COLOR_RANGES.warmGray.h[1] &&
-    hsl.s >= RUBBER_TREE_COLOR_RANGES.warmGray.s[0] &&
-    hsl.s <= RUBBER_TREE_COLOR_RANGES.warmGray.s[1] &&
-    hsl.l >= RUBBER_TREE_COLOR_RANGES.warmGray.l[0] &&
-    hsl.l <= RUBBER_TREE_COLOR_RANGES.warmGray.l[1];
-
-  return (
-    matchesGoldenBrown ||
-    matchesLightBrown ||
-    matchesMediumBrown ||
-    matchesDarkBrown ||
-    matchesWarmGray
-  );
-};
-
 export default function App() {
   const [showInstructions, setShowInstructions] = useState("first");
   const [distance, setDistance] = useState(false);
@@ -203,7 +56,6 @@ export default function App() {
   const { profile } = useAuth();
   const { theme } = useTheme();
   const [modal, setModal] = useState(false);
-  const [colors, setColors] = useState<ImageColorsResultType | null>(null);
   const [status, setStatus] = useState(false);
 
   const { height: deviceHeight, width: deviceWidth } = useWindowDimensions();
@@ -345,41 +197,9 @@ export default function App() {
       );
 
       console.log("✂️ Cropped photo:", croppedPhoto.uri);
-      const url = croppedPhoto.uri;
-      const result: ImageColorsResultType = await getColors(url);
-      console.log("🎨 Detected colors:", result);
-
-      // Validate if the detected colors match rubber tree
-      const dominant = result.dominant || result.vibrant || "";
-      const average = result.average || result.muted || "";
-
-      const isDominantMatch = isRubberTreeColor(dominant);
-      const isAverageMatch = isRubberTreeColor(average);
-
-      console.log(`🌳 Dominant color match: ${isDominantMatch}`);
-      console.log(`🌳 Average color match: ${isAverageMatch}`);
-
-      if (!isDominantMatch || !isAverageMatch) {
-        Alert.alert(
-          "⚠️ Try Again",
-          "You are too far from the rubber tree or the image doesn't show the tree clearly. Please move closer and try again.",
-          [
-            {
-              text: "OK",
-              onPress: () => {
-                setHalf(false);
-                setModal(false);
-              },
-            },
-          ]
-        );
-        setIsCapturing(false);
-        return;
-      }
 
       // Colors match - proceed with photo
       setCapturedPhoto(photo.uri);
-      setColors(result);
       setModal(true);
     } catch (error) {
       console.error("Error capturing photo:", error);
@@ -662,7 +482,7 @@ export default function App() {
               ))}
             </CameraView>
           ) : (
-            <DistanceChecker />
+            <DistanceChecker setDistance={setDistance} />
           )}
         </View>
       )}

@@ -352,7 +352,6 @@ export default function CameraLeaf() {
       setDisable(true);
       const photo = await cameraRef.current.takePictureAsync();
       if (photo?.uri) {
-        setUri(photo.uri);
         const rawPath = CAMERA_CACHE_DIR + `raw-${Date.now()}.jpg`;
 
         await FileSystem.moveAsync({
@@ -380,6 +379,7 @@ export default function CameraLeaf() {
           CAMERA_CACHE_DIR
         );
         console.log("Photo compressed", compressedUri);
+        setUri(compressedUri);
 
         await uploadImage(compressedUri);
       }
@@ -408,10 +408,8 @@ export default function CameraLeaf() {
       });
 
       if (!result.canceled) {
-        const selectedUris = result.assets[0].uri;
         let size;
 
-        setUri(selectedUris);
         const rawPath = CAMERA_CACHE_DIR + `raw-${Date.now()}.jpg`;
 
         await FileSystem.moveAsync({
@@ -437,6 +435,7 @@ export default function CameraLeaf() {
           uploadSize,
           CAMERA_CACHE_DIR
         );
+        setUri(compressedUri);
 
         await uploadImage(compressedUri);
       }
@@ -792,6 +791,8 @@ export default function CameraLeaf() {
     );
   }
 
+  console.log(uri);
+
   return (
     <SafeAreaView style={{ flexGrow: 1 }}>
       <CameraView
@@ -830,7 +831,7 @@ export default function CameraLeaf() {
               onPress={() => setDropdown((prev) => !prev)}
               className={`gap-5 flex-row bg-black/50 items-center px-7 py-2 rounded-full`}
             >
-              <AppText>Camera Detection</AppText>
+              <AppText>Leaf Disease Detection</AppText>
               {dropdown ? (
                 <Ionicons name="caret-up" color="white" size={28} />
               ) : (

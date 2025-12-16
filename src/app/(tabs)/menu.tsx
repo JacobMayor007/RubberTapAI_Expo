@@ -177,18 +177,20 @@ export default function Menu() {
   return (
     <SafeAreaView className="flex-1">
       <BackgroundGradient
-        className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFDFA9]`} flex-1 flex-col justify-between`}
+        className={`${
+          theme === "dark" ? `bg-gray-900` : `bg-[#FFDFA9]`
+        } flex-1 flex-col justify-between`}
       >
         <View className={` flex-1 px-6 flex-col z-20`}>
-          <HeaderNav title="Menu" arrow={true} />
+          <HeaderNav title="Settings" arrow={true} />
           <View className={`h-72 rounded-2xl drop-shadow-lg `}>
             <LinearGradient
               colors={
                 theme === "dark"
                   ? ["#202020", "#1B1B1B"]
                   : rain
-                    ? ["#7BDEE0", "#F1FDDA"]
-                    : ["#BFE07B", "#79B400"]
+                  ? ["#7BDEE0", "#F1FDDA"]
+                  : ["#BFE07B", "#79B400"]
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 0.33, y: 1 }}
@@ -219,7 +221,9 @@ export default function Menu() {
                 </TouchableOpacity>
               </View>
               <View
-                className={`"flex-1 ${theme === "dark" ? `bg-gray-900` : ``} mx-4 mt-8 gap-1.5 rounded-xl drop-shadow-2xl flex-col py-2 px-4 gap-1"`}
+                className={`"flex-1 ${
+                  theme === "dark" ? `bg-gray-900` : ``
+                } mx-4 mt-8 gap-1.5 rounded-xl drop-shadow-2xl flex-col py-2 px-4 gap-1"`}
               >
                 <AppText
                   color={theme === "dark" ? "light" : "dark"}
@@ -243,7 +247,11 @@ export default function Menu() {
             </LinearGradient>
           </View>
           <View
-            className={`flex-row justify-between items-center ${theme === "dark" ? `bg-[rgb(83,62,53,0.5)]` : `bg-[rgb(83,62,53,0.1)]`} mt-4 px-4 rounded-lg outline-dashed`}
+            className={`flex-row justify-between items-center ${
+              theme === "dark"
+                ? `bg-[rgb(83,62,53,0.5)]`
+                : `bg-[rgb(83,62,53,0.1)]`
+            } mt-4 px-4 rounded-lg outline-dashed`}
           >
             <AppText
               color={theme === "dark" ? "light" : "dark"}
@@ -309,7 +317,9 @@ export default function Menu() {
                 className="flex-row justify-between items-center"
               >
                 <AppText
-                  className={`font-poppins font-bold text-lg ${theme === "dark" ? `text-white` : `text-black`}`}
+                  className={`font-poppins font-bold text-lg ${
+                    theme === "dark" ? `text-white` : `text-black`
+                  }`}
                 >
                   Rate App
                 </AppText>
@@ -323,7 +333,11 @@ export default function Menu() {
           )}
 
           <View
-            className={`${theme === "dark" ? `bg-[rgb(83,62,53,0.5)]` : `bg-[rgb(83,62,53,0.1)]`} py-2 mt-4 px-4 rounded-lg outline-dashed`}
+            className={`${
+              theme === "dark"
+                ? `bg-[rgb(83,62,53,0.5)]`
+                : `bg-[rgb(83,62,53,0.1)]`
+            } py-2 mt-4 px-4 rounded-lg outline-dashed`}
           >
             <Pressable
               onPress={() => {
@@ -431,7 +445,9 @@ export default function Menu() {
                 value={feedback}
                 onChangeText={setFeedback}
                 placeholderTextColor="#6b7280"
-                className={`border-[1px] ${theme === "dark" ? `text-[#E8C282]` : `text-slate-800`} p-4 border-gray-500 h-28 w-full rounded-lg`}
+                className={`border-[1px] ${
+                  theme === "dark" ? `text-[#E8C282]` : `text-slate-800`
+                } p-4 border-gray-500 h-28 w-full rounded-lg`}
               />
               <View className="w-full ">
                 <AppText className="font-bold font-poppins text-start  text-xs text-slate-500">

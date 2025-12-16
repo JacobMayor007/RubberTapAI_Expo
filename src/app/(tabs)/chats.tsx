@@ -220,7 +220,7 @@ export default function ChatBox() {
                 return (
                   <Link
                     onPress={async () => await handleMessageUser(other.id)}
-                    href={"/(message)/testing"}
+                    href={"/(message)/messages"}
                     key={chat.$id || chatIndex}
                     className="flex-row py-2 mt-2 items-center"
                   >
