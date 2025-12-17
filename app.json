@@ -64,18 +64,6 @@
           "photosPermission": "Allow RubberTapAI to access your photos",
           "savePhotosPermission": "Allow RubberTapAI to save photos"
         }
-      ],
-      
-      "react-native-vision-camera",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "minSdkVersion": 26,
-            "compileSdkVersion": 35,
-            "targetSdkVersion": 35
-          }
-        }
       ]
     ],
     "experiments": {

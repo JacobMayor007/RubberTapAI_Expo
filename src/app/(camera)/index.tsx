@@ -80,6 +80,17 @@ const diseasesDescription = [
     causeBy: "Leaf spot is formed caused by Anthracnose.",
     todo: "Spray with Daconil, or Vitigran blue at least 4 rounds weekly",
   },
+  {
+    key: 3,
+    label: "Healthy",
+    description:
+      "A healthy rubber tree has green, well-formed leaves with no visible spots, powdery growth, or discoloration, allowing normal growth and latex production.",
+    effect:
+      "The tree efficiently absorbs sunlight for photosynthesis, supporting strong growth, proper metabolism, and optimal latex yield.",
+    causeBy:
+      "Proper cultivation practices, balanced nutrition, suitable weather conditions, and absence of fungal or bacterial infections.",
+    todo: "Continue regular monitoring, maintain proper fertilization, ensure good air circulation, and apply preventive disease management practices.",
+  },
 ];
 
 const CAMERA_CACHE_DIR = FileSystem.cacheDirectory + "leaf-disease/";
@@ -1100,7 +1111,9 @@ export default function CameraLeaf() {
                             }}
                           >
                             <AppText color="dark" className="font-bold text-xl">
-                              Negative Effect:
+                              {data?.label === "Healthy"
+                                ? `Positive Effect:`
+                                : `Negative Effect:`}
                             </AppText>
                             <AppText color="dark" className="text-lg">
                               {"  "}

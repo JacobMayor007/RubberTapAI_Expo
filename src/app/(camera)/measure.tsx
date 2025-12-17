@@ -45,7 +45,7 @@ const FIXED_RED_LINE_HEIGHT = Math.round(
 
 export default function App() {
   const [showInstructions, setShowInstructions] = useState("first");
-  const [distance, setDistance] = useState(false);
+  const [distance, setDistance] = useState(true);
   const [permission, requestPermission] = useCameraPermissions();
   const [half, setHalf] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
@@ -505,8 +505,8 @@ const styles = StyleSheet.create({
     left: 0,
     top: 0,
     bottom: 0,
-    width: "37%",
-    backgroundColor: "rgba(0,0,0,0.80)",
+    width: "36%",
+    backgroundColor: "rgb(0,0,0)",
     zIndex: 20,
   },
   rightOverlay: {
@@ -514,8 +514,8 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    width: "37%",
-    backgroundColor: "rgba(0,0,0,0.80)",
+    width: "36%",
+    backgroundColor: "rgb(0,0,0)",
     zIndex: 20,
   },
 
