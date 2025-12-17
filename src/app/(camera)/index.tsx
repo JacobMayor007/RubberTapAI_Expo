@@ -42,6 +42,10 @@ type TMResponse = {
   error?: string;
   tfjsVersion?: string;
   tmVersion?: string;
+  topPrediction: {
+    className: string;
+    probability: number;
+  };
 };
 
 const diseasesDescription = [
@@ -539,7 +543,7 @@ export default function CameraLeaf() {
         base64data
       );
 
-      console.log("Server 3:", server3Result);
+      console.log("Server 3:", JSON.stringify(server3Result, null, 2));
 
       if (!server3Result || !server3Result.predictions) {
         Alert.alert("Error", "Failed to get final prediction from Server 3");
@@ -549,6 +553,7 @@ export default function CameraLeaf() {
       }
 
       console.log("✅ Server 3 prediction received");
+      console.log("Server 3: ", server3Result.topPrediction.className);
 
       setResults(server3Result);
       await saveToDatabase(server3Result.predictions);
@@ -563,7 +568,6 @@ export default function CameraLeaf() {
     }
   };
 
-  // Helper function to send data to WebSocket and wait for response
   const sendToServer = (
     ws: WebSocket | null,
     base64data: string

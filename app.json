@@ -65,6 +65,7 @@
           "savePhotosPermission": "Allow RubberTapAI to save photos"
         }
       ],
+      
       "react-native-vision-camera",
       [
         "expo-build-properties",
