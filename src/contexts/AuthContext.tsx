@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             Accept: "application/json",
           },
         },
-        20000
+        20000,
       );
 
       const profileJson = await response.json();

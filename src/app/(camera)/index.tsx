@@ -7,12 +7,14 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useLocation } from "@/src/contexts/LocationContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
+import { compressImage } from "@/src/services/imageCompressionUtil";
 import { Plot, Profile, SubscriptionData, Tree_Record } from "@/types";
 import Entypo from "@expo/vector-icons/Entypo";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { CameraView, useCameraPermissions } from "expo-camera";
+import * as FileSystem from "expo-file-system";
 import * as ImagePicker from "expo-image-picker";
 import * as MediaLibrary from "expo-media-library";
 import { Link, router } from "expo-router";
@@ -40,12 +42,16 @@ type TMResponse = {
   error?: string;
   tfjsVersion?: string;
   tmVersion?: string;
+  topPrediction: {
+    className: string;
+    probability: number;
+  };
 };
 
 const diseasesDescription = [
   {
     key: 0,
-    label: "Oidium Heveae",
+    label: "Oidium heveae",
     description:
       "Oidium Heveae or Powdery mildew A condition where a rubber tree has white powdery growth on leaves, curling, distortion, and it is a serious threat to rubber-producing countries",
     effect:
@@ -74,7 +80,20 @@ const diseasesDescription = [
     causeBy: "Leaf spot is formed caused by Anthracnose.",
     todo: "Spray with Daconil, or Vitigran blue at least 4 rounds weekly",
   },
+  {
+    key: 3,
+    label: "Healthy",
+    description:
+      "A healthy rubber tree has green, well-formed leaves with no visible spots, powdery growth, or discoloration, allowing normal growth and latex production.",
+    effect:
+      "The tree efficiently absorbs sunlight for photosynthesis, supporting strong growth, proper metabolism, and optimal latex yield.",
+    causeBy:
+      "Proper cultivation practices, balanced nutrition, suitable weather conditions, and absence of fungal or bacterial infections.",
+    todo: "Continue regular monitoring, maintain proper fertilization, ensure good air circulation, and apply preventive disease management practices.",
+  },
 ];
+
+const CAMERA_CACHE_DIR = FileSystem.cacheDirectory + "leaf-disease/";
 
 export default function CameraLeaf() {
   const [flash, setFlash] = useState<"off" | "on">("off");
@@ -96,6 +115,10 @@ export default function CameraLeaf() {
   const [profile, setProfile] = useState<Profile | null>();
   const [takes, setTakes] = useState(0);
   const [page, setPage] = useState(1);
+  const wsServer1Ref = useRef<WebSocket | null>(null);
+  const wsServer2Ref = useRef<WebSocket | null>(null);
+  const wsServer3Ref = useRef<WebSocket | null>(null);
+
   const [loading, setLoading] = useState(false);
   const [dropdown, setDropdown] = useState(false);
   const [pageLoading, setPageLoading] = useState(false);
@@ -120,6 +143,54 @@ export default function CameraLeaf() {
   useEffect(() => {
     MyPlot();
     myTree();
+  }, []);
+
+  useEffect(() => {
+    FileSystem.makeDirectoryAsync(CAMERA_CACHE_DIR, {
+      intermediates: true,
+    });
+
+    return () => {
+      clearCameraCache();
+    };
+  }, []);
+
+  const clearCameraCache = async () => {
+    try {
+      await FileSystem.deleteAsync(CAMERA_CACHE_DIR, {
+        idempotent: true,
+      });
+      console.log("Image leaf disease caches cleared");
+    } catch (e) {
+      console.warn("Cache cleanup failed", e);
+    }
+  };
+
+  useEffect(() => {
+    // Prediction WS
+    const wsPred = new WebSocket("https://rubbertapai-server-3-1.onrender.com");
+    wsPred.onopen = () => console.log("✅ Prediction 1 WS connected");
+    wsPred.onmessage = (msg) => console.log("Prediction WS:", msg.data);
+    wsPred.onerror = (err) => console.error(err);
+    wsServer1Ref.current = wsPred;
+
+    const wsPred2 = new WebSocket("https://backend-1-uu1o.onrender.com");
+    wsPred2.onopen = () => console.log("✅ Prediction 2 WS connected");
+    wsPred2.onmessage = (msg) => console.log("Chat WS:", msg.data);
+    wsPred2.onerror = (err) => console.error(err);
+    wsServer2Ref.current = wsPred2;
+
+    const wsPred3 = new WebSocket("https://rubbertapai-server-2.onrender.com");
+    wsPred3.onopen = () => console.log("✅ Prediction 3 connected");
+    wsPred3.onmessage = (msg) => console.log("Chat WS:", msg.data);
+    wsPred3.onerror = (err) => console.error(err);
+    wsServer3Ref.current = wsPred3;
+
+    return () => {
+      wsPred.close();
+      wsPred2.close();
+      wsPred3.close();
+    };
   }, []);
 
   const [mediaPermission, requestMediaPermission] =
@@ -296,8 +367,36 @@ export default function CameraLeaf() {
       setDisable(true);
       const photo = await cameraRef.current.takePictureAsync();
       if (photo?.uri) {
-        setUri(photo.uri);
-        await uploadImage(photo.uri);
+        const rawPath = CAMERA_CACHE_DIR + `raw-${Date.now()}.jpg`;
+
+        await FileSystem.moveAsync({
+          from: photo.uri,
+          to: rawPath,
+        });
+
+        const fileInfo = await FileSystem.getInfoAsync(rawPath);
+
+        let size;
+        if (fileInfo.exists) {
+          size = (fileInfo.size / 1024).toFixed(2);
+          console.log(typeof size);
+
+          console.log(size);
+        }
+
+        const uploadSize = Number(size) - 400.0;
+
+        console.log("Upload size: ", uploadSize);
+
+        const compressedUri = await compressImage(
+          rawPath,
+          uploadSize,
+          CAMERA_CACHE_DIR
+        );
+        console.log("Photo compressed", compressedUri);
+        setUri(compressedUri);
+
+        await uploadImage(compressedUri);
       }
     } catch (error) {
       console.log("Error taking photo:", error);
@@ -324,9 +423,36 @@ export default function CameraLeaf() {
       });
 
       if (!result.canceled) {
-        const selectedUris = result.assets[0].uri;
-        setUri(selectedUris);
-        await uploadImage(selectedUris);
+        let size;
+
+        const rawPath = CAMERA_CACHE_DIR + `raw-${Date.now()}.jpg`;
+
+        await FileSystem.moveAsync({
+          from: result.assets[0].uri,
+          to: rawPath,
+        });
+
+        const fileInfo = await FileSystem.getInfoAsync(rawPath);
+
+        if (fileInfo.exists) {
+          size = (fileInfo.size / 1024).toFixed(2);
+          console.log(typeof size);
+
+          console.log(size);
+        }
+
+        const uploadSize = Number(size) - 400.0;
+
+        console.log("Upload Size on Image Upload", uploadSize);
+
+        const compressedUri = await compressImage(
+          rawPath,
+          uploadSize,
+          CAMERA_CACHE_DIR
+        );
+        setUri(compressedUri);
+
+        await uploadImage(compressedUri);
       }
     } catch (error) {
       console.error(error);
@@ -336,31 +462,45 @@ export default function CameraLeaf() {
   const uploadImage = async (uri: string) => {
     setResultModal(true);
 
-    const formData = new FormData();
-    formData.append("image", {
-      uri,
-      name: "photo.jpg",
-      type: "image/jpeg",
-    } as any);
+    if (
+      !wsServer1Ref.current ||
+      wsServer1Ref.current.readyState !== WebSocket.OPEN
+    ) {
+      Alert.alert("WebSocket not connected", "Please try again.");
+      setDisable(false);
+      return;
+    }
 
     try {
       setLoading(true);
-      const response3 = await fetch(
-        `https://rubbertapai-server-3.onrender.com/predict`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Accept: "application/json",
-          },
-          body: formData,
-        }
+
+      // Convert image to Base64
+      const response = await fetch(uri);
+      const blob = await response.blob();
+
+      const base64data = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          resolve(reader.result as string);
+        };
+        reader.readAsDataURL(blob);
+      });
+
+      // Server 1: Validate it's a rubber tree leaf
+      const server1Result = await sendToServer(
+        wsServer1Ref.current,
+        base64data
       );
 
-      const dataOne = await response3.json();
-      const isRubberLeaf = await isRubberTreeLeaf(dataOne.predictions);
+      if (!server1Result || !server1Result.predictions) {
+        Alert.alert("Error", "Failed to get response from Server 1");
+        setLoading(false);
+        setDisable(false);
+        return;
+      }
 
-      console.log("Server 3:", isRubberLeaf);
+      const isRubberLeaf = await isRubberTreeLeaf(server1Result.predictions);
+      console.log("Server 1 - Is Rubber:", isRubberLeaf);
 
       if (
         isRubberLeaf === "Mango Leaf" ||
@@ -368,64 +508,114 @@ export default function CameraLeaf() {
         isRubberLeaf === "Error"
       ) {
         Alert.alert(
-          "Leaf Detection Error",
-          "We can only detect a rubber tree leaf."
+          "⚠️ Leaf Detection Error",
+          "Please try again! Please focus the camera on a rubber tree leaf."
         );
+        setLoading(false);
+        setResults(null);
+        setDisable(false);
         return;
       }
 
-      const response2 = await fetch(
-        `https://backend-e0gn.onrender.com/predict`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Accept: "application/json",
-          },
-          body: formData,
-        }
+      console.log("✅ Server 1 validation passed");
+
+      // Server 2: Validate disease classification
+      const server2Result = await sendToServer(
+        wsServer2Ref.current,
+        base64data
       );
 
-      const data_response2 = await response2.json();
+      if (!server2Result || !server2Result.predictions) {
+        Alert.alert("Error", "Failed to get response from Server 2");
+        setLoading(false);
+        setDisable(false);
+        return;
+      }
 
-      console.log(data_response2);
+      const diseaseClass = await isRubberTreeLeaf(server2Result.predictions);
+      console.log("Server 2 - Classification:", diseaseClass);
 
-      const isRubber = await isRubberTreeLeaf(data_response2.predictions);
-
-      if (isRubber === "Other" || isRubber === "Error") {
+      if (diseaseClass === "Other" || diseaseClass === "Error") {
         Alert.alert(
-          "Leaf Detection Error",
-          "We can only detect a rubber tree leaf."
+          "⚠️ Leaf Detection Error",
+          "Please try again! Please focus the camera on a rubber tree leaf."
         );
+        setResults(null);
+        setLoading(false);
+        setDisable(false);
         return;
       }
-      //
-      const response = await fetch(
-        "https://rubbertapai-server-1.onrender.com/predict",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Accept: "application/json",
-          },
-          body: formData,
-        }
+
+      console.log("✅ Server 2 validation passed");
+
+      // Server 3: Get final prediction
+      const server3Result = await sendToServer(
+        wsServer3Ref.current,
+        base64data
       );
 
-      const data = await response.json();
-      setResults(data);
-      saveToDatabase(data.predictions);
-      setTakes(takes + 1);
-    } catch (error) {
-      console.error("Upload error:", error);
-      setResults({
-        error: error instanceof Error ? error.message : "Prediction failed",
-        predictions: [],
-      });
-    } finally {
+      console.log("Server 3:", JSON.stringify(server3Result, null, 2));
+
+      if (!server3Result || !server3Result.predictions) {
+        Alert.alert("Error", "Failed to get final prediction from Server 3");
+        setLoading(false);
+        setDisable(false);
+        return;
+      }
+
+      console.log("✅ Server 3 prediction received");
+      console.log("Server 3: ", server3Result.topPrediction.className);
+
+      setResults(server3Result);
+      await saveToDatabase(server3Result.predictions);
+      setTakes((prev) => prev + 1);
+      setLoading(false);
+      setDisable(false);
+    } catch (err) {
+      console.error("Upload error:", err);
+      Alert.alert("Error", "Failed to process image");
       setLoading(false);
       setDisable(false);
     }
+  };
+
+  const sendToServer = (
+    ws: WebSocket | null,
+    base64data: string
+  ): Promise<TMResponse> => {
+    return new Promise((resolve, reject) => {
+      if (!ws || ws.readyState !== WebSocket.OPEN) {
+        reject(new Error("WebSocket not connected"));
+        return;
+      }
+
+      const timeout = setTimeout(() => {
+        ws.removeEventListener("message", handleMessage);
+        reject(new Error("Server response timeout"));
+      }, 30000); // 30 second timeout
+
+      const handleMessage = (event: any) => {
+        try {
+          clearTimeout(timeout);
+          ws.removeEventListener("message", handleMessage);
+          const data: TMResponse = JSON.parse(event.data);
+          resolve(data);
+        } catch (error) {
+          clearTimeout(timeout);
+          ws.removeEventListener("message", handleMessage);
+          reject(error);
+        }
+      };
+
+      ws.addEventListener("message", handleMessage);
+
+      ws.send(
+        JSON.stringify({
+          type: "frame",
+          frameData: base64data,
+        })
+      );
+    });
   };
 
   const isRubberTreeLeaf = async (results: Prediction[]) => {
@@ -442,17 +632,31 @@ export default function CameraLeaf() {
     }
   };
 
-  const saveToDatabase = async (results: Prediction[]) => {
+  const saveToDatabase = async (predictions: Prediction[]) => {
     try {
-      const bestResult = results.reduce(
+      // Add safety check for predictions array
+      if (
+        !predictions ||
+        !Array.isArray(predictions) ||
+        predictions.length === 0
+      ) {
+        console.warn("No predictions available to save");
+        return;
+      }
+
+      const bestResult = predictions.reduce(
         (max, item) => (item.probability > max.probability ? item : max),
         { className: "", probability: 0 }
       );
 
+      // Validate bestResult
+      if (!bestResult || !bestResult.className) {
+        console.warn("Invalid prediction result");
+        return;
+      }
+
       let probability = bestResult.probability * 100;
-
       if (probability > 100) probability = 100;
-
       probability = parseFloat(probability.toFixed(3));
 
       const payload = {
@@ -479,7 +683,8 @@ export default function CameraLeaf() {
         }
       );
 
-      await response.json();
+      const result = await response.json();
+      console.log("Prediction saved successfully:", result);
     } catch (error) {
       console.error("Save error:", error);
     }
@@ -601,7 +806,7 @@ export default function CameraLeaf() {
     );
   }
 
-  console.log(results);
+  console.log(uri);
 
   return (
     <SafeAreaView style={{ flexGrow: 1 }}>
@@ -641,7 +846,7 @@ export default function CameraLeaf() {
               onPress={() => setDropdown((prev) => !prev)}
               className={`gap-5 flex-row bg-black/50 items-center px-7 py-2 rounded-full`}
             >
-              <AppText>Camera Detection</AppText>
+              <AppText>Leaf Disease Detection</AppText>
               {dropdown ? (
                 <Ionicons name="caret-up" color="white" size={28} />
               ) : (
@@ -746,7 +951,7 @@ export default function CameraLeaf() {
         }}
       >
         {loading ? (
-          <View className="flex-1 bg-black/50">
+          <BackgroundGradient className="flex-1 ">
             <Feather
               name="x"
               size={30}
@@ -759,12 +964,14 @@ export default function CameraLeaf() {
             />
             <View className="flex-1 justify-center items-center flex-col ">
               <Loading className="h-20 w-20" />
-              <AppText>Analyzing Images</AppText>
+              <AppText>Analyzing Image</AppText>
             </View>
-          </View>
+          </BackgroundGradient>
         ) : (
           <BackgroundGradient
-            className={`flex-1 justify-between border ${theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`} `}
+            className={`flex-1 justify-between border ${
+              theme === "dark" ? `bg-gray-900` : `bg-[#FFECCC]`
+            } `}
           >
             <View className="flex-1">
               <Feather
@@ -878,7 +1085,9 @@ export default function CameraLeaf() {
                         ).className && (
                         <View className="gap-4">
                           <View
-                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 1 ? `flex` : `hidden`} h-48`}
+                            className={`bg-[#F3E0C1] p-4 rounded-xl ${
+                              page === 1 ? `flex` : `hidden`
+                            } h-48`}
                             style={{
                               boxShadow:
                                 "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
@@ -893,14 +1102,18 @@ export default function CameraLeaf() {
                             </AppText>
                           </View>
                           <View
-                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 1 ? `flex` : `hidden`} h-48`}
+                            className={`bg-[#F3E0C1] p-4 rounded-xl ${
+                              page === 1 ? `flex` : `hidden`
+                            } h-48`}
                             style={{
                               boxShadow:
                                 "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
                             }}
                           >
                             <AppText color="dark" className="font-bold text-xl">
-                              Negative Effect:
+                              {data?.label === "Healthy"
+                                ? `Positive Effect:`
+                                : `Negative Effect:`}
                             </AppText>
                             <AppText color="dark" className="text-lg">
                               {"  "}
@@ -908,7 +1121,9 @@ export default function CameraLeaf() {
                             </AppText>
                           </View>
                           <View
-                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 2 ? `flex` : `hidden`} h-40`}
+                            className={`bg-[#F3E0C1] p-4 rounded-xl ${
+                              page === 2 ? `flex` : `hidden`
+                            } h-40`}
                             style={{
                               boxShadow:
                                 "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
@@ -923,7 +1138,9 @@ export default function CameraLeaf() {
                             </AppText>
                           </View>
                           <View
-                            className={`bg-[#F3E0C1] p-4 rounded-xl ${page === 2 ? `flex` : `hidden`} h-40`}
+                            className={`bg-[#F3E0C1] p-4 rounded-xl ${
+                              page === 2 ? `flex` : `hidden`
+                            } h-40`}
                             style={{
                               boxShadow:
                                 "rgba(0, 0, 0, 0.1) 0px 10px 15px -3px, rgba(0, 0, 0, 0.05) 0px 4px 6px -2px",
@@ -977,13 +1194,15 @@ export default function CameraLeaf() {
               </View>
             </View>
             {results && (
-              <View className={`pb-5 items-end `}>
+              <View className={`pb-5 items-end gap-3`}>
                 <TouchableOpacity
                   onPress={() => {
                     setSaveModal(true);
                     setResultModal(false);
                   }}
-                  className={`${theme === "dark" ? `bg-green-500` : `bg-[#000000]/75`} rounded-full h-12 px-7 tracking-widest  items-center justify-center mr-4`}
+                  className={`${
+                    theme === "dark" ? `bg-green-500` : `bg-[#000000]/75`
+                  } rounded-full h-12 px-7 tracking-widest items-center justify-center mr-4`}
                 >
                   <Text
                     style={{
@@ -1015,7 +1234,9 @@ export default function CameraLeaf() {
           />
           <View className="flex-row items-center justify-between mt-5 ">
             <Text
-              className={`font-poppins text-lg font-bold ${theme === "dark" ? `text-white` : `text-black`}`}
+              className={`font-poppins text-lg font-bold ${
+                theme === "dark" ? `text-white` : `text-black`
+              }`}
             >
               Save To Tree Records
             </Text>
@@ -1051,7 +1272,9 @@ export default function CameraLeaf() {
               <View>
                 <Text
                   style={{ fontWeight: 700 }}
-                  className={`${theme === "dark" ? `text-white` : `text-black`} mb-6 text-lg tracking-wide`}
+                  className={`${
+                    theme === "dark" ? `text-white` : `text-black`
+                  } mb-6 text-lg tracking-wide`}
                 >
                   Select Plots
                 </Text>
@@ -1080,7 +1303,9 @@ export default function CameraLeaf() {
                       />
                     ) : (
                       <View
-                        className={`h-[60%] items-center justify-center px-2 rounded-s-lg ${theme === "dark" ? `bg-slate-200` : `bg-slate-500`}`}
+                        className={`h-[60%] items-center justify-center px-2 rounded-s-lg ${
+                          theme === "dark" ? `bg-slate-200` : `bg-slate-500`
+                        }`}
                       >
                         <AppText
                           color={theme === "dark" ? `dark` : `light`}
@@ -1123,7 +1348,9 @@ export default function CameraLeaf() {
                 color={theme === "dark" ? `white` : `black`}
               />
               <Text
-                className={`font-poppins text-lg font-bold ${theme === "dark" ? `text-white` : `text-black`}`}
+                className={`font-poppins text-lg font-bold ${
+                  theme === "dark" ? `text-white` : `text-black`
+                }`}
               >
                 Choose tree to{"\n"}save the leaf
               </Text>
@@ -1158,7 +1385,9 @@ export default function CameraLeaf() {
           <View className={`${myTrees.length > 0 && `flex`}`}>
             <Text
               style={{ fontWeight: 700 }}
-              className={`${theme === "dark" ? `text-white` : `text-black`} my-6 text-lg tracking-wide`}
+              className={`${
+                theme === "dark" ? `text-white` : `text-black`
+              } my-6 text-lg tracking-wide`}
             >
               Select A Tree
             </Text>
@@ -1196,7 +1425,9 @@ export default function CameraLeaf() {
                     />
                   ) : (
                     <View
-                      className={`h-[60%] items-center justify-center px-2 rounded-s-lg ${theme === "dark" ? `bg-slate-200` : `bg-slate-500`}`}
+                      className={`h-[60%] items-center justify-center px-2 rounded-s-lg ${
+                        theme === "dark" ? `bg-slate-200` : `bg-slate-500`
+                      }`}
                     >
                       <AppText
                         color={theme === "dark" ? `dark` : `light`}
