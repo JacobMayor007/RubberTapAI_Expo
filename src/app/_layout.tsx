@@ -6,19 +6,24 @@ import { LocationProvider } from "../contexts/LocationContext";
 import { MessageProvider } from "../contexts/MessageContext";
 import { ThemeProvider } from "../contexts/ThemeContext";
 import { WeatherProvider } from "../contexts/WeatherContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient();
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <ThemeProvider>
-        <MessageProvider>
-          <LocationProvider>
-            <WeatherProvider>
-              <Slot />
-            </WeatherProvider>
-          </LocationProvider>
-        </MessageProvider>
-      </ThemeProvider>
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider>
+          <MessageProvider>
+            <LocationProvider>
+              <WeatherProvider>
+                <Slot />
+              </WeatherProvider>
+            </LocationProvider>
+          </MessageProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }

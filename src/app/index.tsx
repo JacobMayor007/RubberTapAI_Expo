@@ -24,7 +24,6 @@ export default function IndexScreen() {
   const [networkChecked, setNetworkChecked] = useState(false);
   const [hasInternet, setHasInternet] = useState(true);
   const auth = useAuth();
-
   const spin = () => {
     spinValue.setValue(0);
     Animated.timing(spinValue, {
@@ -55,7 +54,7 @@ export default function IndexScreen() {
                 onPress: () => router.back(),
                 style: "cancel",
               },
-            ]
+            ],
           );
         } else {
           setHasInternet(true);
@@ -73,7 +72,7 @@ export default function IndexScreen() {
                 AppState.currentState === "active" && BackHandler.exitApp(),
               style: "cancel",
             },
-          ]
+          ],
         );
       }
 
@@ -116,7 +115,7 @@ export default function IndexScreen() {
             headers: {
               "X-Appwrite-Project": `${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}`,
             },
-          }
+          },
         );
 
         if (response.ok) {

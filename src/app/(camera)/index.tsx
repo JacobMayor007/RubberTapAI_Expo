@@ -51,7 +51,7 @@ type TMResponse = {
 const diseasesDescription = [
   {
     key: 0,
-    label: "Oidium Heveae",
+    label: "Oidium heveae",
     description:
       "Oidium Heveae or Powdery mildew A condition where a rubber tree has white powdery growth on leaves, curling, distortion, and it is a serious threat to rubber-producing countries",
     effect:

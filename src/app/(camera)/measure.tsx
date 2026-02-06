@@ -45,7 +45,7 @@ const FIXED_RED_LINE_HEIGHT = Math.round(
 
 export default function App() {
   const [showInstructions, setShowInstructions] = useState("first");
-  const [distance, setDistance] = useState(true);
+  const [distance, setDistance] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
   const [half, setHalf] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);

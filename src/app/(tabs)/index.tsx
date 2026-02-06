@@ -4,13 +4,12 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useLocation } from "@/src/contexts/LocationContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
-import { Profile } from "@/types";
+import useUser from "@/src/hooks/getUser";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
 import * as Location from "expo-location";
 import * as Notifications from "expo-notifications";
-import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { Linking } from "react-native";
 
@@ -33,13 +32,11 @@ Notifications.setNotificationHandler({
 });
 
 export default function Home() {
-  const { user } = useAuth();
-  const router = useRouter();
   const location = useLocation();
   const { theme } = useTheme();
+  const { data: profile } = useUser();
 
-  const [profile, setProfile] = useState<Profile | null>(null);
-
+  console.log("The profile's data: ", JSON.stringify(profile, null, 2));
   // Permission status for Location flow
   const [permissionStatus, setPermissionStatus] = useState<
     "checking" | "granted" | "denied"
@@ -135,7 +132,7 @@ export default function Home() {
             style: "cancel",
           },
         ],
-        { cancelable: true }
+        { cancelable: true },
       );
     }
   }, [permissionStatus]);
@@ -148,16 +145,16 @@ export default function Home() {
     const controller = new AbortController();
     const fetchProfile = async () => {
       try {
-        if (!user?.$id) return;
+        if (!profile?.$id) return;
         const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user.$id}`,
+          `${process.env.EXPO_PUBLIC_BASE_URL}/profile:/${profile.$id}`,
           {
             method: "GET",
             headers: {
               Accept: "application/json",
             },
             signal: controller.signal,
-          }
+          },
         );
         if (!response.ok) {
           console.warn("fetchProfile non-OK status", response.status);
@@ -175,7 +172,7 @@ export default function Home() {
     return () => {
       controller.abort();
     };
-  }, [user?.$id]);
+  }, [profile?.$id]);
 
   /* ---------------------------
      4) updateLocation API call
@@ -183,7 +180,7 @@ export default function Home() {
        - profile?.API_KEY exists
        - location.address.city exists
        - permissionStatus is granted (extra safety)
-     Guards prevent calling the API when user denied location
+     Guards prevent calling the API when profile denied location
      --------------------------- */
   useEffect(() => {
     if (permissionStatus !== "granted") return;
@@ -202,12 +199,12 @@ export default function Home() {
               Accept: "application/json",
             },
             body: JSON.stringify({
-              userId: user?.$id,
+              userId: profile?.$id,
               API_KEY: profile.API_KEY,
               city: location?.address?.city,
             }),
           },
-          20000
+          20000,
         );
 
         if (cancelled) return;
@@ -223,7 +220,12 @@ export default function Home() {
     return () => {
       cancelled = true;
     };
-  }, [profile?.API_KEY, location?.address?.city, permissionStatus, user?.$id]);
+  }, [
+    profile?.API_KEY,
+    location?.address?.city,
+    permissionStatus,
+    profile?.$id,
+  ]);
 
   /* ---------------------------
      5) Push notifications
@@ -305,7 +307,7 @@ export default function Home() {
       }
       if (finalStatus !== "granted") {
         console.warn(
-          "Permission not granted to get push token for push notification!"
+          "Permission not granted to get push token for push notification!",
         );
         return null;
       }
@@ -339,8 +341,8 @@ export default function Home() {
         console.warn("Skipping push token upload: missing API_KEY");
         return;
       }
-      if (!user?.$id) {
-        console.warn("Skipping push token upload: missing user id");
+      if (!profile?.$id) {
+        console.warn("Skipping push token upload: missing profile id");
         return;
       }
 
@@ -353,12 +355,12 @@ export default function Home() {
             Accept: "application/json",
           },
           body: JSON.stringify({
-            userId: user.$id,
+            userId: profile.$id,
             token: pushToken,
             API_KEY: profile.API_KEY,
           }),
         },
-        20000
+        20000,
       );
 
       await result.json();
@@ -370,7 +372,7 @@ export default function Home() {
   /* ---------------------------
      Render
      - While initializing we show a small safe spinner
-     - If user denied location we still render the screen (limited features)
+     - If profile denied location we still render the screen (limited features)
      - All effects guarded so nothing will crash
      --------------------------- */
   if (initializing) {
