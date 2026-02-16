@@ -7,6 +7,7 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
+import { useUser } from "@/src/hooks/tsHooks";
 import { storage } from "@/src/lib/appwrite";
 import { MessageHistory, Profile } from "@/types";
 import AntDesign from "@expo/vector-icons/AntDesign";
@@ -40,17 +41,16 @@ export default function Messages() {
   const scrollViewRef = useRef<any>(null);
   const { user } = useAuth();
   const router = useRouter();
-  const [lines, setLines] = useState(1);
-  const [newMessage, setNewMessage] = useState("");
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [images, setImages] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [rateModal, setRateModal] = useState(false);
-  const [rateUser, setRateUser] = useState(0);
-  const [feedback, setFeedback] = useState("");
+  const [lines, setLines] = useState<number>(1);
+  const [newMessage, setNewMessage] = useState<string>("");
+  const [images, setImages] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [rateModal, setRateModal] = useState<boolean>(false);
+  const [rateUser, setRateUser] = useState<number>(0);
+  const [feedback, setFeedback] = useState<string>("");
   const { theme } = useTheme();
   const [showDate, setShowDate] = useState<Number | null>(null);
-
+  const { data: profile } = useUser();
   const [messages, setMessages] = useState<MessageHistory[]>([]);
 
   const handleContentSizeChange = (event: any) => {
@@ -59,28 +59,6 @@ export default function Messages() {
     const calculatedLines = Math.floor(contentHeight / lineHeight);
     setLines(calculatedLines);
   };
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        const data = await response.json();
-        setProfile(data);
-      } catch (error) {
-        console.error("Upload error:", error);
-      }
-    };
-    fetchProfile();
-  }, [user?.$id]);
 
   const pickAnImage = async () => {
     const permissionResult =
@@ -107,13 +85,13 @@ export default function Messages() {
     const getMessages = async () => {
       try {
         const sentResponse = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/sent-messages/${user.$id}/${userMessage?.user?.$id}`
+          `${process.env.EXPO_PUBLIC_BASE_URL}/sent-messages/${user.$id}/${userMessage?.user?.$id}`,
         );
 
         const sentMessages = await sentResponse.json();
 
         const receivedResponse = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/received-messages/${user.$id}/${userMessage?.user?.$id}`
+          `${process.env.EXPO_PUBLIC_BASE_URL}/received-messages/${user.$id}/${userMessage?.user?.$id}`,
         );
         const receivedMessages = await receivedResponse.json();
 
@@ -163,7 +141,7 @@ export default function Messages() {
               name: `image_${Date.now()}.jpg`,
               type: "image/jpeg",
               size: fileInfo.size,
-            }
+            },
           );
 
           console.log("Image uploaded!", result);
@@ -233,7 +211,7 @@ export default function Messages() {
             ratedImage: userMessage?.user?.imageURL,
           }),
         },
-        20000
+        20000,
       );
 
       const response = await result.json();
@@ -260,15 +238,13 @@ export default function Messages() {
         keyboardVerticalOffset={0}
       >
         <BackgroundGradient
-          className={`flex-1 flex-col ${
-            theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`
-          }`}
+          className={`flex-1 flex-col ${theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`
+            }`}
         >
           <View className="flex-1">
             <View
-              className={`${
-                theme === "dark" ? " border-[#38C282]" : " border-gray-500"
-              } gap-4 h-24 p-6 flex-row items-center justify-between border-b-[0.5px] `}
+              className={`${theme === "dark" ? " border-[#38C282]" : " border-gray-500"
+                } gap-4 h-24 p-6 flex-row items-center justify-between border-b-[0.5px] `}
             >
               <View className="flex-row items-center gap-4">
                 <FontAwesome5
@@ -331,11 +307,10 @@ export default function Messages() {
                   return (
                     <View key={index}>
                       <View
-                        className={`${
-                          msg?.sender_id === user?.$id
-                            ? `flex-row-reverse`
-                            : `flex-row`
-                        } items-center gap-2`}
+                        className={`${msg?.sender_id === user?.$id
+                          ? `flex-row-reverse`
+                          : `flex-row`
+                          } items-center gap-2`}
                       >
                         <Image
                           source={{
@@ -349,28 +324,26 @@ export default function Messages() {
                         <TouchableOpacity
                           onPress={() =>
                             setShowDate((prev) =>
-                              prev === index ? null : index
+                              prev === index ? null : index,
                             )
                           }
-                          className={`min-w-48 max-w-72 p-3 rounded-md mb-2 w-fit ${
-                            msg.sender_id === user?.$id
-                              ? `${
-                                  theme === "dark"
-                                    ? `bg-blue-900`
-                                    : `bg-blue-500`
-                                } text-white ml-auto text-right font-hind font-medium text-base`
-                              : `bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base`
-                          }`}
+                          className={`min-w-48 max-w-72 p-3 rounded-md mb-2 w-fit ${msg.sender_id === user?.$id
+                            ? `${theme === "dark"
+                              ? `bg-blue-900`
+                              : `bg-blue-500`
+                            } text-white ml-auto text-right font-hind font-medium text-base`
+                            : `bg-gray-300 text-black mr-auto text-left font-hind font-medium text-base`
+                            }`}
                           style={
                             msg.$id === user?.$id
                               ? {
-                                  borderTopLeftRadius: 24,
-                                  borderBottomRightRadius: 24,
-                                }
+                                borderTopLeftRadius: 24,
+                                borderBottomRightRadius: 24,
+                              }
                               : {
-                                  borderTopRightRadius: 24,
-                                  borderBottomLeftRadius: 24,
-                                }
+                                borderTopRightRadius: 24,
+                                borderBottomLeftRadius: 24,
+                              }
                           }
                         >
                           {msg?.imageUrl && (
@@ -384,9 +357,8 @@ export default function Messages() {
                           </AppText>
                           {index === showDate && (
                             <AppText
-                              className={`text-right text-xs mt-2 ${
-                                theme === "dark" ? `light` : `text-white`
-                              }`}
+                              className={`text-right text-xs mt-2 ${theme === "dark" ? `light` : `text-white`
+                                }`}
                             >
                               {msg.$createdAt
                                 .utc()
@@ -419,11 +391,10 @@ export default function Messages() {
             )}
             {!loading && (
               <View
-                className={`${lines > 2 ? "h-[72px]" : "h-14"} ${
-                  theme === "dark"
-                    ? `bg-[#FFECCC]/50`
-                    : `bg-[rgb(63,31,17,.25)]`
-                } gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
+                className={`${lines > 2 ? "h-[72px]" : "h-14"} ${theme === "dark"
+                  ? `bg-[#FFECCC]/50`
+                  : `bg-[rgb(63,31,17,.25)]`
+                  } gap-2 relative rounded-full mx-4 flex-row items-center px-4`}
               >
                 <View className=" flex-row absolute bottom-14 left-12 gap-4">
                   {images.length > 0 && (
@@ -444,9 +415,8 @@ export default function Messages() {
                 <TextInput
                   multiline
                   placeholder="Message ..."
-                  className={`w-9/12 max-h-20 ${
-                    theme === "dark" ? `text-white` : `text-black`
-                  }`}
+                  className={`w-9/12 max-h-20 ${theme === "dark" ? `text-white` : `text-black`
+                    }`}
                   onContentSizeChange={handleContentSizeChange}
                   value={newMessage}
                   onChangeText={setNewMessage}

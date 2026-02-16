@@ -7,8 +7,7 @@ import NavigationBar from "@/src/components/Navigation";
 import RegisterPlot from "@/src/components/RegisterTreePlot";
 import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
-import { globalFunction } from "@/src/global/fetchWithTimeout";
-import { Plot, Profile } from "@/types";
+import { getMyPlot, useUser } from "@/src/hooks/tsHooks";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useRouter } from "expo-router";
@@ -26,79 +25,23 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function History() {
-  const [myPlot, setMyPlot] = useState<Plot[]>([]);
-  const { user } = useAuth();
   const { theme } = useTheme();
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [registerModal, setRegisterModal] = useState(false);
-  const [saveModal, setSaveModal] = useState(false);
-  const [ediDelID, setEdiDelID] = useState("");
-  const [updatePlot, setUpdatePlot] = useState("");
-  const [modal, setModal] = useState(false);
-  const [refresh, setRefresh] = useState(false);
-  const [editDelete, setEditDelete] = useState("");
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [registerModal, setRegisterModal] = useState<boolean>(false);
+  const [saveModal, setSaveModal] = useState<boolean>(false);
+  const [ediDelID, setEdiDelID] = useState<string>("");
+  const [updatePlot, setUpdatePlot] = useState<string>("");
+  const [modal, setModal] = useState<boolean>(false);
+  const [refresh, setRefresh] = useState<boolean>(false);
+  const [editDelete, setEditDelete] = useState<string>("");
+  const { data: user } = useUser();
+  const { data: myPlot } = getMyPlot();
 
   useEffect(() => {
-    MyPlot();
     setRefresh(false);
     setSaveModal(false);
   }, [refresh, saveModal]);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        const data = await response.json();
-        setProfile(data);
-      } catch (error) {
-        console.error("Upload error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, [user?.$id]);
-
-  const MyPlot = async () => {
-    try {
-      setLoading(true);
-      const response = await globalFunction.fetchWithTimeout(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/my-plot/${user?.$id}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-          },
-        },
-        30000
-      );
-      const data = await response.json();
-      setMyPlot(data);
-    } catch (error: any) {
-      if (error === "TimeoutError") {
-        Alert.alert(
-          "Timeout Error",
-          "Internet connectivity is slow, please try again!"
-        );
-      }
-
-      console.error("Upload error:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -115,8 +58,8 @@ export default function History() {
       setModal(false);
       const response = await deletePlot(
         ediDelID,
-        profile?.$id || "",
-        profile?.API_KEY || ""
+        user?.$id || "",
+        user?.API_KEY || "",
       );
 
       const data = response;
@@ -139,7 +82,7 @@ export default function History() {
         user?.$id || "",
         ediDelID,
         updatePlot,
-        profile?.API_KEY || ""
+        user?.API_KEY || "",
       );
     } catch (error) {
       console.error(error);
@@ -149,6 +92,8 @@ export default function History() {
       setModal(false);
     }
   };
+
+  console.log(myPlot?.length);
 
   return (
     <SafeAreaView className="flex-1 flex-col justify-between">
@@ -183,7 +128,7 @@ export default function History() {
               <Feather name="plus" size={24} color={"white"} />
             </TouchableOpacity>
           </View>
-          {myPlot?.length < 1 ? (
+          {(myPlot?.length || 0) < 1 ? (
             <AppText
               color={theme === "dark" ? `light` : `dark`}
               className="font-poppins text-lg font-bold mt-4 mx-auto"

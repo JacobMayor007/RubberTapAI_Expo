@@ -8,10 +8,10 @@ import HeaderNav from "@/src/components/HeaderNav";
 import Loading from "@/src/components/LoadingComponent";
 import NavigationBar from "@/src/components/Navigation";
 import RubberPrice from "@/src/components/RubberPrice";
-import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
-import { Product, Profile } from "@/types";
+import { useUser } from "@/src/hooks/tsHooks";
+import { Product } from "@/types";
 import Feather from "@expo/vector-icons/Feather";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
@@ -31,42 +31,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Market() {
   const router = useRouter();
-  const [addProductModal, setAddProductModal] = useState(false);
-  const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [addProductModal, setAddProductModal] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [myProduct, setMyProduct] = useState<Product[]>([]);
   const [viewModal, setViewModal] = useState(false);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [chosenProduct, setChosenProduct] = useState<Product | null>(null);
-
-  const [loadingRequest, setLoadingRequest] = useState(false);
-  const [addEditModal, setAddEditModal] = useState("");
+  const { data: user } = useUser();
+  const [loadingRequest, setLoadingRequest] = useState<boolean>(false);
+  const [addEditModal, setAddEditModal] = useState<string>("");
   const { theme } = useTheme();
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        const data = await response.json();
-        setProfile(data);
-      } catch (error) {
-        console.error("Upload error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, [user?.$id]);
 
   useEffect(() => {
     const getMyProduct = async () => {
@@ -80,7 +53,7 @@ export default function Market() {
               Accept: "application/json",
             },
           },
-          15000
+          15000,
         );
 
         const data = await response.json();
@@ -101,7 +74,7 @@ export default function Market() {
       const response = await deleteProduct(
         user?.$id || "",
         chosenProduct?.$id || "",
-        profile?.API_KEY || ""
+        user?.API_KEY || "",
       );
 
       router.push("/(tabs)/market");

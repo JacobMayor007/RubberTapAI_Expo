@@ -4,9 +4,9 @@ import Loading from "@/src/components/LoadingComponent";
 import Logo from "@/src/components/Logo";
 import NavigationBar from "@/src/components/Navigation";
 import { ViewPressable } from "@/src/components/ViewPressable";
-import { useAuth } from "@/src/contexts/AuthContext";
 import { useMessage } from "@/src/contexts/MessageContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
+import { useUser, getChat } from "@/src/hooks/tsHooks";
 import { ChatRoom, Profile } from "@/types";
 import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import Fontisto from "@expo/vector-icons/Fontisto";
@@ -27,66 +27,14 @@ dayjs.extend(utc);
 
 export default function ChatBox() {
   const router = useRouter();
-  const [visibleModal, setVisibleModal] = useState(false);
-  const [searchValue, setSearchValue] = useState("");
+  const [visibleModal, setVisibleModal] = useState<boolean>(false);
+  const [searchValue, setSearchValue] = useState<string>("");
   const [searchUser, setSearchUser] = useState<Profile[]>([]);
-  const [chatHistory, setChatHistory] = useState<ChatRoom[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<Profile | null>(null);
-
+  const [loading, setLoading] = useState<boolean>(true);
+  const { data: profile } = useUser();
+  const { data: chatHistory } = getChat();
   const messageUser = useMessage();
   const { theme } = useTheme();
-  const { user } = useAuth();
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        const data = await response.json();
-        setProfile(data);
-      } catch (error) {
-        console.error("Upload error:", error);
-      }
-    };
-    fetchProfile();
-  }, [user?.$id]);
-
-  useEffect(() => {
-    const getChat = async () => {
-      try {
-        setLoading(true);
-
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/chat-room/${user?.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        const data = await response.json();
-
-        setChatHistory(data);
-      } catch (error) {
-        console.error("Upload error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getChat();
-  }, [user?.$id]);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -106,7 +54,7 @@ export default function ChatBox() {
               headers: {
                 Accept: "application/json",
               },
-            }
+            },
           );
 
           const data = await response.json();
@@ -139,7 +87,7 @@ export default function ChatBox() {
   const handleMessageUser = async (chatMate_id: string) => {
     try {
       if (!chatMate_id) {
-        messageUser?.setUser(profile);
+        messageUser?.setUser(profile || null);
       } else {
         const response = await fetch(
           `${process.env.EXPO_PUBLIC_BASE_URL}/chat-mate/${chatMate_id}`,
@@ -148,7 +96,7 @@ export default function ChatBox() {
             headers: {
               Accept: "application/json",
             },
-          }
+          },
         );
 
         const data = await response.json();
@@ -163,9 +111,8 @@ export default function ChatBox() {
   return (
     <SafeAreaView className="flex-1">
       <BackgroundGradient
-        className={`flex-1 flex-col ${
-          theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`
-        }`}
+        className={`flex-1 flex-col ${theme === "dark" ? `bg-[#101010]` : `bg-[#FFDFA9]`
+          }`}
       >
         <View className="flex-1 flex-col gap-2 p-6 ">
           <View className="flex-row items-center gap-2 justify-between">
@@ -192,9 +139,8 @@ export default function ChatBox() {
                   ? "rgba(232, 194, 130, 0.2) 0px 4px 6px -1px, rgba(0, 0, 0, 0.06) 0px 2px 4px -1px"
                   : "",
             }}
-            className={`mt-2 ${
-              theme === "dark" ? `bg-[#202020]` : `bg-[rgb(43,43,43,0.2)]`
-            }  h-11 rounded-2xl flex-row items-center gap-3 px-4`}
+            className={`mt-2 ${theme === "dark" ? `bg-[#202020]` : `bg-[rgb(43,43,43,0.2)]`
+              }  h-11 rounded-2xl flex-row items-center gap-3 px-4`}
           >
             <Fontisto
               name="search"
@@ -203,9 +149,8 @@ export default function ChatBox() {
             />
             <AppText
               onPress={() => setVisibleModal(true)}
-              className={`w-11/12 h-full pt-2.5 ${
-                theme === "dark" ? `text-[#E2C282]` : `text-white`
-              }`}
+              className={`w-11/12 h-full pt-2.5 ${theme === "dark" ? `text-[#E2C282]` : `text-white`
+                }`}
             >
               Search
             </AppText>
@@ -214,7 +159,7 @@ export default function ChatBox() {
             <Loading className="h-16 w-16 mx-auto" />
           ) : (
             <ScrollView className="flex-1 py-2 gap-2">
-              {chatHistory.map((chat, chatIndex) => {
+              {chatHistory?.map((chat, chatIndex) => {
                 const other = getOtherParticipant(chat);
 
                 return (
@@ -228,7 +173,7 @@ export default function ChatBox() {
                       source={{
                         uri:
                           chat.senderId === profile?.$id &&
-                          chat.receiverId === profile?.$id
+                            chat.receiverId === profile?.$id
                             ? profile?.imageURL
                             : other?.profileURL,
                       }}
@@ -319,9 +264,8 @@ export default function ChatBox() {
                   value={searchValue}
                   onChangeText={setSearchValue}
                   placeholderTextColor={theme === "dark" ? `#E2C282` : `black`}
-                  className={`h-full w-full border-none  placeholder:font-poppins placeholder:font-extrabold ${
-                    theme === "dark" ? `text-[#E2C282]` : `text-black`
-                  }`}
+                  className={`h-full w-full border-none  placeholder:font-poppins placeholder:font-extrabold ${theme === "dark" ? `text-[#E2C282]` : `text-black`
+                    }`}
                 />
               </TouchableOpacity>
             </View>
@@ -357,9 +301,8 @@ export default function ChatBox() {
                         router.push("/(message)/messages");
                       }}
                       key={index}
-                      className={`flex-row items-center mb-2 border-b-[0.5px] py-2 ${
-                        theme === "dark" ? `border-[#E2C282]` : `border-black`
-                      }`}
+                      className={`flex-row items-center mb-2 border-b-[0.5px] py-2 ${theme === "dark" ? `border-[#E2C282]` : `border-black`
+                        }`}
                     >
                       <Image
                         style={{ height: 48, width: 48 }}

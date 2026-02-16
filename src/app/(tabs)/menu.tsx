@@ -14,7 +14,8 @@ import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { useWeather } from "@/src/contexts/WeatherContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
-import { AppRate, Profile } from "@/types";
+import { useUser } from "@/src/hooks/tsHooks";
+import { AppRate } from "@/types";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
@@ -33,39 +34,16 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Menu() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [emailHide, setEmailHide] = useState("");
-  const [visibleModal, setVisibleModal] = useState(false);
-  const [modalShown, setModalShown] = useState("");
+  const [emailHide, setEmailHide] = useState<string>("");
+  const [visibleModal, setVisibleModal] = useState<boolean>(false);
+  const [modalShown, setModalShown] = useState<string>("");
   const { rain } = useWeather();
-  const [rate, setRate] = useState(0);
-  const [feedback, setFeedback] = useState("");
+  const [rate, setRate] = useState<number>(0);
+  const [feedback, setFeedback] = useState<string>("");
   const [userRated, setUserRated] = useState<AppRate | null>(null);
   const { theme } = useTheme();
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        const data = await response.json();
-        setProfile(data);
-      } catch (error) {
-        console.error("Upload error:", error);
-      }
-    };
-    fetchProfile();
-  }, [user?.$id]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const { data: profile } = useUser();
 
   useEffect(() => {
     const emailToHide = user?.email.split("@")[0];
@@ -88,7 +66,7 @@ export default function Menu() {
               "Content-Type": "application/json",
             },
           },
-          25000
+          25000,
         );
 
         const data = await response.json();
@@ -113,7 +91,7 @@ export default function Menu() {
             "Content-Type": "application/json",
           },
         },
-        25000
+        25000,
       );
 
       const data = await response.json();
@@ -127,13 +105,13 @@ export default function Menu() {
     userId: string,
     rating: number,
     feedback: string,
-    API_KEY: string
+    API_KEY: string,
   ) => {
     try {
       if (!rating || !feedback.trim()) {
         Alert.alert(
           "Missing Information",
-          "Please provide both a rating and written feedback before submitting."
+          "Please provide both a rating and written feedback before submitting.",
         );
         return;
       }
@@ -151,12 +129,12 @@ export default function Menu() {
               await fetchUserRatingStatus();
             },
           },
-        ]
+        ],
       );
     } catch (error) {
       console.error(error);
       Alert.alert(
-        "Something went wrong on our end. Can you please try again? Thank you!"
+        "Something went wrong on our end. Can you please try again? Thank you!",
       );
     } finally {
       setVisibleModal(false);
@@ -177,9 +155,8 @@ export default function Menu() {
   return (
     <SafeAreaView className="flex-1">
       <BackgroundGradient
-        className={`${
-          theme === "dark" ? `bg-gray-900` : `bg-[#FFDFA9]`
-        } flex-1 flex-col justify-between`}
+        className={`${theme === "dark" ? `bg-gray-900` : `bg-[#FFDFA9]`
+          } flex-1 flex-col justify-between`}
       >
         <View className={` flex-1 px-6 flex-col z-20`}>
           <HeaderNav title="Settings" arrow={true} />
@@ -189,8 +166,8 @@ export default function Menu() {
                 theme === "dark"
                   ? ["#202020", "#1B1B1B"]
                   : rain
-                  ? ["#7BDEE0", "#F1FDDA"]
-                  : ["#BFE07B", "#79B400"]
+                    ? ["#7BDEE0", "#F1FDDA"]
+                    : ["#BFE07B", "#79B400"]
               }
               start={{ x: 0, y: 0 }}
               end={{ x: 0.33, y: 1 }}
@@ -221,9 +198,8 @@ export default function Menu() {
                 </TouchableOpacity>
               </View>
               <View
-                className={`"flex-1 ${
-                  theme === "dark" ? `bg-gray-900` : ``
-                } mx-4 mt-8 gap-1.5 rounded-xl drop-shadow-2xl flex-col py-2 px-4 gap-1"`}
+                className={`"flex-1 ${theme === "dark" ? `bg-gray-900` : ``
+                  } mx-4 mt-8 gap-1.5 rounded-xl drop-shadow-2xl flex-col py-2 px-4 gap-1"`}
               >
                 <AppText
                   color={theme === "dark" ? "light" : "dark"}
@@ -247,11 +223,10 @@ export default function Menu() {
             </LinearGradient>
           </View>
           <View
-            className={`flex-row justify-between items-center ${
-              theme === "dark"
-                ? `bg-[rgb(83,62,53,0.5)]`
-                : `bg-[rgb(83,62,53,0.1)]`
-            } mt-4 px-4 rounded-lg outline-dashed`}
+            className={`flex-row justify-between items-center ${theme === "dark"
+              ? `bg-[rgb(83,62,53,0.5)]`
+              : `bg-[rgb(83,62,53,0.1)]`
+              } mt-4 px-4 rounded-lg outline-dashed`}
           >
             <AppText
               color={theme === "dark" ? "light" : "dark"}
@@ -305,9 +280,8 @@ export default function Menu() {
           </View>
           {!userRated?.$id && (
             <View
-              className={`${
-                theme === "dark" ? "bg-green-500/80" : "bg-green-500/20 "
-              } mt-4 px-4 rounded-lg outline-dashed py-2`}
+              className={`${theme === "dark" ? "bg-green-500/80" : "bg-green-500/20 "
+                } mt-4 px-4 rounded-lg outline-dashed py-2`}
             >
               <Pressable
                 onPress={() => {
@@ -317,9 +291,8 @@ export default function Menu() {
                 className="flex-row justify-between items-center"
               >
                 <AppText
-                  className={`font-poppins font-bold text-lg ${
-                    theme === "dark" ? `text-white` : `text-black`
-                  }`}
+                  className={`font-poppins font-bold text-lg ${theme === "dark" ? `text-white` : `text-black`
+                    }`}
                 >
                   Rate App
                 </AppText>
@@ -333,11 +306,10 @@ export default function Menu() {
           )}
 
           <View
-            className={`${
-              theme === "dark"
-                ? `bg-[rgb(83,62,53,0.5)]`
-                : `bg-[rgb(83,62,53,0.1)]`
-            } py-2 mt-4 px-4 rounded-lg outline-dashed`}
+            className={`${theme === "dark"
+              ? `bg-[rgb(83,62,53,0.5)]`
+              : `bg-[rgb(83,62,53,0.1)]`
+              } py-2 mt-4 px-4 rounded-lg outline-dashed`}
           >
             <Pressable
               onPress={() => {
@@ -394,7 +366,7 @@ export default function Menu() {
                 profile?.$id || "",
                 rate,
                 feedback,
-                profile?.API_KEY || ""
+                profile?.API_KEY || "",
               );
               setVisibleModal(false);
             }}
@@ -445,9 +417,8 @@ export default function Menu() {
                 value={feedback}
                 onChangeText={setFeedback}
                 placeholderTextColor="#6b7280"
-                className={`border-[1px] ${
-                  theme === "dark" ? `text-[#E8C282]` : `text-slate-800`
-                } p-4 border-gray-500 h-28 w-full rounded-lg`}
+                className={`border-[1px] ${theme === "dark" ? `text-[#E8C282]` : `text-slate-800`
+                  } p-4 border-gray-500 h-28 w-full rounded-lg`}
               />
               <View className="w-full ">
                 <AppText className="font-bold font-poppins text-start  text-xs text-slate-500">

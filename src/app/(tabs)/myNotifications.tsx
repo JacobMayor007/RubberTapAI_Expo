@@ -30,37 +30,10 @@ export default function AllMyNotifications() {
 
   const getMyNotifs = async () => {
     try {
-      const response = await globalFunction.fetchWithTimeout(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/notifications`,
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: profile?.$id,
-            API_KEY: profile?.API_KEY,
-          }),
-        },
-        20000
-      );
-
-      const data = await response.json();
-      if (data.items === 0) {
-        return;
-      }
-
-      const sortedNotifications = [...data].sort((a, b) => {
-        return (
-          new Date(b.$createdAt).getTime() - new Date(a.$createdAt).getTime()
-        );
-      });
-
       setMyNotifications(sortedNotifications);
 
       const unreadCount = data.filter(
-        (notif: MyNotifications) => !notif.isRead
+        (notif: MyNotifications) => !notif.isRead,
       ).length;
 
       setUnread(unreadCount);
@@ -78,7 +51,7 @@ export default function AllMyNotifications() {
           headers: {
             Accept: "application/json",
           },
-        }
+        },
       );
 
       const data = await response.json();
@@ -95,7 +68,7 @@ export default function AllMyNotifications() {
     try {
       const response = await updateReadAllNotif(
         profile?.$id || "",
-        profile?.API_KEY || ""
+        profile?.API_KEY || "",
       );
 
       console.log(response);
