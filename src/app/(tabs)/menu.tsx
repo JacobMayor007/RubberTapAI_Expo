@@ -1,4 +1,3 @@
-import { rateRubberTapAI } from "@/src/action/userAction";
 import AppearanceSettings from "@/src/components/AppearanceSettings";
 import { AppText } from "@/src/components/AppText";
 import BackgroundGradient from "@/src/components/BackgroundGradient";
@@ -10,17 +9,14 @@ import Loading from "@/src/components/LoadingComponent";
 import Logout from "@/src/components/Logout";
 import NavigationBar from "@/src/components/Navigation";
 import NotificationSettings from "@/src/components/NotificationSettings";
-import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { useWeather } from "@/src/contexts/WeatherContext";
-import { globalFunction } from "@/src/global/fetchWithTimeout";
-import { useUser } from "@/src/hooks/tsHooks";
-import { AppRate } from "@/types";
+import { useRateAppFetching, userRated, useUser } from "@/src/hooks/tsHooks";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Image,
@@ -33,115 +29,54 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Menu() {
-  const { user } = useAuth();
-  const [emailHide, setEmailHide] = useState<string>("");
   const [visibleModal, setVisibleModal] = useState<boolean>(false);
   const [modalShown, setModalShown] = useState<string>("");
   const { rain } = useWeather();
   const [rate, setRate] = useState<number>(0);
   const [feedback, setFeedback] = useState<string>("");
-  const [userRated, setUserRated] = useState<AppRate | null>(null);
   const { theme } = useTheme();
-  const [loading, setLoading] = useState<boolean>(false);
-  const { data: profile } = useUser();
+  const { data: profile, isLoading: loading } = useUser();
+  const { data: profileRated } = userRated();
 
-  useEffect(() => {
-    const emailToHide = user?.email.split("@")[0];
-    var asterisk = "";
-    for (var i = 0; i < Number(emailToHide?.length); i++) {
-      asterisk += "*";
-    }
-    setEmailHide(asterisk);
-  }, [user?.email, setEmailHide]);
+  const email: string | undefined = profile?.email;
+  const [username]: string[] | [] = email?.split("@") || [];
 
-  useEffect(() => {
-    const isUserRate = async () => {
-      try {
-        const response = await globalFunction.fetchWithTimeout(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/rubbertapai/${user?.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-          },
-          25000,
-        );
-
-        const data = await response.json();
-        setUserRated(data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    isUserRate();
-  }, [profile]);
-
-  const fetchUserRatingStatus = async () => {
-    try {
-      const response = await globalFunction.fetchWithTimeout(
-        `${process.env.EXPO_PUBLIC_BASE_URL}/rubbertapai/${profile?.$id}`,
-        {
-          method: "GET",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        },
-        25000,
-      );
-
-      const data = await response.json();
-      setUserRated(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  // Use String.repeat() for clean asterisk generation
+  const emailHide: string = "*".repeat(username?.length || 0);
+  const { mutate } = useRateAppFetching();
 
   const handleRateApp = async (
-    userId: string,
+    profileId: string,
     rating: number,
     feedback: string,
     API_KEY: string,
   ) => {
-    try {
-      if (!rating || !feedback.trim()) {
-        Alert.alert(
-          "Missing Information",
-          "Please provide both a rating and written feedback before submitting.",
-        );
-        return;
-      }
-
-      await rateRubberTapAI(userId, rating, feedback, API_KEY);
-
+    // 1. Simple Validation
+    if (!rating || !feedback.trim()) {
       Alert.alert(
-        "Your feedback has submitted",
-        "Thank you for your valuable feedback. We’ll use it to improve the experience.",
-        [
-          {
-            style: "default",
-            text: "Ok",
-            onPress: async () => {
-              await fetchUserRatingStatus();
-            },
-          },
-        ],
+        "Missing Information",
+        "Please provide both a rating and written feedback.",
       );
-    } catch (error) {
-      console.error(error);
-      Alert.alert(
-        "Something went wrong on our end. Can you please try again? Thank you!",
-      );
-    } finally {
-      setVisibleModal(false);
-      setModalShown("");
+      return;
     }
-  };
 
+    // 2. Fire the mutation
+    mutate(
+      { id: profileId, rating, feedback, API_KEY },
+      {
+        // Optional: Close modal immediately on success,
+        // or keep it in the hook's onSuccess if preferred.
+        onSuccess: () => {
+          setVisibleModal(false);
+          setModalShown("");
+        },
+        // Ensure modal closes even if it fails (if that's your preferred UX)
+        onSettled: () => {
+          // setVisibleModal(false);
+        },
+      },
+    );
+  };
   if (loading) {
     return (
       <SafeAreaView className="flex-1">
@@ -217,7 +152,7 @@ export default function Menu() {
                   Email
                 </AppText>
                 <AppText color={theme === "dark" ? "light" : "dark"}>
-                  {emailHide}@{user?.email.split("@")[1]}
+                  {emailHide}@{profile?.email.split("@")[1]}
                 </AppText>
               </View>
             </LinearGradient>
@@ -278,7 +213,7 @@ export default function Menu() {
               }}
             />
           </View>
-          {!userRated?.$id && (
+          {!profileRated?.$id && (
             <View
               className={`${theme === "dark" ? "bg-green-500/80" : "bg-green-500/20 "
                 } mt-4 px-4 rounded-lg outline-dashed py-2`}

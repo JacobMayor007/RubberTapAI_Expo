@@ -5,7 +5,6 @@ import ConfirmCancelModal from "@/src/components/ConfirmOrCancelModal";
 import Loading from "@/src/components/LoadingComponent";
 import NavigationBar from "@/src/components/Navigation";
 import RegisterPlot from "@/src/components/RegisterTreePlot";
-import { useAuth } from "@/src/contexts/AuthContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { getMyPlot, useUser } from "@/src/hooks/tsHooks";
 import Feather from "@expo/vector-icons/Feather";
