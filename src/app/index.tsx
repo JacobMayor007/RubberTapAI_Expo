@@ -15,15 +15,15 @@ import {
 import "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useAuth } from "../contexts/AuthContext";
 import { account } from "../lib/appwrite";
+import { useUser } from "../hooks/tsHooks";
 
 export default function IndexScreen() {
   const router = useRouter();
   const spinValue = useRef(new Animated.Value(0)).current;
   const [networkChecked, setNetworkChecked] = useState(false);
   const [hasInternet, setHasInternet] = useState(true);
-  const auth = useAuth();
+  const { data: auth } = useUser();
   const spin = () => {
     spinValue.setValue(0);
     Animated.timing(spinValue, {
@@ -89,7 +89,7 @@ export default function IndexScreen() {
   useEffect(() => {
     if (!networkChecked || !hasInternet) return;
 
-    if (auth.isReady) {
+    if (auth?.$id) {
       const navigate = async () => {
         try {
           await account.get();
@@ -102,7 +102,7 @@ export default function IndexScreen() {
       };
       navigate();
     }
-  }, [networkChecked, hasInternet, auth.isReady, auth.profile, router]);
+  }, [networkChecked, hasInternet, auth?.$id, router]);
 
   // Check Appwrite availability
   useEffect(() => {

@@ -1,10 +1,9 @@
 import DashboardBackground from "@/src/components/DashboardBackground";
 import Loading from "@/src/components/LoadingComponent";
-import { useAuth } from "@/src/contexts/AuthContext";
 import { useLocation } from "@/src/contexts/LocationContext";
 import { useTheme } from "@/src/contexts/ThemeContext";
 import { globalFunction } from "@/src/global/fetchWithTimeout";
-import useUser from "@/src/hooks/getUser";
+import { useUser } from "@/src/hooks/tsHooks";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
@@ -140,39 +139,6 @@ export default function Home() {
   /* ---------------------------
      3) Fetch profile (safe to run regardless of location)
      - add AbortController for safety (avoids warnings on unmount)
-     --------------------------- */
-  useEffect(() => {
-    const controller = new AbortController();
-    const fetchProfile = async () => {
-      try {
-        if (!profile?.$id) return;
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/profile:/${profile.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-            signal: controller.signal,
-          },
-        );
-        if (!response.ok) {
-          console.warn("fetchProfile non-OK status", response.status);
-          return;
-        }
-        const data = await response.json();
-        setProfile(data);
-      } catch (error: unknown) {
-        if ((error as any)?.name === "AbortError") return;
-        console.error("fetchProfile error:", error);
-      }
-    };
-    fetchProfile();
-
-    return () => {
-      controller.abort();
-    };
-  }, [profile?.$id]);
 
   /* ---------------------------
      4) updateLocation API call
