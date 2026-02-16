@@ -585,3 +585,7 @@ For support and documentation:
 ## License
 
 This project is part of a capstone/research initiative for rubber plantation management technology.
+
+## Author
+
+Jacob Mary Tapere
