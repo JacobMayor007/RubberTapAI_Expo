@@ -26,7 +26,7 @@ const editName = async (name: string, userId: string, key: string) => {
           },
           body: JSON.stringify(data),
         },
-        30000
+        30000,
       );
 
       return response;
@@ -41,7 +41,7 @@ const editEmail = async (
   email: string,
   userId: string,
   key: string,
-  password: string
+  password: string,
 ) => {
   try {
     console.log(email, userId, key, password);
@@ -50,7 +50,7 @@ const editEmail = async (
 
     if (result.$updatedAt) {
       await account.createVerification(
-        `${process.env.EXPO_PUBLIC_VERIFICATION}/`
+        `${process.env.EXPO_PUBLIC_VERIFICATION}/`,
       );
 
       const data = {
@@ -69,7 +69,7 @@ const editEmail = async (
           },
           body: JSON.stringify(data),
         },
-        30000
+        30000,
       );
 
       return response;
@@ -83,7 +83,7 @@ const editEmail = async (
 const updateProfileAction = async (
   userId: string,
   API_KEY: string,
-  uri: string
+  uri: string,
 ) => {
   try {
     var fileUrl = "";
@@ -107,7 +107,7 @@ const updateProfileAction = async (
           name: `image_${Date.now()}.jpg`,
           type: "image/jpeg",
           size: fileInfo.size,
-        }
+        },
       );
 
       fileUrl = `${process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT}/storage/buckets/${process.env.EXPO_PUBLIC_APPWRITE_STORAGE}/files/${result.$id}/view?project=${process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID}&mode=admin`;
@@ -128,7 +128,7 @@ const updateProfileAction = async (
           },
           body: JSON.stringify(data),
         },
-        20000
+        20000,
       );
 
       const jsonData = await response.json();
@@ -160,7 +160,7 @@ const updateNotif = async (user: Profile | null) => {
           notif: !user?.notif,
         }),
       },
-      2000
+      2000,
     );
 
     const data = await result.json();
@@ -189,7 +189,7 @@ const updateWeather = async (user: Profile | null) => {
           weather: !user?.weatherAlert,
         }),
       },
-      2000
+      2000,
     );
 
     const data = await result.json();
@@ -217,7 +217,7 @@ const updateMessage = async (user: Profile | null) => {
           message: !user?.messageAlert,
         }),
       },
-      2000
+      2000,
     );
 
     const data = await result.json();
@@ -246,7 +246,7 @@ const updateMarket = async (user: Profile | null) => {
           market: !user?.marketAlert,
         }),
       },
-      2000
+      2000,
     );
 
     const data = await result.json();
@@ -271,7 +271,7 @@ const getMyUnreadNotif = async (userId: string, API_KEY: string) => {
         },
         body: JSON.stringify({ userId, API_KEY }),
       },
-      20000
+      20000,
     );
 
     const data = await response.json();
@@ -295,7 +295,7 @@ const updateReadAllNotif = async (userId: string, API_KEY: string) => {
         },
         body: JSON.stringify({ userId, API_KEY }),
       },
-      20000
+      20000,
     );
 
     const data = await response.json();
@@ -309,7 +309,7 @@ const rateRubberTapAI = async (
   userId: string,
   rating: number,
   feedback: string,
-  API_KEY: string
+  API_KEY: string,
 ) => {
   try {
     const response = await globalFunction.fetchWithTimeout(
@@ -327,7 +327,7 @@ const rateRubberTapAI = async (
           API_KEY,
         }),
       },
-      25000
+      25000,
     );
 
     const data = await response.json();
