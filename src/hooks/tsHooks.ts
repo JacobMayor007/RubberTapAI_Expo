@@ -1,16 +1,25 @@
-import { AppRate, ChatRoom, MyNotifications, Plot, Profile } from "@/types";
+import {
+  AppRate,
+  ChatRoom,
+  MyNotifications,
+  Plot,
+  Profile,
+  Tree_Record,
+} from "@/types";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { globalFunction } from "../global/fetchWithTimeout";
 import { account } from "../lib/appwrite";
 import { rateRubberTapAI } from "../action/userAction";
 import { Alert } from "react-native";
+import dayjs from "dayjs";
 
-interface RateParams {
-  id: string;
-  rating: number;
-  feedback: string;
+export interface AuthPayload {
+  userId: string;
   API_KEY: string;
 }
+
+// Now use Intersections for specific mutations
+export type RateParams = AuthPayload & { rating: number; feedback: string };
 
 export function useUser() {
   // 1. First, get the account session (Sync hook, Async logic inside)
@@ -171,23 +180,135 @@ export function userRated() {
 }
 
 export function useRateAppFetching() {
-  const queryClient = useQueryClient(); // Get the client instance
-
+  const queryClient = useQueryClient();
   return useMutation<any, Error, RateParams>({
-    mutationFn: async ({ id, rating, feedback, API_KEY }) => {
-      return await rateRubberTapAI(id, rating, feedback, API_KEY);
+    mutationFn: async (params) => {
+      // We pass the whole object to the action
+      return await rateRubberTapAI(
+        params.userId,
+        params.rating,
+        params.feedback,
+        params.API_KEY,
+      );
     },
-    onSuccess: (_data, variables) => {
-      // 2. Use the instance to invalidate
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({
-        queryKey: ["app-rate", variables.id], // Note: matches the key in userRated()
+        queryKey: ["app-rate", variables.userId],
       });
-
-      Alert.alert("Success", "Feedback submitted!");
+      Alert.alert("Success", "Thank you for your feedback!");
     },
     onError: (error) => {
       console.error("Mutation Error:", error);
       Alert.alert("Error", "Something went wrong.");
+    },
+  });
+}
+
+export function getMyTree(plotId: string) {
+  const { data: profile } = useUser();
+
+  const userId = profile?.$id;
+  console.log("User Id in get my tree", userId);
+
+  console.log(plotId);
+
+  return useQuery<Tree_Record[] | []>({
+    queryKey: ["tree-record", userId],
+    queryFn: async () => {
+      try {
+        if (!userId) return [];
+
+        const response = await globalFunction.fetchWithTimeout(
+          `${process.env.EXPO_PUBLIC_BASE_URL}/trees/${plotId}/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+            },
+          },
+          20000,
+        );
+
+        const result = await response.json();
+
+        if (result.length === 0) {
+          return [];
+        }
+
+        const convert = result.map((data: Tree_Record) => ({
+          ...data,
+          $createdAt: dayjs(data?.$createdAt),
+        }));
+
+        return result;
+      } catch (error) {
+        console.error(error);
+        return;
+      }
+    },
+    enabled: !!userId && !!plotId,
+  });
+}
+
+export function useDeleteTreeMutation(
+  userId: string | undefined,
+  API_KEY: string | undefined,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, { tree_id: string }>({
+    mutationFn: async ({ tree_id }) => {
+      await globalFunction.fetchWithTimeout(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/tree`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            tree_id,
+            userId,
+            API_KEY,
+          }),
+        },
+        20000,
+      );
+    },
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["tree-record", userId],
+      });
+    },
+  });
+}
+
+export function addTreeMutation() {
+  const queryClient = useQueryClient();
+  return useMutation<
+    void,
+    Error,
+    { plot_id: string; userId: string | undefined; API_KEY: string | undefined }
+  >({
+    mutationFn: async ({ plot_id, userId, API_KEY }) => {
+      await globalFunction.fetchWithTimeout(
+        `${process.env.EXPO_PUBLIC_BASE_URL}/trees`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId, plot_id, API_KEY }),
+        },
+        20000,
+      );
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ["tree-record", variables.userId],
+        exact: true,
+      });
     },
   });
 }
