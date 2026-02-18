@@ -36,7 +36,7 @@ export default function Menu() {
   const [feedback, setFeedback] = useState<string>("");
   const { theme } = useTheme();
   const { data: profile, isLoading: loading } = useUser();
-  const { data: profileRated } = userRated();
+  const { data: profileRated, isLoading: ratedLoading } = userRated();
 
   const email: string | undefined = profile?.email;
   const [username]: string[] | [] = email?.split("@") || [];
@@ -62,7 +62,7 @@ export default function Menu() {
 
     // 2. Fire the mutation
     mutate(
-      { id: profileId, rating, feedback, API_KEY },
+      { userId: profileId, rating, feedback, API_KEY },
       {
         // Optional: Close modal immediately on success,
         // or keep it in the hook's onSuccess if preferred.
@@ -72,12 +72,13 @@ export default function Menu() {
         },
         // Ensure modal closes even if it fails (if that's your preferred UX)
         onSettled: () => {
-          // setVisibleModal(false);
+          setVisibleModal(false);
         },
       },
     );
   };
-  if (loading) {
+
+  if (loading || ratedLoading) {
     return (
       <SafeAreaView className="flex-1">
         <BackgroundGradient className="flex-1 items-center justify-center">
