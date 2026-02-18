@@ -182,7 +182,7 @@ export default function ListTrees() {
                       </TouchableOpacity>
                     </View>
                     <AppText color={theme === "dark" ? `light` : `dark`}>
-                      {data?.$createdAt.format("MM/DD/YYYY")}
+                      {data?.$createdAt.format("MMMM DD, YYYY")}
                     </AppText>
                   </View>
                 </TouchableOpacity>

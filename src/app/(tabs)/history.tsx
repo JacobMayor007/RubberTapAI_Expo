@@ -34,15 +34,15 @@ export default function History() {
   const [modal, setModal] = useState<boolean>(false);
   const [refresh, setRefresh] = useState<boolean>(false);
   const [editDelete, setEditDelete] = useState<string>("");
-  const { data: user } = useUser();
-  const { data: myPlot } = getMyPlot();
+  const { data: user, isLoading: userLoading } = useUser();
+  const { data: myPlot, isLoading: plotLoading } = getMyPlot();
 
   useEffect(() => {
     setRefresh(false);
     setSaveModal(false);
   }, [refresh, saveModal]);
 
-  if (loading) {
+  if (userLoading || plotLoading) {
     return (
       <BackgroundGradient
         className={` flex-1 flex-row items-center justify-center`}

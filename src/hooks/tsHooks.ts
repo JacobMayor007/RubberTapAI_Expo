@@ -103,7 +103,12 @@ export function getMyPlot() {
       );
       const data = await response.json();
 
-      return data;
+      const convert = data.map((doc: Plot) => ({
+        ...doc,
+        $createdAt: dayjs(doc?.$createdAt),
+      }));
+
+      return convert;
     },
     enabled: !!profile,
   });
@@ -241,7 +246,7 @@ export function getMyTree(plotId: string) {
           $createdAt: dayjs(data?.$createdAt),
         }));
 
-        return result;
+        return convert;
       } catch (error) {
         console.error(error);
         return;

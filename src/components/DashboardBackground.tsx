@@ -1,6 +1,5 @@
 import { LinearGradient } from "expo-linear-gradient";
 import { Image, ScrollView, View } from "react-native";
-import { useAuth } from "../contexts/AuthContext";
 import { useLocation } from "../contexts/LocationContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useWeather } from "../contexts/WeatherContext";
@@ -9,9 +8,10 @@ import CurrentWeather from "./CurrentWeather";
 import HeaderNav from "./HeaderNav";
 import NavigationBar from "./Navigation";
 import WeatherForecast from "./WeatherForecast";
+import { useUser } from "../hooks/tsHooks";
 
 export default function DashboardBackground() {
-  const { profile } = useAuth();
+  const { data: profile } = useUser();
   const { address } = useLocation();
   const { rain } = useWeather();
   const { theme } = useTheme();
