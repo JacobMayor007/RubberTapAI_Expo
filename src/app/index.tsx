@@ -88,6 +88,7 @@ export default function IndexScreen() {
 
   useEffect(() => {
     if (!networkChecked || !hasInternet) return;
+    if (!auth) return;
 
     if (auth?.$id) {
       const navigate = async () => {
@@ -101,9 +102,6 @@ export default function IndexScreen() {
         }
       };
       navigate();
-    } else {
-      console.log("❌ No user, redirecting to getStarted");
-      setTimeout(() => router.replace("/getStarted"), 1500);
     }
   }, [networkChecked, hasInternet, auth?.$id, router]);
 

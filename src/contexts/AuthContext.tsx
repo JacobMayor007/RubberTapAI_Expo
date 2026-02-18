@@ -9,12 +9,24 @@ type AuthContextType = {
   register: (email: string, password: string, name: string) => Promise<void>;
   isReady: boolean;
   setIsReady: (ready: boolean) => void;
+  isEmailVerified: () => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isReady, setIsReady] = useState(false);
   const router = useRouter();
+
+  const isEmailVerified = async (): Promise<boolean> => {
+    try {
+      const user = await account.get();
+
+      return user.emailVerification;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  };
 
   const login = async (email: string, password: string) => {
     await account.createEmailPasswordSession({ email, password });
@@ -39,6 +51,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         register,
         setIsReady,
+        isEmailVerified,
       }}
     >
       {children}

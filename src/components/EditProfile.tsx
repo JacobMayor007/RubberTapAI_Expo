@@ -1,10 +1,9 @@
-import { Profile } from "@/types";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Feather from "@expo/vector-icons/Feather";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Image,
@@ -23,14 +22,15 @@ import BackgroundGradient from "./BackgroundGradient";
 import ChangePassword from "./ChangePassword";
 import ConfirmCancelModal from "./ConfirmOrCancelModal";
 import Loading from "./LoadingComponent";
+import { useUser } from "../hooks/tsHooks";
 
 type AppearanceProps = {
   setVisibleModal: (visible: boolean) => void;
 };
 
 export default function EditProfile({ setVisibleModal }: AppearanceProps) {
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const { user, logout } = useAuth();
+  const { data: profile, isLoading: loadingPage } = useUser();
+  const { isEmailVerified } = useAuth();
   const [editProfile, setEditProfile] = useState("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
@@ -41,34 +41,6 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
   const [uri, setUri] = useState("");
   const { theme } = useTheme();
   const [userVerification, setUserVerification] = useState(false);
-  const [loadingPage, setLoadingPage] = useState(true);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoadingPage(true);
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        const data: Profile = await response.json();
-        setProfile(data);
-        setEmail(data?.email);
-        setName(data?.fullName);
-      } catch (error) {
-        console.error("Upload error:", error);
-      } finally {
-        setLoadingPage(false);
-      }
-    };
-    fetchProfile();
-  }, [user?.$id]);
 
   const handleEditName = async () => {
     try {
@@ -76,7 +48,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
       const response = await editName(
         name,
         profile?.$id || "",
-        profile?.API_KEY || ""
+        profile?.API_KEY || "",
       );
 
       const data = await response?.json();
@@ -97,7 +69,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
         newEmail,
         profile?.$id || "",
         profile?.API_KEY || "",
-        password
+        password,
       );
 
       const data = await response?.json();
@@ -106,7 +78,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
         {
           text: "OK",
           onPress: () => {
-            account.deleteSession("current");
+            account.deleteSession({ sessionId: "current" });
             router.dismissAll();
             router.replace("/(auth)");
             setLoading(false);
@@ -154,7 +126,11 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
   const updateProfile = async () => {
     try {
       setLoading(true);
-      await updateProfileAction(user?.$id || "", profile?.API_KEY || "", uri);
+      await updateProfileAction(
+        profile?.$id || "",
+        profile?.API_KEY || "",
+        uri,
+      );
     } catch (error) {
       console.error(error);
     } finally {
@@ -168,7 +144,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
   console.log(theme);
 
   const isUserVerified = () => {
-    if (!user?.emailVerification) {
+    if (!isEmailVerified) {
       if (userVerification) {
         Alert.alert("Already been sent to your email, please check!");
         return;
@@ -196,14 +172,14 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
 
                 Alert.alert(
                   "Verification email sent",
-                  "Please check your email"
+                  "Please check your email",
                 );
               } catch (error) {
                 console.error("Failed to send verification:", error);
               }
             },
           },
-        ]
+        ],
       );
     }
   };
@@ -254,7 +230,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
               />
             </TouchableOpacity>
           </View>
-          {!user?.emailVerification ? (
+          {!isEmailVerified ? (
             <TouchableOpacity
               onPress={isUserVerified}
               className={`bg-red-500 flex-row gap-2 items-center px-4 py-2 rounded-full `}
@@ -282,7 +258,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
           <TextInput
             readOnly={editProfile === "name" ? false : true}
             className={`w-9/12 text-lg ${theme === "dark" ? `text-[#E8C282]` : `text-black`}`}
-            value={name}
+            value={profile?.fName! + " " + profile?.lName!}
             onChangeText={(e) => setName(e)}
           />
           {editProfile === "name" ? (
@@ -331,7 +307,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
           <TextInput
             readOnly={editProfile === "email" ? false : true}
             className={`text-lg ${theme === "dark" ? `text-[#E8C282]` : `text-black`}`}
-            value={email}
+            value={profile?.email}
           />
 
           <TouchableOpacity>
