@@ -30,6 +30,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     await account.createEmailPasswordSession({ email, password });
+    const jwt = await account.createJWT();
+
+    console.log(jwt.jwt);
+
     router.replace("/(tabs)");
   };
 

@@ -10,7 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { globalFunction } from "../global/fetchWithTimeout";
 import { account } from "../lib/appwrite";
 import { rateRubberTapAI } from "../action/userAction";
-import { Alert } from "react-native";
+import { Alert, BackHandler } from "react-native";
 import dayjs from "dayjs";
 
 export interface AuthPayload {
@@ -31,14 +31,25 @@ export function useUser() {
   // 2. Second, fetch the profile only if we have a userData.$id
   const userId = userData?.$id;
   console.log(userId);
-  console.log(`http://192.168.1.9:3000/api/v1/users/${userId}`);
+  console.log(`http://192.168.1.16:3000/api/v1/users/${userId}`);
 
   return useQuery<Profile | null>({
     queryKey: ["profile", userId],
     queryFn: async () => {
       if (!userId) return null;
+
+      const controller = new AbortController();
+
+      // The "Bomb": Exits app if it reaches 10s
+      const timeoutId = setTimeout(() => {
+        controller.abort();
+        Alert.alert("Connection Timeout", "Server unreachable. Closing app.", [
+          { text: "OK", onPress: () => BackHandler.exitApp() },
+        ]);
+      }, 20000);
+
       const response = await globalFunction.fetchWithTimeout(
-        `http://192.168.1.9:3000/api/v1/users/${userId}`,
+        `http://192.168.1.16:3000/api/v1/users/${userId}`,
         {
           method: "GET",
           headers: {
@@ -46,10 +57,11 @@ export function useUser() {
             "Content-Type": "application/json",
           },
         },
-        25000,
+        10000,
       );
 
       const result = await response.json();
+      clearTimeout(timeoutId);
 
       console.log(result);
 

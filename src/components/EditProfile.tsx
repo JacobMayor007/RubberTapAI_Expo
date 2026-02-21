@@ -32,7 +32,6 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
   const { data: profile, isLoading: loadingPage } = useUser();
   const { isEmailVerified } = useAuth();
   const [editProfile, setEditProfile] = useState("");
-  const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [confirmModal, setConfirmModal] = useState(false);
   const [newEmail, setNewEmail] = useState("");
@@ -87,7 +86,6 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
           },
         },
       ]);
-      setEmail(newEmail);
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Error occured, please try again!");
@@ -193,6 +191,7 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
       </SafeAreaView>
     );
   }
+
   return (
     <BackgroundGradient className="flex-1 ">
       <View className="flex-row items-center gap-7 m-6">
@@ -258,7 +257,11 @@ export default function EditProfile({ setVisibleModal }: AppearanceProps) {
           <TextInput
             readOnly={editProfile === "name" ? false : true}
             className={`w-9/12 text-lg ${theme === "dark" ? `text-[#E8C282]` : `text-black`}`}
-            value={profile?.fName! + " " + profile?.lName!}
+            value={
+              editProfile === "name"
+                ? name
+                : profile?.fName! + " " + profile?.lName!
+            }
             onChangeText={(e) => setName(e)}
           />
           {editProfile === "name" ? (
