@@ -25,6 +25,15 @@ RubberTapAI is a comprehensive mobile application built with React Native and Ex
 - **Backend**: Appwrite
 - **Build Tool**: EAS Build
 
+## 🎬 DEMO
+
+Watch the application in action:
+
+<video width="100%" controls>
+  <source src="Demo.mp4" type="video/mp4">
+  Your browser does not support the video tag. <a href="Demo.mp4">Click here to download the demo video</a>
+</video>
+
 ## Project Structure
 
 ```
