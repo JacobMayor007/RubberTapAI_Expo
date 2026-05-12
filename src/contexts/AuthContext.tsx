@@ -2,6 +2,8 @@ import { useRouter } from "expo-router";
 import { createContext, ReactNode, useContext, useState } from "react";
 import { ID } from "react-native-appwrite";
 import { account } from "../lib/appwrite";
+import { useQueryClient } from "@tanstack/react-query";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type AuthContextType = {
   login: (email: string, password: string) => Promise<void>;
@@ -9,20 +11,38 @@ type AuthContextType = {
   register: (email: string, password: string, name: string) => Promise<void>;
   isReady: boolean;
   setIsReady: (ready: boolean) => void;
+  isEmailVerified: () => Promise<boolean>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isReady, setIsReady] = useState(false);
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const isEmailVerified = async (): Promise<boolean> => {
+    try {
+      const user = await account.get();
+
+      return user.emailVerification;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
+  };
 
   const login = async (email: string, password: string) => {
     await account.createEmailPasswordSession({ email, password });
+    const jwt = await account.createJWT();
+
+    console.log(jwt.jwt);
+
     router.replace("/(tabs)");
   };
 
   const logout = async () => {
     await account.deleteSession({ sessionId: "current" });
+    queryClient.clear();
+    await AsyncStorage.removeItem("lastActivity");
     router.dismissAll();
     router.replace("/(auth)");
   };
@@ -39,6 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         register,
         setIsReady,
+        isEmailVerified,
       }}
     >
       {children}

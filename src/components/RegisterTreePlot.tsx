@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { AppText } from "./AppText";
+import { useUser } from "../hooks/tsHooks";
 
 type AppearanceProps = {
   setRegisterModal: (visible: boolean) => void;
@@ -19,30 +20,7 @@ export default function RegisterPlot({
   const { theme } = useTheme();
   const [focusedInput, setFocusedInput] = useState(false);
   const [name, setName] = useState("");
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const { user } = useAuth();
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.EXPO_PUBLIC_BASE_URL}/user/${user?.$id}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        const data = await response.json();
-        setProfile(data);
-      } catch (error) {
-        console.error("Upload error:", error);
-      }
-    };
-    fetchProfile();
-  }, [user?.$id]);
+  const { data: profile } = useUser();
 
   const toSavePlot = async () => {
     try {
@@ -51,7 +29,7 @@ export default function RegisterPlot({
       }
 
       const data = {
-        userId: user?.$id,
+        userId: profile?.$id,
         name: name,
         API_KEY: profile?.API_KEY,
       };

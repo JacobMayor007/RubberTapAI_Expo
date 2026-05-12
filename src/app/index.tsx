@@ -88,6 +88,7 @@ export default function IndexScreen() {
 
   useEffect(() => {
     if (!networkChecked || !hasInternet) return;
+    if (!auth) return;
 
     if (auth?.$id) {
       const navigate = async () => {
