@@ -1,11 +1,5 @@
 
 
-https://github.com/user-attachments/assets/1e90d04d-68ce-4f23-a761-847d1777e1ae
-
-
-
-https://github.com/user-attachments/assets/cb057620-8024-4ae5-b995-83ca433bc544
-
 # RubberTapAI - Rubber Tree Management Application
 
 RubberTapAI is a comprehensive mobile application built with React Native and Expo that enables rubber plantation owners and managers to efficiently manage their rubber tree operations, track measurements, monitor weather conditions, and process payments.
@@ -37,10 +31,7 @@ RubberTapAI is a comprehensive mobile application built with React Native and Ex
 
 Watch the application in action:
 
-<video width="100%" controls>
-  <source src="Demo.mp4" type="video/mp4">
-  Your browser does not support the video tag. <a href="Demo.mp4">Click here to download the demo video</a>
-</video>
+https://github.com/user-attachments/assets/1e90d04d-68ce-4f23-a761-847d1777e1ae
 
 ## Project Structure
 
